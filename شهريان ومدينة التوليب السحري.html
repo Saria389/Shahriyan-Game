@@ -1,0 +1,1408 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>شهريان ومدينة التوليب السحري</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600&family=Reem+Kufi:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: a full-bleed night-garden canvas; a dark glass dialogue panel docked at the bottom; thumb controls in the lower corners. */
+:root{
+  --night:#12112a; --night-2:#1c1a3d; --moon:#ece9f7; --moon-dim:#b7b3d4;
+  --lantern:#f4b95c; --tulip:#e0405f; --glass:#8fd2e6; --ink:#0c0b1d;
+  --panel:rgba(16,15,38,.94); --line:rgba(236,233,247,.2);
+  --f-display:'Reem Kufi','Noto Kufi Arabic','Segoe UI',Tahoma,sans-serif;
+  --f-body:'Noto Naskh Arabic','Amiri','Traditional Arabic',Tahoma,serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--moon);font-family:var(--f-body);font-size:17px;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#app{position:relative;width:100%;height:100%;overflow:hidden;direction:rtl}
+#game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(5,4,18,.55) 100%)}
+button{font-family:var(--f-display);color:var(--moon);cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:2px solid var(--lantern);outline-offset:2px}
+.btn{background:rgba(236,233,247,.06);border:1px solid var(--line);border-radius:8px;padding:10px 18px;font-size:16px;min-height:44px}
+.btn:hover{background:rgba(236,233,247,.14)}
+.btn.main{background:var(--lantern);color:var(--ink);border-color:var(--lantern);font-weight:700}
+.btn.main:hover{background:#ffc873}
+/* HUD */
+#hud{position:absolute;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;pointer-events:none}
+#hudL{min-width:0;max-width:min(64%,460px);display:flex;flex-direction:column;gap:6px}
+#chTag{font-family:var(--f-display);font-size:13px;letter-spacing:.06em;color:var(--lantern)}
+#goal{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:15px;line-height:1.7}
+#memWrap{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 12px;display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-size:13px}
+#memBar{flex:1;height:8px;border-radius:4px;background:rgba(236,233,247,.15);overflow:hidden}
+#memFill{height:100%;width:100%;background:linear-gradient(90deg,var(--tulip),var(--lantern));transition:width .15s}
+#hudR{display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.hbtn{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:15px;min-height:44px}
+#place{position:absolute;top:34%;left:0;right:0;text-align:center;font-family:var(--f-display);font-size:30px;letter-spacing:.04em;color:var(--moon);text-shadow:0 2px 18px rgba(0,0,0,.8);opacity:0;pointer-events:none;transition:opacity .8s}
+#place.on{opacity:1}
+#toast{position:absolute;left:50%;top:96px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--lantern);color:var(--moon);border-radius:10px;padding:8px 16px;font-size:15px;opacity:0;pointer-events:none;transition:opacity .3s;max-width:88%;text-align:center}
+#toast.on{opacity:1}
+#prompt{position:absolute;transform:translate(-50%,-100%);background:var(--lantern);color:var(--ink);font-family:var(--f-display);font-size:14px;font-weight:700;padding:6px 12px;border-radius:8px;border:0;white-space:nowrap;min-height:36px}
+/* controls */
+#controls{position:absolute;left:0;right:0;bottom:0;height:0;transition:opacity .2s}
+#stick{position:absolute;left:20px;bottom:24px;width:128px;height:128px;border-radius:50%;background:rgba(236,233,247,.07);border:1px solid var(--line);touch-action:none}
+#knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(244,185,92,.55);border:1px solid var(--lantern)}
+#act{position:absolute;right:20px;bottom:36px;width:88px;height:88px;border-radius:50%;background:rgba(244,185,92,.16);border:2px solid var(--lantern);font-size:18px}
+#act.hot{background:var(--lantern);color:var(--ink);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 12px rgba(244,185,92,0)}0%{box-shadow:0 0 0 0 rgba(244,185,92,.5)}}
+#keys{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:14px;color:var(--moon-dim);pointer-events:none;display:none}
+@media (hover:hover) and (pointer:fine){#stick{display:none}#act{display:none}#keys{display:block}#prompt{cursor:pointer}}
+body.talking #controls,body.ov #controls,body.talking #keys,body.ov #keys{opacity:0;pointer-events:none}
+/* dialogue */
+#dialog{position:absolute;left:12px;right:12px;bottom:14px;max-width:680px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px 12px;box-shadow:0 12px 40px rgba(0,0,0,.5);cursor:pointer}
+#dSpk{display:inline-block;font-family:var(--f-display);font-size:15px;font-weight:700;color:var(--lantern);margin-bottom:4px}
+#dTxt{font-size:19px;line-height:1.95;min-height:2em}
+#dTxt.nar{color:var(--moon-dim)}
+#dHint{font-family:var(--f-display);font-size:12px;color:var(--moon-dim);text-align:left;margin-top:2px}
+#dChoices{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#dChoices .btn{text-align:right;font-family:var(--f-body);font-size:17px;line-height:1.6}
+/* overlays */
+.ovl{position:absolute;inset:0;background:rgba(8,7,22,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px 16px;overflow:auto}
+#card{background:radial-gradient(ellipse at 50% 40%,#241f55 0%,#0c0b1d 75%);opacity:0;transition:opacity .7s;text-align:center;cursor:pointer;z-index:30}
+#card.show{opacity:1}
+#cardL{font-family:var(--f-display);font-size:16px;letter-spacing:.14em;color:var(--lantern)}
+#cardT{font-family:var(--f-display);font-size:clamp(28px,8vw,52px);font-weight:700;line-height:1.35;text-wrap:balance;max-width:14em}
+#cardS{color:var(--moon-dim);font-size:16px;max-width:26em;line-height:1.9}
+#fade{position:absolute;inset:0;background:#07061a;opacity:0;pointer-events:none;transition:opacity .45s;z-index:25}
+#fade.on{opacity:1}
+#title{z-index:40;background:radial-gradient(ellipse at 50% 30%,#2a2468 0%,#12112a 55%,#0a0918 100%)}
+#title svg{width:min(26vw,96px);height:auto;flex:none}
+#tFace{width:116px;height:116px;border-radius:50%;object-fit:cover;border:3px solid var(--lantern);box-shadow:0 0 44px rgba(244,185,92,.38);flex:none}
+#title h1{font-family:var(--f-display);font-weight:700;font-size:clamp(46px,14vw,86px);line-height:1.1;margin:0;color:var(--moon)}
+#title h2{font-family:var(--f-display);font-weight:500;font-size:clamp(18px,5vw,26px);margin:0;color:var(--lantern);letter-spacing:.04em}
+#title p{margin:0;color:var(--moon-dim);max-width:24em;text-align:center;line-height:1.9;font-size:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.sheet{width:min(100%,640px);max-height:100%;background:var(--night-2);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;gap:12px;padding:16px;overflow:hidden}
+.sheet header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet h3{margin:0;font-family:var(--f-display);font-size:22px;color:var(--lantern)}
+.scroll{overflow:auto;display:flex;flex-direction:column;gap:12px;min-height:0;padding-inline-end:2px}
+.scroll h4{margin:8px 0 0;font-family:var(--f-display);font-size:14px;letter-spacing:.08em;color:var(--glass)}
+.chI{border-top:1px solid var(--line);padding-top:10px}
+.chI b{font-family:var(--f-display);font-size:16px;display:block}
+.chI small{font-family:var(--f-display);color:var(--lantern);font-size:12px;letter-spacing:.06em}
+.chI p{margin:2px 0 0;color:var(--moon-dim);font-size:15px;line-height:1.8}
+.chI.lock{opacity:.35}
+.itm{display:flex;gap:10px;align-items:flex-start}
+.itm i{flex:none;width:14px;height:14px;border-radius:50%;margin-top:8px}
+.itm p{margin:0;font-size:15px;line-height:1.8;color:var(--moon-dim)}
+.itm b{font-family:var(--f-display);color:var(--moon)}
+#mixGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;width:100%}
+#mixGrid button{display:flex;flex-direction:column;gap:6px;align-items:center;padding:12px 8px;border-radius:10px;background:rgba(236,233,247,.06);border:2px solid var(--line);font-size:15px;line-height:1.5}
+#mixGrid button i{width:26px;height:26px;border-radius:50%;border:1px solid var(--line)}
+#mixGrid button.sel{border-color:var(--lantern);background:rgba(244,185,92,.16)}
+#mixMsg{min-height:3.4em;color:var(--moon);text-align:center;line-height:1.8;font-size:16px}
+#simon{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(78vw,300px)}
+#simon button{height:min(34vw,128px);border-radius:16px;border:2px solid var(--line);opacity:.55}
+#simon button.lit{opacity:1;box-shadow:0 0 28px 6px currentColor;transform:scale(1.04)}
+#mapSvg{width:min(86vw,320px);height:auto;border-radius:12px;border:1px solid var(--line)}
+#dRow{display:flex;gap:12px;align-items:flex-start}
+#dAv{width:58px;height:58px;border-radius:50%;object-fit:cover;border:2px solid var(--lantern);flex:none}
+#dBody{flex:1;min-width:0}
+#dBar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px}
+#dBar #dHint{margin:0}
+.btn.sm{min-height:36px;padding:4px 14px;font-size:13px}
+select{background:var(--night);color:var(--moon);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:var(--f-body);font-size:15px;flex:1;min-width:0;max-width:100%}
+.rdT{margin:0;font-family:var(--f-display);font-size:24px;line-height:1.45;color:var(--moon);text-wrap:balance}
+.rdL{font-family:var(--f-display);font-size:13px;letter-spacing:.08em;color:var(--lantern)}
+.rdP{margin:0;font-size:19px;line-height:2.05;color:var(--moon);user-select:text;-webkit-user-select:text}
+#rdHint{margin:8px 0 0;background:rgba(244,185,92,.12);border:1px solid var(--lantern);border-radius:10px;padding:10px 12px;line-height:1.9;font-size:16px}
+.tog{display:flex;flex-direction:column;gap:8px;width:100%}
+.tog .btn{text-align:right}
+</style>
+
+<div id="app" dir="rtl">
+  <canvas id="game"></canvas>
+  <div id="vig"></div>
+  <div id="hud">
+    <div id="hudL">
+      <div id="chTag"></div>
+      <div id="goal"></div>
+      <div id="memWrap" hidden><span>الذاكرة</span><div id="memBar"><div id="memFill"></div></div></div>
+    </div>
+    <div id="hudR"><button id="btnRead" class="hbtn" type="button">الرواية</button><button id="btnBook" class="hbtn" type="button">الحقيبة</button></div>
+  </div>
+  <div id="place"></div>
+  <div id="toast"></div>
+  <button id="prompt" type="button" hidden></button>
+  <div id="controls">
+    <div id="stick"><div id="knob"></div></div>
+    <button id="act" type="button">تفاعل</button>
+  </div>
+  <div id="keys">الأسهم أو WASD للحركة · مسافة أو E للتفاعل · B للكتاب</div>
+
+  <div id="dialog" hidden>
+    <div id="dRow"><img id="dAv" alt="" hidden><div id="dBody"><div id="dSpk"></div><div id="dTxt"></div></div></div>
+    <div id="dChoices"></div>
+    <div id="dBar"><button id="dSkip" class="btn sm" type="button">تخطي الحوار</button><span id="dHint">اضغطي للمتابعة</span></div>
+  </div>
+
+  <div id="fade"></div>
+
+  <div id="card" class="ovl" hidden>
+    <div id="cardL"></div><div id="cardT"></div><div id="cardS"></div>
+  </div>
+
+  <div id="mix" class="ovl" hidden>
+    <div class="sheet" style="align-items:stretch">
+      <header><h3 id="mixTitle">تحضير الدواء</h3></header>
+      <div id="mixInfo" style="color:var(--moon-dim);line-height:1.8;font-size:15px"></div>
+      <div id="mixGrid"></div>
+      <div id="mixMsg"></div>
+      <div class="row"><button id="mixGo" class="btn main" type="button">اخلطي</button><button id="mixNo" class="btn" type="button">لاحقًا</button></div>
+    </div>
+  </div>
+
+  <div id="simonOv" class="ovl" hidden>
+    <div id="simonMsg" style="font-family:var(--f-display);font-size:20px;text-align:center;min-height:2.6em;line-height:1.6"></div>
+    <div id="simon"></div>
+    <button id="simonNo" class="btn" type="button">ليس الآن</button>
+  </div>
+
+  <div id="mapOv" class="ovl" hidden>
+    <svg id="mapSvg" viewBox="0 0 300 360" role="img" aria-label="خريطة تشير إلى غابة النسيان">
+      <rect width="300" height="360" fill="#241f55"/>
+      <g fill="none" stroke="#3b3680" stroke-width="1">
+        <path d="M0 60 H300 M0 120 H300 M0 180 H300 M0 240 H300 M0 300 H300 M60 0 V360 M120 0 V360 M180 0 V360 M240 0 V360"/>
+      </g>
+      <path d="M150 310 C 90 270, 220 240, 150 200 S 90 150, 170 120 S 200 100, 196 84" fill="none" stroke="#f4b95c" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/>
+      <circle cx="150" cy="310" r="9" fill="#ece9f7"/>
+      <text x="150" y="336" text-anchor="middle" fill="#ece9f7" font-size="15" font-family="Reem Kufi,sans-serif">مدينة التوليب</text>
+      <g fill="#1b2447"><circle cx="70" cy="90" r="16"/><circle cx="104" cy="70" r="13"/><circle cx="236" cy="130" r="15"/><circle cx="60" cy="150" r="12"/><circle cx="250" cy="70" r="13"/></g>
+      <circle cx="196" cy="84" r="12" fill="#e0405f"/><circle cx="196" cy="84" r="20" fill="none" stroke="#e0405f" stroke-opacity=".5"/>
+      <text x="196" y="50" text-anchor="middle" fill="#e0405f" font-size="17" font-family="Reem Kufi,sans-serif" font-weight="700">غابة النسيان</text>
+    </svg>
+    <button id="mapNo" class="btn main" type="button">فهمت</button>
+  </div>
+
+  <div id="book" class="ovl" hidden>
+    <div class="sheet">
+      <header><h3>الحقيبة والإعدادات</h3><button id="bookNo" class="btn" type="button">إغلاق</button></header>
+      <div class="scroll" id="bookBody"></div>
+      <div class="tog">
+        <button id="sndBtn" class="btn" type="button"></button>
+        <button id="musBtn" class="btn" type="button"></button>
+        <button id="skipBtn" class="btn" type="button"></button>
+        <button id="resetBtn" class="btn" type="button">بداية جديدة</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reader" class="ovl" hidden style="z-index:34">
+    <div class="sheet" style="height:min(100%,820px)">
+      <header><h3>الرواية</h3><button id="readNo" class="btn" type="button">إغلاق</button></header>
+      <div class="row" style="flex-wrap:nowrap;width:100%"><button id="rdPrev" class="btn sm" type="button">السابق</button><select id="rdSel" aria-label="الفصل"></select><button id="rdNext" class="btn sm" type="button">التالي</button></div>
+      <div class="scroll" id="rdBody"></div>
+      <div><button id="rdHintBtn" class="btn sm" type="button">تلميح للمرحلة الحالية</button><p id="rdHint" hidden></p></div>
+    </div>
+  </div>
+
+  <div id="endOv" class="ovl" hidden style="z-index:35;background:radial-gradient(ellipse at 50% 40%,#2a2468 0%,#0c0b1d 80%)">
+    <div id="endL" style="font-family:var(--f-display);color:var(--lantern);letter-spacing:.14em">انتهت هذه الرحلة</div>
+    <div style="font-family:var(--f-display);font-size:clamp(26px,7vw,44px);font-weight:700;text-align:center;line-height:1.4;max-width:14em">البوصلة تشير إلى مملكة الغيوم المضيئة</div>
+    <p style="color:var(--moon-dim);max-width:24em;text-align:center;line-height:1.9;margin:0">بعض الحكايات لا تبدأ عندما تصل إلى النهاية... بل عندما تكتشف أنك لم تصل بعد.</p>
+    <div class="row"><button id="endStay" class="btn main" type="button">أكملي التجوال</button><button id="endNew" class="btn" type="button">ابدئي من جديد</button></div>
+  </div>
+
+  <div id="title" class="ovl">
+    <img id="tFace" alt="شهريان">
+    <svg viewBox="0 0 100 130" aria-hidden="true">
+      <defs><radialGradient id="tg" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#8fd2e6" stop-opacity=".55"/><stop offset="1" stop-color="#8fd2e6" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="50" cy="48" r="46" fill="url(#tg)"/>
+      <path d="M50 118 C50 96 51 82 50 66" stroke="#3f9a76" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M50 108 C34 104 26 92 28 78 C40 82 48 92 50 108Z" fill="#2f7a5a"/>
+      <path d="M50 100 C64 96 72 86 70 74 C60 78 52 86 50 100Z" fill="#2b6b50"/>
+      <path d="M30 34 L38 14 L50 32 L62 14 L70 34 C73 56 63 70 50 74 C37 70 27 56 30 34Z" fill="#1a1530" stroke="#8fd2e6" stroke-width="1.6" stroke-linejoin="round"/>
+      <circle cx="44" cy="46" r="2.2" fill="#8fd2e6"/><circle cx="58" cy="56" r="1.8" fill="#8fd2e6"/><circle cx="50" cy="38" r="1.5" fill="#cfeaf2"/>
+    </svg>
+    <h2>لعبة استكشاف</h2>
+    <h1>شهريان</h1>
+    <h2 style="color:var(--moon)">ومدينة التوليب السحري</h2>
+    <p>طالبة طب في السنة الرابعة، وزهرة سوداء تتكلم، ومرض قديم يمحو الذاكرة.</p>
+    <div class="row"><button id="btnNew" class="btn main" type="button">ابدئي الحكاية</button><button id="btnCont" class="btn" type="button" hidden>متابعة</button></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const cv=$('#game'),ctx=cv.getContext('2d');
+const FACE='data:image/jpeg;base64,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';
+const faceImg=new Image();let FACE_OK=false;faceImg.onload=()=>{FACE_OK=true};faceImg.src=FACE;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const dist=(a,b,c,d)=>Math.hypot(a-c,b-d);
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* ---------- settings & audio ---------- */
+const SKEY='shahriyan-tulip-settings-v1';
+const settings=Object.assign({sfx:true,music:true,auto:false},(()=>{try{return JSON.parse(localStorage.getItem(SKEY))||{}}catch(e){return {}}})());
+function saveSettings(){try{localStorage.setItem(SKEY,JSON.stringify(settings))}catch(e){}}
+let AC=null,master=null,musicBus=null,drone=null;
+function ac(){
+  try{
+    if(!AC){
+      AC=new (window.AudioContext||window.webkitAudioContext)();
+      master=AC.createGain();master.gain.value=1;master.connect(AC.destination);
+      musicBus=AC.createGain();musicBus.gain.value=settings.music?1:0;musicBus.connect(master);
+      drone=AC.createOscillator();drone.type='sine';drone.frequency.value=98;
+      const dg=AC.createGain();dg.gain.value=.028;drone.connect(dg);dg.connect(musicBus);drone.start();
+    }
+    if(AC.state==='suspended')AC.resume();
+  }catch(e){AC=null}
+  return AC;
+}
+function setMusic(){if(musicBus&&AC)musicBus.gain.setTargetAtTime(settings.music?1:0,AC.currentTime,.1)}
+function tone(f,d=.25,type='sine',v=.07,delay=0,bus){
+  if(!settings.sfx&&!bus)return;
+  const a=ac();if(!a)return;
+  try{
+    const t0=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();
+    o.type=type;o.frequency.value=f;
+    g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(v,t0+.015);g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+    o.connect(g);g.connect(bus||master);o.start(t0);o.stop(t0+d+.02);
+  }catch(e){}
+}
+function noiseBuf(a,d){const n=Math.max(1,a.sampleRate*d|0),b=a.createBuffer(1,n,a.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=Math.random()*2-1;return b}
+function noise(d=.2,v=.05,f0=2000,type='bandpass',q=1){
+  if(!settings.sfx)return;const a=ac();if(!a)return;
+  try{
+    const s=a.createBufferSource();s.buffer=noiseBuf(a,d);
+    const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f0;fl.Q.value=q;
+    const g=a.createGain(),t0=a.currentTime;g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+    s.connect(fl);fl.connect(g);g.connect(master);s.start(t0);
+  }catch(e){}
+}
+function wind(d){
+  if(!settings.sfx)return;const a=ac();if(!a)return;
+  try{
+    const s=a.createBufferSource();s.buffer=noiseBuf(a,d);
+    const fl=a.createBiquadFilter();fl.type='bandpass';fl.frequency.value=520;fl.Q.value=.6;
+    const g=a.createGain(),t0=a.currentTime;g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(.07,t0+d*.4);g.gain.linearRampToValueAtTime(.0001,t0+d);
+    s.connect(fl);fl.connect(g);g.connect(master);s.start(t0);
+  }catch(e){}
+}
+const sfx={
+  ui(){tone(620,.06,'triangle',.05)},
+  pick(){tone(660,.3,'sine',.08);tone(880,.45,'sine',.07,.11)},
+  card(){[392,523,659,784].forEach((f,i)=>tone(f,.9,'sine',.05,i*.14))},
+  page(){noise(.28,.07,2600,'highpass',.7)},
+  whoosh(){noise(.6,.08,700,'bandpass',.6)},
+  right(){tone(523,.2,'triangle',.07);tone(784,.4,'triangle',.07,.12)},
+  wrong(){tone(180,.3,'sawtooth',.05);tone(150,.3,'sawtooth',.04,.12)},
+  heal(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.7,'sine',.06,i*.1))},
+  refill(){for(let i=0;i<5;i++)tone(1200+Math.random()*900,.25,'sine',.03,i*.06)},
+  forget(){[440,370,311,247,196,147].forEach((f,i)=>tone(f,.5,'sine',.06,i*.14));noise(.9,.05,300,'lowpass',.5)},
+  growl(){tone(85,.8,'sawtooth',.06);noise(.7,.06,200,'lowpass',.8)},
+  pulse(){tone(62,.25,'sine',.09)},
+  step(sc){
+    if(sc==='crystal')tone(1500+Math.random()*500,.12,'sine',.022);
+    else if(sc==='hospital'||sc==='city'||sc==='grove'){noise(.05,.045,2400,'bandpass',2);tone(150,.05,'triangle',.02)}
+    else if(sc==='valley')noise(.09,.03,700,'bandpass',.7);
+    else noise(.07,.04,sc==='forest'?500:1000,'bandpass',.9);
+  }
+};
+const chime=()=>sfx.pick();
+const BLIP={'شهريان':520,'زهرة التوليب':880,'الحارس':150,'المخلوق':150,'ملك الكريستال':330,'الأب':260,'المريض':400};
+function blip(spk){const f=BLIP[spk];if(f)tone(f*(1+Math.random()*.12),.05,'square',.01)}
+const MUS={garden:[261.6,293.7,329.6,392,440,523.3],hospital:[196,220,246.9,293.7,329.6],road:[220,247,277,330,370],city:[392,440,494,587,659],forest:[146.8,174.6,196,220,261.6],grove:[174.6,220,261.6,311,349],crystal:[523,659,784,880,1047],valley:[233,277,311,370,415]};
+const DR={garden:98,hospital:82.4,road:87.3,city:110,forest:73.4,grove:87.3,crystal:130.8,valley:77.8};
+let musT=2;
+function music(dt){
+  if(!AC||!settings.music||AC.state!=='running'||!S)return;
+  musT-=dt;if(musT>0)return;musT=1.1+Math.random()*1.6;
+  const sc=MUS[S.scene]||MUS.garden,f=sc[Math.random()*sc.length|0]*(Math.random()<.25?.5:1);
+  tone(f,2.8,'sine',.045,0,musicBus);if(Math.random()<.4)tone(f*1.5,2.2,'sine',.022,.05,musicBus);
+}
+function setDrone(){if(drone&&AC&&S)drone.frequency.setTargetAtTime(DR[S.scene]||98,AC.currentTime,1.2)}
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('button');if(b&&b.id!=='act')sfx.ui()},true);
+
+/* ---------- data ---------- */
+const ITEMS={
+  moonHerb:{n:'عشبة ضوء القمر',d:'لا تزهر إلا عند اكتمال القمر. توقظ الذاكرة النائمة.',c:'#c9b8ff',bad:'عشبة القمر وحدها لا تكفي.'},
+  silverWater:{n:'ماء النهر الفضي',d:'ماء يلمع كالفضة. يخفف كل ما يُمزج به.',c:'#cfe8f2',bad:'الماء الفضي خفّف المزيج حتى ضاع أثره.'},
+  petal:{n:'بتلات التوليب الملونة',d:'جميلة جدًا، من شوارع مدينة التوليب.',c:'#ff9ec0',bad:'البتلات الملونة جميلة، لكنها لا تحمل شفاءً.'},
+  blueLeaf:{n:'الورقة الزرقاء',d:'من النبتة ذات الجذع الأبيض. تثبّت الدواء.',c:'#5aa7ff',bad:'الورقة الزرقاء تثبّت الدواء، لكن لا تصنعه.'},
+  blackBloom:{n:'زهرة التوليب السوداء',d:'فيها الشفاء من مرض الظل.',c:'#6a5aa8',bad:'الزهرة السوداء تحتاج ما يوقظها ويثبّتها.'},
+  cure:{n:'دواء مرض الظل',d:'يكفي لعلاج مرضى الأكاديمية.',c:'#f4b95c'},
+  luminous:{n:'الأعشاب المضيئة',d:'من حقيبة شهريان الطبية. تضيء في العتمة.',c:'#9dffb0',bad:'الأعشاب المضيئة وحدها لا تذيب البلورات.'},
+  nectar:{n:'رحيق زهرة التناغم',d:'ينمو على ألحان الأمل.',c:'#ffb0e0',bad:'الرحيق قوي لكنه يحتاج ما يمتزج به.'},
+  shard:{n:'شظية كريستال',d:'باردة وصامتة. لا تصلح للدواء.',c:'#8fd2e6',bad:'الشظية الصامتة زادت المزيج برودة.'},
+  compass:{n:'البوصلة السحرية',d:'تشير إلى القلوب التي تحتاج إلى العلاج.',c:'#f4b95c'}
+};
+const CH=[
+  {id:'p',l:'مقدمة',t:'شهريان ومدينة التوليب السحري',s:'مملكة أوراليا، حيث الطب والسحر علمٌ واحد، وفتاة تحب التوليب.'},
+  {id:'1',l:'الفصل الأول',t:'الفتاة التي أرادت أن تصبح مهندسة',s:'حلمت شهريان بأن تصبح مهندسة، حتى رأت طبيبًا ينقذ طفلًا فقررت دراسة الطب.'},
+  {id:'2',l:'الفصل الثاني',t:'أكاديمية أوريليا',s:'في سنتها الرابعة صارت حديقة الفصول الأربعة مكانها المفضل.'},
+  {id:'3',l:'الفصل الثالث',t:'التوليب الذي لا يذبل',s:'بين زهور التوليب وجدت زهرة سوداء لا تذبل، وتكلمت معها.'},
+  {id:'4',l:'الفصل الرابع',t:'سر المملكة',s:'روت الزهرة قصة مرض الظل الذي يمحو الذاكرة، وقد عاد إلى المملكة.'},
+  {id:'5',l:'الفصل الخامس',t:'المستشفى السري',s:'تحت الأكاديمية مستشفى فيه مرضى لا يشبهون أحدًا.'},
+  {id:'6',l:'الفصل السادس',t:'مدينة التوليب',s:'رحلة عبر غابة ونهر وجبل حتى مدينة مخبّأة عن العالم.'},
+  {id:'7',l:'الفصل السابع',t:'الطبيب الأول',s:'تمثال الطبيب الأول يفتح خريطة تشير إلى غابة النسيان.'},
+  {id:'8',l:'الفصل الثامن',t:'غابة النسيان',s:'في الغابة تنسى شهريان نفسها، ثم يعيدها التوليب إلى ذاكرتها.'},
+  {id:'9',l:'الفصل التاسع',t:'العلاج',s:'عند نبتة العلاج يقف مخلوق ضخم يحرسها.'},
+  {id:'10',l:'الفصل العاشر',t:'الطبيبة',s:'اكتشفت أن الحارس مريض، فحضّرت له الدواء.'},
+  {id:'R',l:'الفصل الأخير',t:'العودة',s:'عادت بالعلاج، وعادت الذاكرة إلى المملكة.'},
+  {id:'11',l:'الفصل الحادي عشر',t:'صدى الممالك البعيدة',s:'الزهرة السوداء تخبرها أن ممالك أخرى تتألم.'},
+  {id:'12',l:'الفصل الثاني عشر',t:'بوابة النجوم المعلقة',s:'بوابة من زجاج فضي ونجوم تنبض تفتح في الحديقة.'},
+  {id:'13',l:'الفصل الثالث عشر',t:'مملكة الكريستال الباكي',s:'مملكة صامتة، وسكانها نائمون داخل بلورات.'},
+  {id:'14',l:'الفصل الرابع عشر',t:'تشخيص النداء الصامت',s:'وباء الصمت المطبق: حزن وخوف يحوّلان القلوب إلى حجر.'},
+  {id:'15',l:'الفصل الخامس عشر',t:'نبات التناغم والأمل',s:'في وادي الصدى تنمو زهرة التناغم على ألحان الأمل.'},
+  {id:'16',l:'الفصل السادس عشر',t:'عودة الحياة إلى الكريستال',s:'الرحيق يذيب البلورات ويعيد الضحكات إلى الشوارع.'},
+  {id:'17',l:'الفصل السابع عشر',t:'بوصلة الأفق البعيد',s:'ملك الكريستال يهديها بوصلة تشير إلى القلوب المتألمة.'},
+  {id:'F',l:'الفصل الأخير (المتجدد)',t:'رحلة لا تنتهي',s:'الأفق التالي هو مملكة الغيوم المضيئة.'}
+];
+const SPK={'شهريان':'#f4b95c','زهرة التوليب':'#8fd2e6','الحارس':'#e7a0ff','المخلوق':'#e7a0ff','ملك الكريستال':'#ffd98a','الأب':'#b7b3d4'};
+
+/* ---------- state ---------- */
+const KEY='shahriyan-tulip-save-v1';
+const fresh=()=>({scene:'garden',x:750,y:640,flags:{},inv:{},chapters:[],notes:[],mem:100});
+let S=null;
+const F=()=>S.flags;
+function save(){ if(!S)return; try{S.x=P.x;S.y=P.y;localStorage.setItem(KEY,JSON.stringify(S))}catch(e){} }
+function loadSave(){ try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null}catch(e){return null} }
+const has=i=>(S.inv[i]||0)>0;
+function give(i,n=1){S.inv[i]=(S.inv[i]||0)+n;toast('حصلتِ على: '+ITEMS[i].n);chime()}
+function take(i,n=1){S.inv[i]=Math.max(0,(S.inv[i]||0)-n)}
+function note(t){if(!S.notes.includes(t))S.notes.push(t)}
+
+/* ---------- canvas ---------- */
+let W=0,H=0,DPR=1,Z=1;
+function resize(){
+  const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+  W=Math.max(1,r.width);H=Math.max(1,r.height);
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+  Z=clamp(Math.min(W/460,H/520),.85,1.8);
+}
+window.addEventListener('resize',resize);
+
+/* ---------- drawing helpers ---------- */
+function circ(c,x,y,r,f){c.beginPath();c.arc(x,y,r,0,6.2832);c.fillStyle=f;c.fill()}
+function ell(c,x,y,rx,ry,f){c.beginPath();c.ellipse(x,y,rx,ry,0,0,6.2832);c.fillStyle=f;c.fill()}
+function rect(c,x,y,w,h,f){c.fillStyle=f;c.fillRect(x,y,w,h)}
+function rrect(c,x,y,w,h,r,f){c.beginPath();if(c.roundRect)c.roundRect(x,y,w,h,r);else c.rect(x,y,w,h);c.fillStyle=f;c.fill()}
+function poly(c,p,f){c.beginPath();p.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.closePath();c.fillStyle=f;c.fill()}
+function glow(c,x,y,r,rgb,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba('+rgb+','+a+')');g.addColorStop(1,'rgba('+rgb+',0)');c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2)}
+function line(c,pts,w,col){c.beginPath();pts.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.strokeStyle=col;c.lineWidth=w;c.lineCap='round';c.lineJoin='round';c.stroke()}
+function vgrad(c,y0,y1,stops){const g=c.createLinearGradient(0,y0,0,y1);stops.forEach(s=>g.addColorStop(s[0],s[1]));return g}
+
+const TREE={
+  g:{t:'#3b2c3f',a:'#1f5b57',b:'#256b62',c:'#2d7d6f'},
+  w:{t:'#4a4b6e',a:'#8fb6d6',b:'#a9c8e0',c:'#d4e6f2'},
+  a:{t:'#4a2f34',a:'#b8662f',b:'#d0803a',c:'#e8a14c'},
+  s:{t:'#4a3342',a:'#d9809f',b:'#e79ab4',c:'#f4bccd'},
+  m:{t:'#3a2c55',a:'#3b2f78',b:'#4a3a92',c:'#6552b8'},
+  f:{t:'#1c1530',a:'#171f45',b:'#202b57',c:'#2b3a6b'},
+  r:{t:'#3b3340',a:'#1c4a45',b:'#235a52',c:'#2c6b61'}
+};
+function drawTree(c,x,y,s,k){
+  const P=TREE[k];
+  ell(c,x,y+2,16*s,6*s,'rgba(0,0,0,.3)');
+  rect(c,x-3*s,y-26*s,6*s,28*s,P.t);
+  circ(c,x,y-42*s,22*s,P.a);circ(c,x-14*s,y-32*s,15*s,P.b);circ(c,x+14*s,y-33*s,15*s,P.b);circ(c,x-5*s,y-50*s,12*s,P.c);
+}
+function drawTulip(c,x,y,col,s,t){
+  c.save();c.translate(x,y);c.scale(s,s);
+  const sw=Math.sin(t*1.4+x*.05)*1.5;
+  c.strokeStyle='#2f7a5a';c.lineWidth=2;c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(sw,-9,sw,-18);c.stroke();
+  c.fillStyle='#2b6b50';c.beginPath();c.moveTo(0,-2);c.quadraticCurveTo(-9,-8,-7,-15);c.quadraticCurveTo(-2,-9,0,-2);c.fill();
+  c.translate(sw,-18);
+  c.fillStyle=col;c.beginPath();c.moveTo(-6,-2);c.lineTo(-5,-11);c.lineTo(-2,-6);c.lineTo(0,-12);c.lineTo(2,-6);c.lineTo(5,-11);c.lineTo(6,-2);c.quadraticCurveTo(6,6,0,7);c.quadraticCurveTo(-6,6,-6,-2);c.fill();
+  c.restore();
+}
+function drawCrystal(c,x,y,s,col,t,lit){
+  const a=lit||.0;
+  if(a)glow(c,x,y-30*s,70*s,'255,255,255',a*.35);
+  ell(c,x,y+2,18*s,6*s,'rgba(0,0,0,.3)');
+  poly(c,[[x-16*s,y],[x-10*s,y-46*s],[x-2*s,y]],col);
+  poly(c,[[x-4*s,y],[x+4*s,y-70*s],[x+16*s,y]],col);
+  poly(c,[[x+10*s,y],[x+18*s,y-38*s],[x+28*s,y]],col);
+  poly(c,[[x+4*s,y-70*s],[x+10*s,y-22*s],[x+16*s,y]],'rgba(255,255,255,.25)');
+  poly(c,[[x-10*s,y-46*s],[x-6*s,y-18*s],[x-2*s,y]],'rgba(255,255,255,.18)');
+}
+function drawGlass(c,x,y,w,h,t){
+  ell(c,x,y+2,w*.55,8,'rgba(0,0,0,.3)');
+  const g=vgrad(c,y-h,y,[[0,'#f4f6ff'],[1,'#a8b4e8']]);
+  c.fillStyle=g;c.beginPath();c.moveTo(x-w/2,y);c.lineTo(x-w/2,y-h+22);c.quadraticCurveTo(x,y-h-26,x+w/2,y-h+22);c.lineTo(x+w/2,y);c.closePath();c.fill();
+  c.strokeStyle='rgba(90,100,170,.55)';c.lineWidth=1.2;
+  for(let i=1;i<4;i++){c.beginPath();c.moveTo(x-w/2+i*w/4,y);c.lineTo(x-w/2+i*w/4,y-h+10);c.stroke()}
+  for(let j=1;j<4;j++){c.beginPath();c.moveTo(x-w/2,y-j*h/4);c.lineTo(x+w/2,y-j*h/4);c.stroke()}
+  rrect(c,x-9,y-26,18,26,[9,9,0,0],'#6f7fc9');
+}
+function drawRock(c,x,y,r){
+  ell(c,x,y+4,r*1.05,r*.4,'rgba(0,0,0,.3)');
+  ell(c,x,y-r*.35,r,r*.8,'#4b4868');ell(c,x-r*.25,y-r*.6,r*.5,r*.35,'#615d84');
+}
+function drawLamp(c,x,y,t){
+  rect(c,x-2,y-44,4,46,'#2a2447');circ(c,x,y-48,7,'#ffd98a');glow(c,x,y-48,60,'244,185,92',.35+Math.sin(t*3+x)*.05);
+}
+function drawPillar(c,x,y,h,col){rect(c,x-9,y-h,18,h,col||'#4b4f93');rect(c,x-13,y-h-6,26,8,'#6368b0');rect(c,x-13,y-4,26,6,'#6368b0')}
+function drawBuilding(c,x,y,w,h,body,roof,t){
+  ell(c,x,y+2,w*.52,9,'rgba(0,0,0,.3)');
+  rect(c,x-w/2,y-h,w,h,body);
+  poly(c,[[x-w/2-10,y-h],[x,y-h-h*.38],[x+w/2+10,y-h]],roof);
+  const cols=Math.max(2,Math.floor(w/70));
+  for(let i=0;i<cols;i++){const wx=x-w/2+(i+.5)*w/cols;
+    rrect(c,wx-9,y-h*.7,18,h*.34,[9,9,0,0],'#ffcf80');glow(c,wx,y-h*.55,34,'255,200,110',.2)}
+  rrect(c,x-14,y-h*.34,28,h*.34,[14,14,0,0],'#241c3f');
+}
+function drawTower(c,x,y,h){
+  ell(c,x,y+2,40,9,'rgba(0,0,0,.3)');
+  rect(c,x-30,y-h,60,h,'#3b3a66');
+  for(let i=1;i<7;i++)rect(c,x-30,y-i*h/7,60,2,'rgba(0,0,0,.25)');
+  poly(c,[[x-40,y-h],[x,y-h-90],[x+40,y-h]],'#2a2a52');
+  rrect(c,x-7,y-h*.7,14,28,[7,7,0,0],'#a6b0ff');
+}
+
+/* ---------- scenes ---------- */
+const SC={};
+let cur=null;
+function mk(id,name,w,h,spawn,amb){return{id,name,w,h,spawn,amb,deco:[],solids:[],objs:[],trig:[],tuft:[],ground:()=>{},dark:0}}
+function addDeco(sc,x,y,r,f){sc.deco.push({x,y,r,f})}
+function addTree(sc,x,y,s,k){addDeco(sc,x,y,50*s,(c)=>drawTree(c,x,y,s,k));sc.solids.push({x,y,r:9*s})}
+function addTulips(sc,r,cx,cy,rx,ry,n,cols){
+  for(let i=0;i<n;i++){const a=r()*6.28,d=Math.sqrt(r());const x=cx+Math.cos(a)*rx*d,y=cy+Math.sin(a)*ry*d,col=cols[Math.floor(r()*cols.length)];
+    addDeco(sc,x,y,24,(c,t)=>drawTulip(c,x,y,col,1,t))}
+}
+function tufts(sc,r,n,colfn){for(let i=0;i<n;i++){const x=r()*sc.w,y=r()*sc.h;sc.tuft.push({x,y,c:colfn(x,y)})}}
+function dToPath(x,y,pts){let m=1e9;for(let i=0;i<pts.length-1;i++){const ax=pts[i][0],ay=pts[i][1],dx=pts[i+1][0]-ax,dy=pts[i+1][1]-ay;const t=clamp(((x-ax)*dx+(y-ay)*dy)/(dx*dx+dy*dy),0,1);m=Math.min(m,Math.hypot(x-(ax+t*dx),y-(ay+t*dy)))}return m}
+const OBJ=o=>Object.assign({r:56,show:()=>true,lab:56},o);
+function lore(id,x,y,lab,lines,f){return OBJ({id,x,y,label:lab,f:f||(()=>{}),use:async()=>{await talk(lines)}})}
+
+/* ===== garden ===== */
+function gardenScene(){
+  const r=rng(7);const sc=mk('garden','حديقة الفصول الأربعة',1500,1000,[750,660],'244,185,92');
+  sc.ground=(c,t)=>{
+    rect(c,0,0,750,500,'#1b2a4a');rect(c,750,0,750,500,'#261e50');rect(c,0,500,750,500,'#173a3c');rect(c,750,500,750,500,'#392a35');
+    rect(c,690,0,120,1000,'#34336a');rect(c,0,440,1500,120,'#34336a');
+    circ(c,750,500,112,'#3d3c78');circ(c,750,500,88,'#34336a');
+    for(let i=0;i<8;i++){const a=i*.785;circ(c,750+Math.cos(a)*100,500+Math.sin(a)*100,3,'#8fd2e6')}
+    ell(c,560,800,150,95,'#14312f');
+  };
+  tufts(sc,r,380,(x,y)=>x<750?(y<500?'#2c4a74':'#245a52'):(y<500?'#3a3178':'#5a3b3a'));
+  const onPath=(x,y)=>Math.abs(x-750)<95||Math.abs(y-500)<95;
+  const avoid=(x,y)=>dist(x,y,560,800)<160||(y<290&&(Math.abs(x-750)<340||x<380||x>1120))||dist(x,y,110,560)<110||dist(x,y,1010,820)<90||(y>900&&Math.abs(x-750)<120);
+  for(const q of [['w',0,0],['m',750,0],['s',0,500],['a',750,500]]){
+    for(let i=0;i<13;i++){let x,y,k=0;do{x=q[1]+40+r()*670;y=q[2]+(q[2]?50:230)+r()*(q[2]?430:240);k++}while((onPath(x,y)||avoid(x,y))&&k<40);
+      if(k<40)addTree(sc,x,y,.9+r()*.5,q[0])}
+  }
+  for(let i=0;i<16;i++){const x=800+r()*620,y=260+r()*180;addDeco(sc,x,y,30,(c,t)=>{glow(c,x,y-8,22,'200,190,255',.5+Math.sin(t*2+x)*.2);circ(c,x,y-8,4,'#ece9f7');rect(c,x-1,y-8,2,10,'#3f9a76')})}
+  addTulips(sc,r,560,800,130,80,24,['#e0405f','#f4b95c','#ece9f7','#6a8fff','#b06bd6']);
+  addDeco(sc,750,210,300,(c,t)=>{drawBuilding(c,750,210,560,170,'#2f2e5c','#24234a',t);rect(c,505,70,34,140,'#2a2952');poly(c,[[495,70],[522,10],[549,70]],'#24234a');rect(c,961,70,34,140,'#2a2952');poly(c,[[951,70],[978,10],[1005,70]],'#24234a')});
+  sc.solids.push({x:470,y:110,w:560,h:100});
+  addDeco(sc,230,240,160,(c,t)=>drawBuilding(c,230,240,260,130,'#3a355f','#2b2750',t));sc.solids.push({x:100,y:170,w:260,h:70});
+  addDeco(sc,1270,240,160,(c,t)=>drawBuilding(c,1270,240,260,130,'#2d3b5e','#222e4d',t));sc.solids.push({x:1140,y:170,w:260,h:70});
+  addDeco(sc,110,575,200,(c,t)=>drawTower(c,110,575,230));sc.solids.push({x:70,y:500,w:80,h:75});
+  addDeco(sc,750,985,100,(c)=>{rect(c,670,930,20,55,'#4b4f93');rect(c,810,930,20,55,'#4b4f93');rrect(c,665,912,170,26,12,'#6368b0')});
+  const bench=(c)=>{rrect(c,596,826,70,12,3,'#5c4638');rect(c,600,838,6,12,'#3a2b24');rect(c,656,838,6,12,'#3a2b24');rrect(c,596,806,70,8,3,'#6b5342')};
+  addDeco(sc,631,845,50,bench);
+  sc.solids.push({x:596,y:806,w:70,h:40});
+  sc.objs.push(
+    lore('lib',230,255,'المكتبة',["مكتبة الأكاديمية. فيها أكثر من مليون كتاب، وبعضها يهمس عندما تمرين بجانبه."]),
+    lore('lab',1270,255,'مختبر الأعشاب',["مختبرات الأعشاب. رائحة النعناع وغبار فضي يملآن المكان."]),
+    lore('door',750,228,'مدخل الأكاديمية',["مدخل الأكاديمية. انتهت محاضرات اليوم، وبقي القمر وحده في الساحة."]),
+    OBJ({id:'tower',x:110,y:605,label:'البرج القديم',f:()=>{},use:async()=>{await talk(["البرج القديم. ممنوع على الطلاب الاقتراب منه... وهذا يزيد الفضول."]);if(F().metTulip&&!F().hospSeen)await talk([['زهرة التوليب','الباب الحجري عند قاعدته. لا يفتحه إلا من يعرف ماذا يبحث عنه.']])}}),
+    lore('winter',300,390,'نباتات الشتاء',["نباتات لا تنمو إلا في الشتاء. تتجمد بلورات الثلج على أوراقها فتبدو كالزجاج."],(c,t)=>{circ(c,300,380,10,'#d4e6f2');glow(c,300,380,26,'200,230,255',.4)}),
+    lore('spring',300,730,'مشتل الربيع',["شتلات الربيع تتمايل مع النسيم، رغم أن الليل بارد."],(c,t)=>{circ(c,300,722,10,'#f4bccd');glow(c,300,722,26,'255,190,210',.35)}),
+    lore('autumn',1180,740,'شجرة الخريف',["شجرة ذهبية تتساقط أوراقها ببطء، وكل ورقة عليها رسمة صغيرة."],(c,t)=>{circ(c,1180,732,10,'#e8a14c');glow(c,1180,732,26,'255,190,100',.35)}),
+    OBJ({id:'moonHerb',x:1160,y:300,label:'عشبة ضوء القمر',show:()=>!has('moonHerb')&&!F().gotMoon&&!F().cured,f:(c,t)=>{glow(c,1160,292,44,'200,180,255',.55+Math.sin(t*3)*.15);rect(c,1159,290,2,12,'#3f9a76');circ(c,1160,288,6,'#e6dcff')},
+      use:async()=>{await talk(["عشبة ضوء القمر! نادرة، ولا تزهر إلا عند اكتمال القمر.",['شهريان','أكيد رح أحتاجها يومًا.']]);F().gotMoon=1;give('moonHerb')}}),
+    OBJ({id:'bench',x:631,y:858,r:62,label:'المقعد',f:()=>{},use:()=>benchUse()}),
+    OBJ({id:'bTulip',x:500,y:830,label:'التوليب الأسود',show:()=>F().tulipSeen&&!F().metTulip,f:(c,t)=>drawBlackTulip(c,500,830,t,1.5),use:()=>tulipTalk()}),
+    OBJ({id:'stoneDoor',x:112,y:620,r:60,label:'الباب الحجري',show:()=>F().metTulip,f:(c,t)=>{rrect(c,92,590,40,44,[20,20,0,0],'#17142e');glow(c,112,610,50,'143,210,230',.35+Math.sin(t*2)*.1);rrect(c,98,596,28,38,[14,14,0,0],'#0a0918')},use:()=>{if(F().returned&&!F().patientsHealed&&!has('cure')){return talk(["لا دواء معك بعد."])}return goto('hospital',500,590)}}),
+    OBJ({id:'gate',x:750,y:962,r:74,label:'بوابة الأكاديمية',f:()=>{},use:()=>leaveAcademy()}),
+    OBJ({id:'starGate',x:1010,y:830,r:72,label:'بوابة النجوم',show:()=>F().gateOpen&&!F().crossed,f:(c,t)=>drawStarGate(c,1010,830,t),use:()=>crossGate()})
+  );
+  return sc;
+}
+function drawBlackTulip(c,x,y,t,s){
+  glow(c,x,y-26*s,34*s,'143,210,230',.25);
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.strokeStyle='#3f9a76';c.lineWidth=2.4;c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(2,-12,0,-24);c.stroke();
+  c.fillStyle='#2b6b50';c.beginPath();c.moveTo(0,-3);c.quadraticCurveTo(-10,-9,-8,-18);c.quadraticCurveTo(-2,-11,0,-3);c.fill();
+  c.translate(0,-24);
+  c.fillStyle='#17122b';c.beginPath();c.moveTo(-7,-2);c.lineTo(-6,-13);c.lineTo(-2,-7);c.lineTo(0,-14);c.lineTo(2,-7);c.lineTo(6,-13);c.lineTo(7,-2);c.quadraticCurveTo(7,7,0,8);c.quadraticCurveTo(-7,7,-7,-2);c.fill();
+  c.strokeStyle='rgba(143,210,230,.8)';c.lineWidth=1;c.stroke();
+  const a=.6+Math.sin(t*3)*.3;circ(c,-3,0,1.4,'rgba(160,220,255,'+a+')');circ(c,3,3,1.1,'rgba(160,220,255,'+(1-a*.6)+')');
+  c.restore();
+}
+function drawStarGate(c,x,y,t){
+  glow(c,x,y-50,100,'160,190,255',.35);
+  c.save();c.translate(x,y-50);
+  c.strokeStyle='#cdd6f4';c.lineWidth=7;c.beginPath();c.ellipse(0,0,38,52,0,0,6.2832);c.stroke();
+  ell(c,0,0,32,46,'rgba(120,150,255,.25)');
+  for(let i=0;i<10;i++){const a=i*.628+t*.5,sx=Math.cos(a)*38,sy=Math.sin(a)*52;circ(c,sx,sy,2+Math.sin(t*4+i)*1,'#ffe9a8')}
+  c.restore();
+}
+
+/* ===== hospital ===== */
+function hospitalScene(){
+  const sc=mk('hospital','المستشفى السري',1000,700,[500,590],'160,170,255');
+  sc.ground=(c,t)=>{
+    rect(c,0,0,1000,700,'#1a1832');
+    for(let x=0;x<1000;x+=50)for(let y=120;y<700;y+=50)if((x/50+y/50)%2===0)rect(c,x,y,50,50,'#1f1d3b');
+    rect(c,0,0,1000,125,'#2b2850');
+    for(let y=0;y<125;y+=25){rect(c,0,y,1000,2,'rgba(0,0,0,.25)');for(let x=(y/25%2)*30;x<1000;x+=60)rect(c,x,y,2,25,'rgba(0,0,0,.25)')}
+    rect(c,0,118,1000,10,'#161430');
+    rect(c,410,140,180,560,'rgba(143,210,230,.05)');
+  };
+  sc.solids.push({x:0,y:0,w:1000,h:150});
+  for(const x of [120,380,620,880])addDeco(sc,x,120,70,(c,t)=>drawLamp(c,x,120,t));
+  const PN=['المريض الأول','المريضة الثانية','المريض الثالث'];
+  [220,500,780].forEach((bx,i)=>{
+    sc.solids.push({x:bx-44,y:250,w:88,h:96});
+    sc.objs.push(OBJ({id:'pat'+i,x:bx,y:372,r:70,label:PN[i],f:(c,t)=>{
+      const h=F()['heal'+i];
+      rrect(c,bx-44,250,88,96,6,'#3a3870');rrect(c,bx-40,286,80,56,4,h?'#e9e6fb':'#555a98');
+      rrect(c,bx-36,258,72,26,6,'#d9d6f0');
+      circ(c,bx,272,11,h?'#f0c9a4':'#b9a8a0');ell(c,bx,266,12,7,'#3b2417');
+      if(!h){ell(c,bx+10,322,22,10,'rgba(40,40,60,.55)');if(i===1){for(let k=0;k<3;k++)circ(c,bx-30+k*30,236-Math.sin(t*2+k)*6,3,'rgba(190,150,255,.7)')}if(i===2){c.fillStyle='#b7b3d4';c.font='bold 16px sans-serif';c.fillText('z',bx+34,248-Math.sin(t*2)*4);c.fillText('Z',bx+44,236-Math.sin(t*2+1)*4)}}
+      else glow(c,bx,296,56,'255,220,150',.25);
+    },use:()=>patientUse(i)}));
+  });
+  sc.objs.push(OBJ({id:'stairs',x:500,y:660,r:80,label:'الدرج إلى الحديقة',f:(c,t)=>{for(let i=0;i<5;i++)rect(c,450-i*6,672-i*10,100+i*12,9,'#3b3870')},use:()=>goto('garden',130,640)}));
+  sc.onEnter=async()=>{
+    if(!F().hospSeen){F().hospSeen=1;await chapter('5');
+      await talk(["في تلك الليلة، أخذت الزهرة شهريان إلى مكان سري تحت الأكاديمية. انفتح باب حجري قديم بمجرد أن اقتربت منه.","ونزلت شهريان درجات طويلة، وفي الأسفل وجدت مستشفى لم تعرف بوجوده.","كان هناك عشرات المرضى. لكن الغريب أنهم لم يكونوا مرضى عاديين.",['زهرة التوليب','افحصيهم. أنتِ أول طالبة تفعل ذلك.']]);
+    }
+  };
+  return sc;
+}
+
+/* ===== road ===== */
+const ROAD_PATH=[[450,2740],[360,2300],[500,1950],[450,1700],[450,1400],[500,1000],[450,700],[450,150]];
+function roadScene(){
+  const r=rng(21);const sc=mk('road','الطريق إلى مدينة التوليب',900,2800,[450,2700],'200,255,180');
+  sc.ground=(c,t)=>{
+    c.fillStyle=vgrad(c,0,2800,[[0,'#2a2744'],[.45,'#233048'],[.62,'#1c3a3a'],[1,'#122b2a']]);c.fillRect(0,0,900,2800);
+    c.fillStyle='#34336a';c.globalAlpha=.55;line(c,ROAD_PATH,110,'#3d4a6a');c.globalAlpha=1;
+    const rv=vgrad(c,1560,1700,[[0,'#7fc4de'],[1,'#a9dcea']]);c.fillStyle=rv;c.fillRect(0,1560,900,140);
+    for(let i=0;i<40;i++){const x=(i*97+t*24)%900,y=1570+((i*53)%120);rect(c,x,y,22,2,'rgba(255,255,255,.5)')}
+    rect(c,396,1548,128,164,'#5a4234');for(let y=1552;y<1712;y+=14)rect(c,396,y,128,2,'#3a2b24');
+    rect(c,390,1548,8,164,'#6b5342');rect(c,522,1548,8,164,'#6b5342');
+  };
+  tufts(sc,r,500,(x,y)=>y>1900?'#1d4a40':y>1400?'#2c5a4f':'#3d3a66');
+  sc.solids.push({x:0,y:1560,w:396,h:140},{x:524,y:1560,w:376,h:140});
+  for(let i=0;i<150;i++){const x=r()*900,y=1760+r()*1000;if(dToPath(x,y,ROAD_PATH)>95)addTree(sc,x,y,.9+r()*.6,'r')}
+  for(let i=0;i<40;i++){const x=r()*900,y=1740+r()*60;if(y>1710&&dToPath(x,y,ROAD_PATH)>95)addTree(sc,x,y,1+r()*.4,'r')}
+  for(let i=0;i<45;i++){const x=r()*900,y=100+r()*1260;if(dToPath(x,y,ROAD_PATH)>95&&Math.abs(y-820)>120){addDeco(sc,x,y,40,(c)=>drawRock(c,x,y,16+(i%4)*5));sc.solids.push({x,y:y-6,r:14+(i%4)*4})}}
+  sc.rocks=[];
+  [90,230,370,510,650,790].forEach((x,i)=>{const o={x,y:820,r:68,hx:x,ax:x+(x<450?-1:1)*170};sc.rocks.push(o);sc.solids.push(o);sc.deco.push({get x(){return o.x},y:o.y,r:90,f:(c)=>drawRock(c,o.x,o.y,o.r)})});
+  const fish=(x,y,id,lines)=>OBJ({id,x,y,r:100,label:'سمكة تتكلم',f:(c,t)=>{const j=Math.max(0,Math.sin(t*1.3+x))*14;c.save();c.translate(x,y-j);c.rotate(-.3);ell(c,0,0,14,6,'#d8f1ff');poly(c,[[12,0],[22,-7],[22,7]],'#d8f1ff');circ(c,-7,-1,1.6,'#122b2a');c.restore()},use:async()=>{await talk(lines)}});
+  sc.objs.push(
+    fish(200,1630,'fish1',[['المخلوق','سمكة تتكلم: الجبل أمامكِ يتحرك عندما يقترب منه البشر. لا تخافي.']]),
+    fish(690,1640,'fish2',[['المخلوق','سمكة أخرى: ثلاثة أيام من المشي... وما زال الطريق أجمل من الوصول.']]),
+    OBJ({id:'silver',x:230,y:1540,r:70,label:'ماء النهر الفضي',show:()=>!has('silverWater')&&!F().gotSilver&&!F().cured,f:(c,t)=>{glow(c,230,1548,40,'200,230,255',.5);circ(c,230,1548,7,'#cfe8f2')},use:async()=>{await talk(["ماء النهر يجري بلونٍ فضي. ملأت شهريان قارورة صغيرة."]);F().gotSilver=1;give('silverWater')}})
+  );
+  sc.trig.push(
+    {id:'rv',x:0,y:1750,w:900,h:80,once:true,fn:async()=>{await talk(["عبرت شهريان نهرًا كانت أسماكه تستطيع التحدث."])}},
+    {id:'mt',x:0,y:1380,w:900,h:60,once:true,fn:async()=>{await talk(["وصعدت جبلًا كانت صخوره تتحرك عندما يقترب منها البشر."])}},
+    {id:'city',x:0,y:0,w:900,h:120,fn:async()=>{await goto('city',800,1040)}},
+    {id:'back',x:0,y:2765,w:900,h:35,fn:async()=>{await goto('garden',750,900)}}
+  );
+  sc.onEnter=async()=>{if(!F().roadSeen){F().roadSeen=1;await talk(["بدأت رحلتها. مرت عبر غابة لا تظهر على الخرائط.",['شهريان','الحقيبة ثقيلة، بس الزهرة معي.']])}};
+  return sc;
+}
+
+/* ===== city ===== */
+const TL=[['red','#e0405f',330,430],['yellow','#f4c84a',1270,440],['white','#f2f0ff',360,880],['blue','#6a8fff',1250,880],['violet','#b06bd6',800,190]];
+function cityScene(){
+  const r=rng(33);const sc=mk('city','مدينة التوليب',1600,1100,[800,1040],'255,170,200');
+  sc.ground=(c,t)=>{
+    rect(c,0,0,1600,1100,'#2a2c64');
+    c.globalAlpha=.9;rect(c,740,0,120,1100,'#454a8c');rect(c,0,500,1600,120,'#454a8c');c.globalAlpha=1;
+    circ(c,800,560,190,'#e1def7');circ(c,800,560,168,'#cfcbee');
+    for(let i=0;i<12;i++){const a=i*.5236;circ(c,800+Math.cos(a)*180,560+Math.sin(a)*180,4,'#8fd2e6')}
+  };
+  tufts(sc,r,260,()=>'#3a3d82');
+  [[250,300,180,200],[560,320,150,170],[1050,320,150,170],[1350,300,180,200],[250,1000,180,170],[560,1000,150,150],[1050,1000,150,150],[1350,1000,180,170],[300,660,150,190],[1300,660,150,190]].forEach(b=>{
+    addDeco(sc,b[0],b[1],b[3]+40,(c,t)=>drawGlass(c,b[0],b[1],b[2],b[3],t));sc.solids.push({x:b[0]-b[2]/2,y:b[1]-50,w:b[2],h:50});
+  });
+  const cols=['#e0405f','#f4c84a','#f2f0ff','#6a8fff','#b06bd6'];
+  addTulips(sc,r,800,300,130,60,28,cols);addTulips(sc,r,640,640,60,40,18,cols);addTulips(sc,r,960,640,60,40,18,cols);
+  [[800,540],[800,640]].forEach(p=>addTulips(sc,r,p[0],p[1]+60,360,24,26,cols));
+  addDeco(sc,800,440,230,(c,t)=>{rect(c,780,310,40,130,'#e8e5ff');ell(c,800,300,150,90,'#2f7a5a');for(let i=0;i<60;i++){const a=i*2.4,d=(i%9)/9;const x=800+Math.cos(a)*(30+d*115),y=300+Math.sin(a)*(10+d*70);circ(c,x,y,4,cols[i%5])}glow(c,800,280,200,'255,190,220',.15)});
+  sc.solids.push({x:785,y:395,r:26});
+  addDeco(sc,800,720,70,(c,t)=>{ell(c,800,722,34,10,'rgba(0,0,0,.3)');rrect(c,775,690,50,30,3,'#9aa0d6');rect(c,788,630,24,64,'#c9cdf0');circ(c,800,620,12,'#c9cdf0');rrect(c,790,650,26,18,2,'#f4b95c');if(!F().mapSeen)glow(c,800,658,50,'244,185,92',.4)});
+  sc.solids.push({x:775,y:690,w:50,h:30});
+  sc.objs.push(OBJ({id:'statue',x:800,y:742,r:70,label:'تمثال الطبيب الأول',f:()=>{},use:()=>statueUse()}));
+  TL.forEach((t,i)=>sc.objs.push(OBJ({id:'tl'+i,x:t[2],y:t[3],r:60,label:'توليب '+['أحمر','أصفر','أبيض','أزرق','بنفسجي'][i],show:()=>!F()['tl'+i],f:(c,tm)=>{glow(c,t[2],t[3]-14,30,'255,255,255',.3);drawTulip(c,t[2],t[3],t[1],1.8,tm)},use:async()=>{F()['tl'+i]=1;give('petal');await talk(["قطفت بتلة واحدة فقط، ورفعتها نحو ضوء القمر."]);const n=TL.filter((_,k)=>F()['tl'+k]).length;toast('بتلات: '+n+' / 5');if(n===5&&!F().bouquet){F().bouquet=1;await talk(["اكتملت ألوان التوليب الخمسة في يدها، وتوهّجت البتلات معًا.",['زهرة التوليب','هذه الألوان تحفظ شيئًا من الذاكرة. ستفيدكِ في الغابة.']])}}})));
+  sc.trig.push(
+    {id:'cback',x:0,y:1070,w:1600,h:30,fn:async()=>{await goto('road',450,150)}},
+    {id:'cforest',x:700,y:0,w:200,h:90,fn:async()=>{if(!F().mapSeen){F().nudge=1;P.y=140;await talk(["الشارع الشمالي مغلق بستارة من الضباب. ربما يعرف تمثال المدينة الطريق."])}else await goto('forest',700,1900)}}
+  );
+  sc.onEnter=async()=>{
+    if(!F().cityIn){F().cityIn=1;
+      await talk(["وبعد ثلاثة أيام، وصلت إلى مكان لم تصدق عينيها. مدينة كاملة... لكنها لم تكن مدينة عادية.","كانت جميع مبانيها مصنوعة من الزجاج الأبيض، والشوارع مغطاة بالتوليب: الأحمر والأصفر والأبيض والأزرق والبنفسجي.",['زهرة التوليب','هذه هي مدينة التوليب.'],['شهريان','ليش ما حدا بيعرف عنها؟'],['زهرة التوليب','لأنها تختفي عن العالم عندما يكون في خطر.']]);
+    }
+  };
+  return sc;
+}
+
+/* ===== forest ===== */
+const FP=[[700,1990],[700,1700],[480,1560],[420,1330],[700,1210],[980,1040],[940,800],[660,650],[560,430],[700,240],[700,90]];
+const CPS=[[700,1650],[430,1300],[952,1057],[744,695],[616,354]];
+const ORBS=[[524,1588,'الكتب','رائحة الورق القديم في المكتبة... هذه أنا.'],[440,1400,'الأكاديمية','ممرات الأكاديمية الطويلة، وأصدقائي ينتظرونني.'],[840,1125,'المرضى','وجوه المرضى الذين ينتظرون من ينقذهم.'],[800,725,'الطب','لماذا أدرس الطب؟ لأنني أريد أن أفهم الألم.'],[630,335,'الحلم','حلم الطفلة التي أرادت أن تبني شيئًا لا يبنيه أحد... والآن تبنيه شفاءً.']];
+function forestScene(){
+  const r=rng(44);const sc=mk('forest','غابة النسيان',1400,2000,[700,1900],'180,200,255');
+  sc.ground=(c,t)=>{
+    rect(c,0,0,1400,2000,'#0f1530');
+    line(c,FP,150,'#171e43');
+    c.globalAlpha=.5;line(c,FP,70,'#202a5a');c.globalAlpha=1;
+  };
+  tufts(sc,r,500,()=>'#1b2556');
+  for(let i=0;i<620;i++){const x=r()*1400,y=60+r()*1920;if(dToPath(x,y,FP)>82)addTree(sc,x,y,1+r()*.7,'f')}
+  CPS.forEach((p,i)=>sc.objs.push(OBJ({id:'cp'+i,x:p[0],y:p[1],r:70,label:'توليب أحمر',lab:50,f:(c,t)=>{glow(c,p[0],p[1]-14,60,'224,64,95',.35+Math.sin(t*2)*.1);drawTulip(c,p[0],p[1],'#e0405f',2.2,t)},use:async()=>{S.mem=memMax();S.cp=i;await talk(["دفء غريب ينبعث من التوليب الأحمر. ذاكرتكِ تعود."])}})));
+  ORBS.forEach((o,i)=>sc.objs.push(OBJ({id:'orb'+i,x:o[0],y:o[1],r:50,auto:30,label:'ذكرى',show:()=>!F()['o'+i],f:(c,t)=>{const yy=o[1]-24+Math.sin(t*2+i)*5;glow(c,o[0],yy,40,'255,220,150',.6);circ(c,o[0],yy,8,'#fff4d0')},use:async()=>{F()['o'+i]=1;chime();await talk([["شهريان","«"+o[2]+"»... "+o[3]]]);const n=ORBS.filter((_,k)=>F()['o'+k]).length;if(n===5){F().orbsAll=1;await talk(["بدأت ذاكرتها تعود. فهمت شهريان السر.",["شهريان","التوليب ما كان بس زهرة بحبها... كان مفتاح ذاكرتي."],["زهرة التوليب","وها قد عرفتِ. الستار في آخر الغابة سيفتح لكِ الآن."]])}else toast('ذكريات: '+n+' / 5')}})));
+  sc.trig.push(
+    {id:'fback',x:0,y:1975,w:1400,h:25,fn:async()=>{await goto('city',800,150)}},
+    {id:'veil',x:560,y:0,w:280,h:130,fn:async()=>{if(!F().orbsAll){P.y=190;await talk(["ستار من الضباب الرمادي يمنعها. ما زالت ذكرياتها ناقصة."])}else await goto('grove',500,740)}}
+  );
+  sc.onEnter=async()=>{
+    if(!F().forestIn){F().forestIn=1;await chapter('8');
+      await talk(["دخلت شهريان الغابة. منذ اللحظة الأولى، شعرت بشيء غريب.",['زهرة التوليب','احذري. الغابة تأكل الذاكرة مع كل خطوة. ابحثي عن التوليب الأحمر كلما شعرتِ أنكِ تضيعين.']]);
+    }
+    S.cp=S.cp||0;
+  };
+  return sc;
+}
+
+/* ===== grove ===== */
+function groveScene(){
+  const r=rng(55);const sc=mk('grove','قلب غابة النسيان',1000,800,[500,740],'143,210,230');
+  sc.ground=(c,t)=>{
+    rect(c,0,0,1000,800,'#0f1a30');circ(c,500,420,330,'#162a45');circ(c,500,420,250,'#1b3555');
+    c.strokeStyle='rgba(143,210,230,.35)';c.lineWidth=2;c.beginPath();c.arc(500,420,300,0,6.2832);c.stroke();
+    for(let i=0;i<12;i++){const a=i*.5236+t*.05;circ(c,500+Math.cos(a)*300,420+Math.sin(a)*300,4+Math.sin(t*2+i),'#8fd2e6')}
+  };
+  tufts(sc,r,150,()=>'#1f4a63');
+  for(let i=0;i<60;i++){const x=r()*1000,y=30+r()*760;if(dist(x,y,500,420)>350)addTree(sc,x,y,1.1+r()*.6,'f')}
+  addDeco(sc,500,330,140,(c,t)=>{
+    glow(c,500,220,120,'143,210,230',.25);
+    rrect(c,486,200,28,130,6,'#ece9f7');
+    for(let i=0;i<6;i++){const a=-.9+i*.36,sx=500+(i%2?1:-1)*20;c.save();c.translate(sx,260-i*10);c.rotate((i%2?1:-1)*(.7+i*.05));ell(c,(i%2?1:-1)*24,0,26,9,'#3d84e0');c.restore()}
+    drawBlackTulip(c,500,205,t,2.2);
+  });
+  sc.solids.push({x:500,y:320,r:28});
+  sc.objs.push(
+    OBJ({id:'plant',x:500,y:350,r:70,label:'النبتة',show:()=>F().guardianMet&&!F().cured,f:()=>{},use:async()=>{await talk(["النبتة تلمع بلطف، لكن الحارس يقف أمامها. عليكِ أن تفهميه أولًا."])}}),
+    OBJ({id:'guard',x:500,y:470,r:96,lab:130,label:'المخلوق',show:()=>F().guardianMet,f:(c,t)=>drawGuardian(c,500,470,t),use:()=>guardUse()})
+  );
+  sc.solids.push({x:500,y:455,r:46});
+  sc.trig.push(
+    {id:'meet',x:300,y:560,w:400,h:60,when:()=>!F().guardianMet,fn:async()=>{if(!F().guardianMet)await guardianMeet()}},
+    {id:'gback',x:0,y:775,w:1000,h:25,fn:async()=>{if(F().cured){await returnToAcademy()}else{P.y=700;await talk(["ليس قبل أن تحصلي على العلاج."])}}}
+  );
+  sc.onEnter=async()=>{if(!F().groveIn){F().groveIn=1;await chapter('9');await talk(["في أعماق الغابة، وجدت شهريان نباتًا غريبًا. كان له جذع أبيض، وأوراق زرقاء، وفوقه زهرة توليب سوداء.","عرفت فورًا أن هذا هو العلاج."])}};
+  return sc;
+}
+function drawGuardian(c,x,y,t){
+  const cured=F().cured,bow=F().gVerdict&&!cured?10:0;
+  ell(c,x,y+4,70,16,'rgba(0,0,0,.35)');
+  if(!cured){
+    for(let i=0;i<7;i++){const a=i*.9+t*.6;ell(c,x+Math.cos(a)*55,y-40+Math.sin(a*1.3)*30,10,16,'rgba(30,18,60,.45)')}
+    ell(c,x,y-48,64,52,'#1a1033');
+    for(let i=-3;i<=3;i++)poly(c,[[x+i*18-8,y-90],[x+i*18,y-112-(i%2)*8],[x+i*18+8,y-90]],'#241647');
+    circ(c,x-20,y-70+bow,7,'#ff7a3d');circ(c,x+20,y-70+bow,7,'#ff7a3d');glow(c,x,y-70+bow,60,'255,122,61',.25);
+    rrect(c,x-30,y-52+bow,60,8,4,'#0c0818');
+  }else{
+    ell(c,x,y-48,64,52,'#f6e7c8');
+    for(let i=-3;i<=3;i++)poly(c,[[x+i*18-8,y-90],[x+i*18,y-108-(i%2)*6],[x+i*18+8,y-90]],'#ffffff');
+    circ(c,x-20,y-70,7,'#4aa37a');circ(c,x+20,y-70,7,'#4aa37a');circ(c,x-20,y-70,3,'#103020');circ(c,x+20,y-70,3,'#103020');
+    glow(c,x,y-60,110,'255,230,170',.35+Math.sin(t*2)*.05);
+    c.strokeStyle='#8a6a3a';c.lineWidth=3;c.beginPath();c.arc(x,y-54,14,.2,2.9);c.stroke();
+  }
+}
+
+/* ===== crystal kingdom ===== */
+const KC=[[650,360,'قرب نافذة القصر'],[430,560,'بلورة الساحة'],[1090,580,'بلورة الحديقة'],[860,360,'بلورة العرش']];
+function crystalScene(){
+  const r=rng(66);const sc=mk('crystal','مملكة الكريستال',1500,1100,[750,1000],'143,210,230');
+  sc.ground=(c,t)=>{
+    rect(c,0,0,1500,1100,'#18284a');
+    for(let x=0;x<1500;x+=100)for(let y=0;y<1100;y+=100)if((x/100+y/100)%2===0)rect(c,x,y,100,100,'#1b2d52');
+    c.fillStyle='#223a66';c.fillRect(690,300,120,800);c.fillRect(0,540,1500,100);
+    for(let i=0;i<4;i++){const rr=((t*30+i*60)%240);c.strokeStyle='rgba(143,210,230,'+(.25-rr/1200)+')';c.lineWidth=2;c.beginPath();c.arc(750,330,rr,0,6.2832);c.stroke()}
+  };
+  tufts(sc,r,160,()=>'#274a7a');
+  addDeco(sc,750,250,340,(c,t)=>{drawBuilding(c,750,250,600,200,'#8fb4de','#6f96c8',t);glow(c,750,160,200,'143,210,230',.15)});
+  sc.solids.push({x:450,y:120,w:600,h:130});
+  for(let i=0;i<30;i++){const x=r()*1500,y=300+r()*780;if(Math.abs(x-750)>110&&Math.abs(y-590)>90&&dist(x,y,KC[1][0],KC[1][1])>90&&dist(x,y,KC[2][0],KC[2][1])>90&&dist(x,y,KC[3][0],KC[3][1])>90&&dist(x,y,KC[0][0],KC[0][1])>90&&y<1000){const s=.7+r()*.8;addDeco(sc,x,y,70*s,(c,t)=>drawCrystal(c,x,y,s,'#7fb6dc',t,0));sc.solids.push({x,y,r:12*s})}}
+  KC.forEach((k,i)=>{
+    sc.solids.push({x:k[0],y:k[1],r:20});
+    sc.objs.push(OBJ({id:'kc'+i,x:k[0],y:k[1]+10,r:76,lab:110,label:i===0?'بلورة بنافذة القصر':'بلورة نائمة',f:(c,t)=>{
+      const h=F()['kh'+i];
+      drawCrystal(c,k[0],k[1],1.5,h?'#ffd0a0':'#6e8ab4',t,h?1:0);
+      c.globalAlpha=h?.9:.55;circ(c,k[0],k[1]-40,7,h?'#f0c9a4':'#26324f');rrect(c,k[0]-8,k[1]-33,16,22,5,h?'#ff9ec0':'#26324f');c.globalAlpha=1;
+      if(h){for(let q=0;q<4;q++)circ(c,k[0]+Math.cos(t*2+q*1.6)*26,k[1]-40+Math.sin(t*2+q*1.6)*22,2,'#fff2c0')}
+    },use:()=>crystalUse(i)}));
+  });
+  sc.objs.push(
+    OBJ({id:'shard',x:900,y:900,r:60,label:'شظية',show:()=>!F().gotShard&&!has('shard'),f:(c,t)=>{drawCrystal(c,900,900,.5,'#8fd2e6',t,0)},use:async()=>{F().gotShard=1;await talk(["شظية كريستال باردة وصامتة."]);give('shard')}}),
+    OBJ({id:'cgate',x:750,y:1050,r:64,label:'بوابة النجوم',f:(c,t)=>drawStarGate(c,750,1060,t),use:async()=>{await talk(["البوابة تعيدكِ إلى أوراليا، لكن رحلتكِ هنا لم تنته."])}})
+  );
+  sc.trig.push({id:'toValley',x:0,y:520,w:50,h:140,fn:async()=>{await goto('valley',600,1520)}});
+  sc.onEnter=async()=>{
+    if(!F().crIn){F().crIn=1;await chapter('13');
+      await talk(["هبطت شهريان في عالم غريب ومذهل يُدعى مملكة الكريستال. كل شيء هنا كان مصنوعًا من صخور كريستالية لامعة.","لكن الشوارع كانت خالية، وكان صوت خافت يشبه البكاء يتردد في أرجاء المكان.","اقتربت من نافذة قصر كبير، فوجدت سكانه متجمدين داخل بلورات باهتة، وأعينهم مغمضة كأنهم في سبات لا يوقظه زمن."]);
+    }
+  };
+  return sc;
+}
+
+/* ===== valley of echo ===== */
+const VP=[[600,1560],[600,1300],[420,1100],[700,880],[560,640],[420,420],[600,240],[600,160]];
+function valleyScene(){
+  const r=rng(77);const sc=mk('valley','وادي الصدى',1200,1600,[600,1520],'190,170,255');
+  sc.ground=(c,t)=>{
+    c.fillStyle=vgrad(c,0,1600,[[0,'#2a2060'],[1,'#17143a']]);c.fillRect(0,0,1200,1600);
+    c.globalAlpha=.5;line(c,VP,120,'#3b3290');c.globalAlpha=1;
+    if(gust){for(let i=0;i<14;i++){const x=(i*140+t*400)%1300-50,y=(i*211+40)%1600;rect(c,x,y,60,2,'rgba(236,233,247,.35)')}}
+  };
+  tufts(sc,r,220,()=>'#342b78');
+  for(let i=0;i<20;i++){const x=r()*1200,y=100+r()*1400;if(dToPath(x,y,VP)>120){addDeco(sc,x,y,80,(c,t)=>{rect(c,x-12,y-70,24,72,'#3b3a7c');rect(c,x-8,y-90,16,22,'#4b49a0');glow(c,x,y-60,48,'160,150,255',.3+Math.sin(t*2+x)*.1)});sc.solids.push({x,y,r:14})}}
+  addDeco(sc,600,180,100,(c,t)=>{rrect(c,570,150,60,26,4,'#3b3a7c');if(!F().nectarGot){drawHarmony(c,600,152,t)}});
+  sc.solids.push({x:570,y:150,w:60,h:28});
+  sc.objs.push(OBJ({id:'harmony',x:600,y:196,r:70,label:'زهرة التناغم',show:()=>!F().nectarGot,f:()=>{},use:()=>harmonyUse()}));
+  sc.trig.push(
+    {id:'vback',x:0,y:1575,w:1200,h:25,fn:async()=>{await goto('crystal',90,590)}},
+    {id:'ask',x:0,y:1380,w:1200,h:60,when:()=>!F().intentOk,fn:async()=>{if(!F().intentOk)await valleyAsk()}}
+  );
+  sc.onEnter=async()=>{if(!F().valleyIn){F().valleyIn=1;await chapter('15');await talk(["لإيجاد العلاج، كان على شهريان دخول وادي الصدى، حيث لا يُسمع صوت إلا لمن يملك قلبًا صافيًا ونية صادقة."])}};
+  return sc;
+}
+function drawHarmony(c,x,y,t){
+  glow(c,x,y-20,60,'255,176,224',.4+Math.sin(t*3)*.1);
+  c.strokeStyle='#4ac28a';c.lineWidth=2.5;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+4,y-14,x,y-26);c.stroke();
+  for(let i=0;i<5;i++){const a=-1.2+i*.6;ell(c,x+Math.cos(a)*10,y-30+Math.sin(a)*8-4,6,10,['#ffb0e0','#ffd0f0','#ffb0e0','#ff90d0','#ffb0e0'][i])}
+  circ(c,x,y-30,4,'#fff2c0');
+}
+let gust=false,gustT=0,stepT=0,inCp=-1,pulseT=0;
+
+/* ---------- player ---------- */
+const P={x:700,y:640,face:1,walk:0,moving:false};
+function drawPlayer(c,t){
+  const sw=P.moving?Math.sin(P.walk*10)*3:0,bob=P.moving?Math.abs(Math.sin(P.walk*10))*-1.5:Math.sin(t*2)*.5,x=P.x,y=P.y,f=P.face;
+  ell(c,x,y+1,12,5,'rgba(0,0,0,.35)');
+  poly(c,[[x-11+sw*.6,y],[x-7,y-27+bob],[x+7,y-27+bob],[x+11-sw*.6,y]],'#14121f');
+  rect(c,x-1,y-26+bob,2,26,'rgba(255,255,255,.07)');
+  poly(c,[[x-9,y-27+bob],[x+9,y-27+bob],[x+6,y-15+bob],[x-6,y-15+bob]],'#c4122f');
+  line(c,[[x-7,y-26+bob],[x+7*f,y-12+bob]],1.6,'#c9a56a');
+  const hy=y-38+bob,hr=12;
+  circ(c,x,hy,hr+1.6,'#c4122f');
+  if(FACE_OK){c.save();c.beginPath();c.arc(x,hy,hr,0,6.2832);c.clip();c.drawImage(faceImg,x-hr,hy-hr,hr*2,hr*2);c.restore()}
+  else circ(c,x,hy,hr,'#f0c9a4');
+}
+function drawCompanion(c,t){
+  const x=P.x-P.face*13,y=P.y-34+Math.sin(t*3)*2;
+  drawBlackTulip(c,x,y+22,t,.65);
+}
+
+/* ---------- input ---------- */
+const keys={l:0,r:0,u:0,d:0};
+const joy={x:0,y:0};
+const KM={ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',ArrowUp:'u',w:'u',W:'u',ArrowDown:'d',s:'d',S:'d'};
+window.addEventListener('keydown',e=>{
+  if((e.key===' '||e.key==='Enter')&&e.target&&e.target.closest&&e.target.closest('button'))return;
+  if(KM[e.key]){keys[KM[e.key]]=1;e.preventDefault()}
+  else if(e.key===' '||e.key==='Enter'||e.key==='e'||e.key==='E'){e.preventDefault();if(!e.repeat)act()}
+  else if((e.key==='b'||e.key==='B'||e.key==='Escape')&&S&&!e.repeat){toggleBook()}
+  else if((e.key==='n'||e.key==='N')&&S&&!e.repeat){toggleReader()}
+});
+window.addEventListener('keyup',e=>{if(KM[e.key])keys[KM[e.key]]=0});
+(()=>{
+  const st=$('#stick'),kn=$('#knob');let id=null;
+  const mv=e=>{const r=st.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const m=Math.hypot(dx,dy),R=r.width/2-10;if(m>R){dx=dx/m*R;dy=dy/m*R}joy.x=dx/R;joy.y=dy/R;kn.style.transform='translate('+dx+'px,'+dy+'px)'};
+  st.addEventListener('pointerdown',e=>{id=e.pointerId;st.setPointerCapture(id);mv(e)});
+  st.addEventListener('pointermove',e=>{if(e.pointerId===id)mv(e)});
+  const up=e=>{if(e.pointerId===id){id=null;joy.x=joy.y=0;kn.style.transform=''}};
+  st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);
+})();
+$('#act').addEventListener('click',()=>act());
+$('#prompt').addEventListener('click',()=>act());
+$('#btnBook').addEventListener('click',()=>toggleBook());
+
+/* ---------- ui: dialogue ---------- */
+const dlg=$('#dialog'),dSpk=$('#dSpk'),dTxt=$('#dTxt'),dCh=$('#dChoices'),dHint=$('#dHint');
+let dlgRes=null,typer=null,busy=false,ovOpen=0;
+let skipNow=false;
+const dAv=$('#dAv'),dSkip=$('#dSkip');
+function portrait(spk){dAv.hidden=!(spk==='شهريان'&&FACE_OK)}
+function say(spk,text,canSkip){
+  if(skipNow||(settings.auto&&canSkip))return Promise.resolve();
+  return new Promise(res=>{
+    dlg.hidden=false;document.body.classList.add('talking');portrait(spk);dSkip.hidden=false;
+    dSpk.textContent=spk||'';dSpk.hidden=!spk;dSpk.style.color=SPK[spk]||'#ece9f7';
+    dTxt.className=spk?'':'nar';dCh.innerHTML='';dHint.hidden=true;
+    let i=0,k=0;dTxt.textContent='';clearInterval(typer);
+    typer=setInterval(()=>{i+=2;if(++k%3===0)blip(spk);dTxt.textContent=text.slice(0,i);if(i>=text.length){clearInterval(typer);typer=null;dTxt.textContent=text;dHint.hidden=false}},28);
+    dlgRes=()=>{if(typer){clearInterval(typer);typer=null;dTxt.textContent=text;dHint.hidden=false;return false}res();return true};
+  });
+}
+async function talk(lines){const multi=lines.length>1;for(const l of lines){if(typeof l==='string')await say('',l,multi);else await say(l[0],l[1],multi)}}
+function choose(q,opts,spk){
+  skipNow=false;
+  return new Promise(res=>{
+    dlg.hidden=false;document.body.classList.add('talking');dlgRes=null;clearInterval(typer);typer=null;portrait(spk);dSkip.hidden=true;
+    dSpk.textContent=spk||'';dSpk.hidden=!spk;dSpk.style.color=SPK[spk]||'#ece9f7';dTxt.className=spk?'':'nar';dTxt.textContent=q;dHint.hidden=true;dCh.innerHTML='';
+    opts.forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=o;b.addEventListener('click',e=>{e.stopPropagation();dCh.innerHTML='';res(i)});dCh.appendChild(b)});
+  });
+}
+function closeDlg(){dlg.hidden=true;dAv.hidden=true;dCh.innerHTML='';document.body.classList.remove('talking');dlgRes=null;clearInterval(typer);typer=null}
+dSkip.addEventListener('click',e=>{e.stopPropagation();skipNow=true;if(dlgRes){const f=dlgRes;if(!f())f();dlgRes=null}});
+function advance(){if(dlgRes){const d=dlgRes();if(d)dlgRes=null}}
+dlg.addEventListener('click',advance);
+
+let toastT=null;
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2200)}
+function place(name){const e=$('#place');e.textContent=name;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2200)}
+async function fade(on){$('#fade').classList.toggle('on',on);await sleep(470)}
+
+async function card(label,title,sub){
+  const el=$('#card');$('#cardL').textContent=label;$('#cardT').textContent=title;$('#cardS').textContent=sub||'';
+  el.hidden=false;void el.offsetWidth;el.classList.add('show');
+  await new Promise(res=>{const tm=setTimeout(res,(skipNow||settings.auto)?450:2800);el.onclick=()=>{clearTimeout(tm);res()}});
+  el.classList.remove('show');await sleep(700);el.hidden=true;el.onclick=null;
+}
+async function chapter(id){
+  if(S.chapters.includes(id))return;
+  const c=CH.find(x=>x.id===id);S.chapters.push(id);save();
+  $('#chTag').textContent=c.l+' · '+c.t;
+  closeDlg();sfx.card();await card(c.l,c.t);
+}
+
+/* ---------- ui: overlays ---------- */
+function openOv(el){el.hidden=false;ovOpen++;document.body.classList.add('ov')}
+function closeOv(el){el.hidden=true;ovOpen=Math.max(0,ovOpen-1);if(!ovOpen)document.body.classList.remove('ov')}
+function syncSettings(){
+  $('#sndBtn').textContent='المؤثرات الصوتية: '+(settings.sfx?'تعمل':'متوقفة');
+  $('#musBtn').textContent='الموسيقى: '+(settings.music?'تعمل':'متوقفة');
+  $('#skipBtn').textContent='الحوارات: '+(settings.auto?'تخطي تلقائي':'عرض كامل');
+}
+function toggleBook(){
+  if(!S||$('#title').hidden===false)return;
+  const b=$('#book');if(!b.hidden){closeOv(b);return}
+  if(busy||ovOpen)return;
+  let h='<h4>الحقيبة</h4>';
+  const inv=Object.keys(S.inv).filter(k=>S.inv[k]>0);
+  h+=inv.length?inv.map(k=>'<div class="itm"><i style="background:'+ITEMS[k].c+'"></i><p><b>'+ITEMS[k].n+(S.inv[k]>1?' ×'+S.inv[k]:'')+'</b><br>'+ITEMS[k].d+'</p></div>').join(''):'<p style="color:var(--moon-dim);margin:0">الحقيبة فارغة.</p>';
+  h+='<h4>ملاحظات الطبيبة</h4>';
+  h+=S.notes.length?S.notes.map(n=>'<div class="itm"><i style="background:#8fd2e6"></i><p>'+n+'</p></div>').join(''):'<p style="color:var(--moon-dim);margin:0">لا ملاحظات بعد.</p>';
+  $('#bookBody').innerHTML=h;syncSettings();
+  $('#resetBtn').textContent='بداية جديدة';
+  sfx.page();openOv(b);
+}
+$('#bookNo').addEventListener('click',()=>closeOv($('#book')));
+$('#sndBtn').addEventListener('click',()=>{settings.sfx=!settings.sfx;saveSettings();syncSettings();if(settings.sfx)sfx.ui()});
+$('#musBtn').addEventListener('click',()=>{settings.music=!settings.music;saveSettings();ac();setMusic();syncSettings()});
+$('#skipBtn').addEventListener('click',()=>{settings.auto=!settings.auto;saveSettings();syncSettings()});
+/* novel reader */
+const NOVEL=[{"id": "p", "l": "مقدمة", "t": "شهريان ومدينة التوليب السحري", "p": ["في عالمٍ بعيد عن عالمنا، حيث كانت الغابات تلمع تحت ضوء القمر، وحيث كانت الأنهار تجري بلونٍ فضي، وحيث كانت بعض الزهور تستطيع أن تتحدث مع من يفهم لغتها...", "كانت هناك مملكة صغيرة تُدعى أوراليا.", "وكانت أوراليا مختلفة عن جميع الممالك الأخرى.", "ففي وسطها كانت توجد مدينة قديمة تحيط بها آلاف الأشجار، وفي قلب المدينة كانت تقع جامعة ضخمة اسمها أكاديمية أوريليا للطب والسحر.", "لم يكن الطب في ذلك العالم مجرد علم.", "كان الأطباء يستطيعون استخدام المعرفة الطبية مع أنواع نادرة من السحر لعلاج الأمراض والإصابات التي لا يستطيع الطب العادي علاجها.", "وكان على كل طالب يريد أن يصبح طبيبًا أن يتعلم شيئًا من الاثنين:", "العلم... والسحر.", "وفي إحدى قرى المملكة، كانت تعيش فتاة اسمها شهريان.", "كانت شهريان في الحادية والعشرين من عمرها، ذات عينين عسليتين، وكان لديها فضول لا ينتهي تجاه العالم.", "لكن أكثر شيء كانت تحبه منذ طفولتها هو التوليب.", "كانت ترى أن هذه الزهرة مختلفة.", "وكانت دائمًا تشعر أن وراء جمالها سرًا لا يعرفه الناس.", "ولم تكن تعلم أن إحساسها كان صحيحًا."]}, {"id": "1", "l": "الفصل الأول", "t": "الفتاة التي أرادت أن تصبح مهندسة", "p": ["عندما كانت شهريان صغيرة، كانت تحلم بأن تصبح مهندسة.", "كانت تحب الأشياء المعقدة.", "كانت تفكك الألعاب القديمة لترى كيف تعمل.", "كانت ترسم آلات غريبة على الأوراق.", "وكانت تقول:", "\"يومًا ما رح أبني آلة ما حدا بالعالم قدر يبنيها.\"", "وكان والدها يضحك ويقول:", "\"يمكن فعلًا تصيري مهندسة عظيمة.\"", "مرت السنوات.", "وكبرت شهريان.", "لكن شيئًا تغير داخلها.", "في أحد الأيام، شاهدت طبيبًا من المملكة يعالج طفلًا مصابًا بمرض غريب.", "كان الطفل يحتضر، ولم يعرف أحد كيف يساعده.", "وضع الطبيب يده على صدره، وبدأ يقرأ كلمات قديمة، ثم استخدم علمه لمعرفة مكان المرض.", "بعد ساعات طويلة، استطاع إنقاذ الطفل.", "وقفت شهريان تراقب المشهد بصمت.", "وفي تلك الليلة، لم تستطع النوم.", "كانت تفكر:", "\"الهندسة بتخليني أبني أشياء...\"", "ثم سكتت.", "\"بس الطب ممكن يخليني أنقذ حياة.\"", "وفي صباح اليوم التالي، اتخذت قرارًا غيّر مستقبلها.", "ستدرس الطب."]}, {"id": "2", "l": "الفصل الثاني", "t": "أكاديمية أوريليا", "p": ["بعد سنوات من الدراسة، وصلت شهريان إلى السنة الرابعة في أكاديمية أوريليا.", "كانت الأكاديمية ضخمة لدرجة أن بعض الطلاب كانوا يضيعون داخلها في الأيام الأولى.", "كانت هناك قاعات للتشريح.", "ومختبرات للأعشاب.", "ومكتبة تحتوي على أكثر من مليون كتاب.", "وبرج قديم ممنوع على الطلاب الاقتراب منه.", "وكانت هناك أيضًا حديقة ضخمة تُسمى:", "حديقة الفصول الأربعة.", "فيها نباتات لا تنمو إلا في الشتاء.", "وأخرى لا تزهر إلا عند اكتمال القمر.", "لكن في زاوية صغيرة من الحديقة، كانت هناك مجموعة من زهور التوليب.", "وكانت شهريان تزورها كل يوم تقريبًا.", "كانت تجلس بجانبها بعد المحاضرات.", "وتقرأ كتبها هناك.", "وفي بعض الأيام كانت تنام فوق العشب من شدة التعب."]}, {"id": "3", "l": "الفصل الثالث", "t": "التوليب الذي لا يذبل", "p": ["في أحد الأيام، كانت شهريان تدرس في الحديقة.", "كان أمامها كتاب ضخم عن أمراض القلب السحرية.", "لكنها شعرت بالملل.", "رفعت رأسها.", "ونظرت إلى الزهور.", "وفجأة لاحظت شيئًا غريبًا.", "كانت هناك زهرة توليب سوداء بين جميع الزهور.", "اقتربت منها.", "كانت الزهرة مختلفة تمامًا.", "لم تكن تذبل.", "حتى أن قطرات الماء فوق أوراقها كانت تلمع بلون أزرق.", "مدت شهريان يدها.", "وقبل أن تلمسها...", "سمعت صوتًا.", "\"لا تلمسيني.\"", "تجمدت.", "نظرت حولها.", "لم يكن هناك أحد.", "قالت:", "\"مين؟\"", "جاء الصوت مرة أخرى.", "\"أنا.\"", "نظرت إلى الزهرة.", "ثم فتحت عينيها بدهشة.", "\"إنتِ؟\"", "تحركت الزهرة قليلًا.", "\"نعم.\"", "تراجعت شهريان خطوة.", "\"زهرة بتحكي؟\"", "قالت الزهرة:", "\"وأنتِ طبيبة لا تعرفين أن النباتات تستطيع الكلام؟\"", "شهقت شهريان.", "\"لسا ما صرت طبيبة!\"", "قالت الزهرة:", "\"لكن لديك الوقت.\"", "ثم سكتت.", "وبعد لحظات قالت:", "\"لأن أمامك مهمة.\""]}, {"id": "4", "l": "الفصل الرابع", "t": "سر المملكة", "p": ["جلست شهريان أمام الزهرة.", "قالت:", "\"أي مهمة؟\"", "قالت الزهرة:", "\"منذ ألف عام، كانت مملكة أوراليا محمية بقوة سحرية عظيمة.\"", "\"شو دخل الطب؟\"", "\"كل شيء.\"", "ثم بدأت الزهرة تشرح.", "منذ آلاف السنين، كان هناك مرض غامض يُسمى مرض الظل.", "لم يكن يصيب الجسد فقط.", "بل كان يصيب الذاكرة.", "يمحو ذكريات الإنسان تدريجيًا.", "وكان المصابون ينسون أسماءهم.", "ثم عائلاتهم.", "ثم حياتهم.", "وفي النهاية...", "ينسون كيف يكونون بشرًا.", "كانت المملكة قد قضت على المرض منذ قرون.", "لكن الزهرة أخبرت شهريان أن المرض بدأ بالعودة.", "قالت:", "\"هناك شخص مريض الآن.\"", "سألت شهريان:", "\"مين؟\"", "أجابت الزهرة:", "\"المملكة بأكملها.\""]}, {"id": "5", "l": "الفصل الخامس", "t": "المستشفى السري", "p": ["في تلك الليلة، أخذت الزهرة شهريان إلى مكان سري تحت الأكاديمية.", "فتح باب حجري قديم بمجرد أن اقتربت منه.", "نزلت شهريان درجات طويلة.", "وفي الأسفل وجدت مستشفى لم تعرف بوجوده.", "كان هناك عشرات المرضى.", "لكن الغريب أنهم لم يكونوا مرضى عاديين.", "بعضهم كان ينسى اسمه كل دقيقة.", "وبعضهم كان يرى أشياء غير موجودة.", "وبعضهم كان ينام لأسابيع.", "اقتربت شهريان من أحد المرضى.", "فحصت نبضه.", "ثم عينيه.", "ثم كتبت ملاحظاتها.", "قالت:", "\"في شيء مش طبيعي.\"", "ظهرت الزهرة بجانبها.", "قالت:", "\"أنتِ أول طالبة تلاحظ ذلك.\"", "ردت شهريان:", "\"شو عم يصير؟\"", "قالت الزهرة:", "\"هناك مرض قديم عاد إلى المملكة.\"", "ثم أضافت:", "\"والعلاج موجود.\"", "رفعت شهريان رأسها.", "\"وين؟\"", "قالت:", "\"في مكان لم يصل إليه أحد منذ ألف عام.\""]}, {"id": "6", "l": "الفصل السادس", "t": "مدينة التوليب", "p": ["خرجت شهريان من الأكاديمية في صباح اليوم التالي.", "كانت تحمل حقيبة صغيرة.", "فيها أدوات طبية.", "كتب.", "بعض الأعشاب.", "ومصباح سحري.", "وفي حقيبتها كانت الزهرة السوداء.", "بدأت رحلتها.", "مرت عبر غابة لا تظهر على الخرائط.", "عبرت نهرًا كانت أسماكه تستطيع التحدث.", "وصعدت جبلًا كانت صخوره تتحرك عندما يقترب منها البشر.", "وبعد ثلاثة أيام، وصلت إلى مكان لم تصدق عينيها.", "مدينة كاملة.", "لكنها لم تكن مدينة عادية.", "كانت جميع مبانيها مصنوعة من الزجاج الأبيض.", "والشوارع مغطاة بالتوليب.", "الأحمر.", "الأصفر.", "الأبيض.", "الأزرق.", "والبنفسجي.", "وكانت في وسط المدينة شجرة عملاقة، تتفتح فوقها آلاف زهور التوليب.", "قالت الزهرة:", "\"هذه هي مدينة التوليب.\"", "نظرت شهريان حولها بدهشة.", "\"ليش ما حدا بيعرف عنها؟\"", "أجابت:", "\"لأنها تختفي عن العالم عندما يكون في خطر.\""]}, {"id": "7", "l": "الفصل السابع", "t": "الطبيب الأول", "p": ["في وسط المدينة، وجدت شهريان تمثالًا حجريًا لرجل يحمل كتابًا.", "كان مكتوبًا تحت التمثال:", "\"أول طبيب عرف أن الجسد والعقل والروح ليست ثلاثة أشياء... بل شيء واحد.\"", "اقتربت شهريان.", "وضعت يدها على الكتاب.", "وفجأة...", "انفتح.", "ظهرت أمامها خريطة.", "وفي وسط الخريطة نقطة حمراء.", "قالت الزهرة:", "\"هناك يوجد العلاج.\"", "لكن الخريطة كانت تشير إلى مكان مخيف.", "غابة النسيان."]}, {"id": "8", "l": "الفصل الثامن", "t": "غابة النسيان", "p": ["دخلت شهريان الغابة.", "منذ اللحظة الأولى، شعرت بشيء غريب.", "نسيت لماذا جاءت.", "ثم نسيت اسمها.", "ثم نسيت الجامعة.", "ثم نسيت الطب.", "توقفت في منتصف الطريق.", "قالت:", "\"أنا... وين؟\"", "ثم نظرت إلى الزهرة.", "لكنها لم تتذكر ما هي.", "وفجأة رأت زهرة توليب حمراء.", "لم تعرف لماذا، لكنها شعرت بالراحة.", "اقتربت منها.", "ثم تذكرت شيئًا.", "الكتب.", "الأكاديمية.", "المرضى.", "الطب.", "والحلم.", "بدأت ذاكرتها تعود.", "فهمت شهريان السر.", "التوليب لم يكن مجرد زهرة تحبها.", "كان مفتاح ذاكرتها."]}, {"id": "9", "l": "الفصل التاسع", "t": "العلاج", "p": ["في أعماق الغابة، وجدت شهريان نباتًا غريبًا.", "كان له جذع أبيض.", "وأوراق زرقاء.", "وفوقه زهرة توليب سوداء.", "عرفت فورًا أن هذا هو العلاج.", "لكن عندما اقتربت منه، ظهر مخلوق ضخم.", "قال:", "\"لن تأخذي الزهرة.\"", "وقفت شهريان أمامه.", "كانت خائفة.", "لكنها لم تهرب.", "قالت:", "\"أنا طالبة طب.\"", "ضحك المخلوق.", "\"وهل سيحميك الطب مني؟\"", "قالت:", "\"لا.\"", "ثم أضافت:", "\"لكن المعرفة يمكن أن تنقذ حياة.\"", "بدأت تفحص المكان.", "لاحظت أن المخلوق لم يكن يهاجمها فعليًا.", "كان يحرس الزهرة.", "وكان جسده نفسه مصابًا بمرض الظل.", "اقتربت منه.", "وضعت يدها على ذراعه.", "بدأت تفحصه.", "ثم قالت:", "\"أنت مو حارس الزهرة.\"", "صمت المخلوق.", "قالت:", "\"أنت مريض.\"", "لأول مرة، انخفض رأسه."]}, {"id": "10", "l": "الفصل العاشر", "t": "الطبيبة", "p": ["استخدمت شهريان معرفتها الطبية.", "حضرت العلاج.", "مزجت الأعشاب.", "استخدمت السحر.", "وأعطت المخلوق الدواء.", "مرت دقائق.", "ثم بدأ جسده يتغير.", "اختفى الظلام من عينيه.", "وعاد شكله الحقيقي.", "كان حارسًا قديمًا للمدينة.", "قال لها:", "\"منذ ألف عام، لم يستطع أحد علاجي.\"", "ابتسمت شهريان.", "وقالت:", "\"يمكن لأنك ما كنت بحاجة لمحارب.\"", "ثم نظرت إلى الزهرة.", "\"كنت بحاجة لطبيبة.\""]}, {"id": "R", "l": "الفصل الأخير", "t": "العودة", "p": ["عادت شهريان إلى أكاديمية أوريليا بعد أسابيع.", "كان الأساتذة قد اعتقدوا أنها اختفت.", "لكنها عادت وهي تحمل معها العلاج.", "بدأ الأطباء باستخدامه.", "وبعد أشهر، بدأ المرض يختفي.", "عادت ذاكرة المرضى.", "وعادت الحياة إلى المملكة.", "أما شهريان...", "فأكملت دراستها.", "كانت لا تزال في السنة الرابعة.", "ولا تزال لديها سنوات أخرى قبل أن تصبح طبيبة كاملة.", "لكنها أصبحت تعرف شيئًا لم يكن موجودًا في أي كتاب.", "أن الطب ليس مجرد معرفة الأمراض.", "وليس مجرد حفظ أسماء الأدوية.", "الطب يعني أن تنظر إلى المريض وتحاول أن تفهم ما وراء الألم.", "وأن تبحث عن الحل حتى عندما يخبرك الجميع أنه لا يوجد حل.", "وفي كل مساء، كانت شهريان تعود إلى حديقة الأكاديمية.", "تجلس بين زهور التوليب.", "تفتح كتابها.", "وتدرس.", "كانت لا تزال تحب التوليب كما كانت دائمًا.", "لكنها الآن تعرف سره.", "فالتوليب لم يكن مجرد زهرة جميلة.", "كان رمزًا للذاكرة.", "للبداية.", "للصبر.", "وللأشياء التي تحتاج وقتًا حتى تتفتح.", "وفي إحدى الليالي، أغلقت شهريان كتاب الطب.", "نظرت إلى السماء.", "ثم إلى زهرة التوليب السوداء.", "وقالت:", "\"لسا قدامي طريق طويل.\"", "تحركت الزهرة قليلًا.", "وقالت:", "\"وأنتِ مستعدة له.\"", "ابتسمت شهريان.", "ثم فتحت كتابها من جديد.", "فهي لم تكن تريد أن تكون مجرد فتاة دخلت عالم السحر.", "ولا مجرد طالبة طب.", "كانت تريد أن تصبح شيئًا أكبر.", "طبيبة تستطيع أن تعالج حتى الأمراض التي يخاف العالم من ذكر اسمها.", "وهكذا بدأت حكاية شهريان الحقيقية...", "حكاية لم تكن نهايتها في أن تصبح طبيبة.", "بل كانت بدايتها الحقيقية عندما أدركت أن العالم أكبر بكثير مما كانت تتخيل.", "وكانت هناك، في مكان ما خلف الجبال، مدينة أخرى تنتظرها.", "مدينة مليئة بالأسرار.", "ومئات أنواع التوليب.", "ومرضى يحتاجون إلى من ينقذهم.", "وكانت شهريان...", "ما زالت في السنة الرابعة.", "وما زال أمامها الكثير لتتعلمه.", "لكنها كانت مستعدة.", "لأن بعض الحكايات لا تبدأ عندما تصل إلى النهاية...", "بل عندما تكتشف أنك لم تصل بعد."]}, {"id": "11", "l": "الفصل الحادي عشر", "t": "صدى الممالك البعيدة", "p": ["بعد أن أنقذت شهريان أوريليا وأعادَت الذاكرة لجميع سكانها والمخلوقات السحرية فيها، عادت إلى حديقة الفصول الأربعة. كانت زهرة التوليب السوداء تنتظرها كالعادة، لكن قطرات الماء فوقها لم تكن زرقاء هذه المرة، بل كانت تتألق بلون قوس قزح. وبينما كانت شهريان تقترب، اهتزت الأوراق الخضراء وارتفع صوت ناعم من الزهرة ليقول: \"يا شهريان، إن شفاء أوريليا لم يكن سوى البداية. هناك ممالك أخرى تحيط بعالمنا، وقد وصل إلينا صدى ألمها.\""]}, {"id": "12", "l": "الفصل الثاني عشر", "t": "بوابة النجوم المعلقة", "p": ["فتحت زهرة التوليب السوداء بتلاتها على غير عادتها، لينبعث منها ضوء باهر رسم في الهواء باباً دائرياً يطفو فوق الأرض. كان الباب مصنوعاً من زجاج فضي ومرصع بنجوم صغيرة تنبض بالحياة. أدركت شهريان أن عليها عبور هذه البوابة. ودعت أصدقاءها في الأكاديمية، وحزمت حقيبتها الطبية التي تحتوي على الأعشاب المضيئة وكتبها القديمة، وقفزت شجاعةً نحو المجهول."]}, {"id": "13", "l": "الفصل الثالث عشر", "t": "مملكة الكريستال الباكي", "p": ["هبطت شهريان في عالم غريب ومذهل يُدعى \"مملكة الكريستال\". كل شيء هنا كان مصنوعاً من صخور كريستالية لامعة، لكن الشوارع كانت خالية، وكان هناك صوت خافت يشبه البكاء يتردد في أرجاء المكان. اقتربت من نافذة قصر كبير، فوجدت سكانه متجمدين داخل بلورات زجاجية باهتة، وأعينهم مغمضة كأنهم في سبات عميق لا يوقظه زمن."]}, {"id": "14", "l": "الفصل الرابع عشر", "t": "تشخيص النداء الصامت", "p": ["بدأت شهريان بفحص إحدى البلورات باستخدام أدواتها الطبية الممزوجة بالسحر. لم يكن مرضاً جسدياً عادياً، بل كان \"وباء الصمت المطبق\"؛ وهو سحر أسود يغذي الحزن والخوف حتى يتحول قلب الكريستال إلى حجارة باردة، ويمنع الأرواح من التحدث أو التعبير. تذكرت كلمات أستاذها القديم: \"الطبيب الحقيقي لا يعالج العضو المريض فحسب، بل يداوي الجرح الخفي في روح المريض.\""]}, {"id": "15", "l": "الفصل الخامس عشر", "t": "نبات التناغم والأمل", "p": ["لإيجاد العلاج، كان على شهريان دخول \"وادي الصدى\"، وهو مكان لا يُسمع فيه صوت إلا لمن يملك قلباً صافياً ونية صادقة. واجهت في طريقها رياحاً عاتية تحاول إسكات خطواتها، لكنها تذكرت أنها طبيبة، وصوت الطبيب هو دائماً صوت الرحمة والشفاء. وهناك، في قلب الوادي، عثرت على زهرة نادرة تُدعى \"زهرة التناغم\"، والتي تنمو فقط على ألحان الأمل."]}, {"id": "16", "l": "الفصل السادس عشر", "t": "عودة الحياة إلى الكريستال", "p": ["عادت شهريان مسرعة إلى القصر حاملةً قطرات من رحيق زهرة التناغم. قامت بمزج الرحيق بأعشابها الطبية ورشّته بحذر على البلورات الكبيرة. تدريجياً، بدأ الجليد البارد ينصهر، وتحولت البلورات الزجاجية إلى ألوان زاهية ودافئة. فتح سكان المملكة أعينهم، وعادت الضحكات تملأ الشوارع، وعلت أصوات الشكر والامتنان ترحيباً بالطيبة التي أنقذت عالمهم."]}, {"id": "17", "l": "الفصل السابع عشر", "t": "بوصلة الأفق البعيد", "p": ["قبل أن تودع شهريان مملكة الكريستال وتستعد للعودة عبر البوابة، قدم لها ملك الكريستال هديةً خاصة: بوصلة سحرية لا تشير إلى الاتجاهات الأربعة، بل تشير إلى القلوب التي تحتاج إلى العلاج في أي عالم و زمان. أمسكت شهريان بالبوصلة، فبدأت إبرتها تدور بسرعة وتستقر مشيرة نحو أفق بعيد ومظلم يحمل اسم \"مملكة الغيوم المضيئة\"."]}, {"id": "F", "l": "الفصل الأخير (المتجدد)", "t": "رحلة لا تنتهي", "p": ["ابتسمت شهريان وهي تنظر إلى بوصلتها وإلى زهرة التوليب السوداء التي ترافقها دائماً على كتفها كسوار سحري. أدركت أن رسالتها في الحياة أوسع بكثير مما كانت تتخيل، وأن كل ألم في هذا الكون الواسع هو مجرد نداء لبحث جديد عن العلاج. رفعت رأسها نحو الأفق، وخطت خطوتها الأولى نحو مغامرة جديدة تنتظر أن تُروى."]}];
+const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+let rdIdx=0,rdBuilt=false;
+function rdRender(i){
+  rdIdx=clamp(i,0,NOVEL.length-1);const c=NOVEL[rdIdx];
+  $('#rdBody').innerHTML='<div class="rdL">'+esc(c.l)+'</div><h2 class="rdT">'+esc(c.t)+'</h2>'+c.p.map(q=>'<p class="rdP">'+esc(q)+'</p>').join('');
+  $('#rdSel').value=String(rdIdx);$('#rdBody').scrollTop=0;
+  $('#rdPrev').disabled=rdIdx===0;$('#rdNext').disabled=rdIdx===NOVEL.length-1;
+}
+function toggleReader(){
+  if(!S||$('#title').hidden===false)return;
+  const r=$('#reader');if(!r.hidden){closeOv(r);return}
+  if(!rdBuilt){rdBuilt=true;$('#rdSel').innerHTML=NOVEL.map((c,i)=>'<option value="'+i+'">'+esc(c.l)+' · '+esc(c.t)+'</option>').join('')}
+  const cur0=NOVEL.findIndex(c=>c.id===S.chapters[S.chapters.length-1]);
+  $('#rdHint').hidden=true;rdRender(cur0<0?0:cur0);
+  sfx.page();openOv(r);
+}
+$('#readNo').addEventListener('click',()=>closeOv($('#reader')));
+$('#rdPrev').addEventListener('click',()=>rdRender(rdIdx-1));
+$('#rdNext').addEventListener('click',()=>rdRender(rdIdx+1));
+$('#rdSel').addEventListener('change',e=>rdRender(+e.target.value));
+$('#rdHintBtn').addEventListener('click',()=>{const h=$('#rdHint');h.textContent=hintText();h.hidden=!h.hidden});
+$('#btnRead').addEventListener('click',()=>toggleReader());
+let resetArm=false;
+$('#resetBtn').addEventListener('click',()=>{
+  if(!resetArm){resetArm=true;$('#resetBtn').textContent='اضغطي مرة أخرى للتأكيد';setTimeout(()=>{resetArm=false;$('#resetBtn').textContent='بداية جديدة'},3000);return}
+  resetArm=false;try{localStorage.removeItem(KEY)}catch(e){}location.reload();
+});
+
+function mixUI(title,info,pool,recipe){
+  return new Promise(res=>{
+    const box=$('#mix'),grid=$('#mixGrid'),msg=$('#mixMsg');const sel=new Set();
+    $('#mixTitle').textContent=title;$('#mixInfo').textContent=info;msg.textContent='اختاري المكونات المناسبة ثم اخلطيها.';
+    const items=pool.filter(has);
+    const draw=()=>{grid.innerHTML='';items.forEach(k=>{const b=document.createElement('button');b.type='button';b.className=sel.has(k)?'sel':'';b.innerHTML='<i style="background:'+ITEMS[k].c+'"></i>'+ITEMS[k].n;b.addEventListener('click',()=>{sel.has(k)?sel.delete(k):sel.add(k);tone(520+sel.size*90,.12);draw()});grid.appendChild(b)})};
+    draw();openOv(box);
+    const done=ok=>{closeOv(box);$('#mixGo').onclick=null;$('#mixNo').onclick=null;res(ok)};
+    $('#mixNo').onclick=()=>done(false);
+    $('#mixGo').onclick=()=>{
+      if(!sel.size){msg.textContent='اختاري مكوّنًا واحدًا على الأقل.';return}
+      const ok=sel.size===recipe.length&&recipe.every(x=>sel.has(x));
+      if(ok){recipe.forEach(x=>take(x));sfx.right();done(true);return}
+      const wrong=[...sel].find(x=>!recipe.includes(x));
+      msg.textContent=wrong?ITEMS[wrong].bad:'ينقص المزيج مكوّن آخر.';tone(180,.3,'sawtooth',.05);
+    };
+  });
+}
+function simonUI(){
+  return new Promise(res=>{
+    const ov=$('#simonOv'),pads=$('#simon'),msg=$('#simonMsg');
+    const cols=['#e0405f','#f4b95c','#6ad6a0','#6a8fff'],fr=[330,392,440,523];
+    pads.innerHTML='';const bs=cols.map((c,i)=>{const b=document.createElement('button');b.type='button';b.style.background=c;b.style.color=c;b.setAttribute('aria-label','نغمة '+(i+1));pads.appendChild(b);return b});
+    const seq=Array.from({length:4},()=>Math.random()*4|0);let pos=0,lock=true;
+    const flash=async i=>{bs[i].classList.add('lit');tone(fr[i],.35,'sine',.1);await sleep(380);bs[i].classList.remove('lit');await sleep(120)};
+    const play=async()=>{lock=true;pos=0;msg.textContent='اسمعي اللحن...';await sleep(500);for(const i of seq)await flash(i);msg.textContent='رددي اللحن بالترتيب.';lock=false};
+    bs.forEach((b,i)=>b.addEventListener('click',async()=>{
+      if(lock)return;lock=true;await flash(i);
+      if(i!==seq[pos]){msg.textContent='اختلّت النغمة. اسمعي اللحن مرة أخرى.';await sleep(900);play();return}
+      pos++;if(pos===seq.length){msg.textContent='ارتفع اللحن في الوادي كله.';chime();await sleep(900);closeOv(ov);res(true)}else lock=false;
+    }));
+    $('#simonNo').onclick=()=>{closeOv(ov);res(false)};
+    openOv(ov);play();
+  });
+}
+function mapUI(){return new Promise(res=>{const o=$('#mapOv');openOv(o);$('#mapNo').onclick=()=>{closeOv(o);res()}})}
+
+/* ---------- world flow ---------- */
+function memMax(){return F().bouquet?140:100}
+async function run(fn){
+  if(busy)return;busy=true;
+  try{await fn()}catch(e){console.error(e)}
+  finally{busy=false;skipNow=false;closeDlg();save()}
+}
+async function goto(id,x,y){
+  sfx.whoosh();
+  await fade(true);
+  S.scene=id;S.x=x;S.y=y;initScene();
+  await fade(false);
+  place(cur.name);
+  if(cur.onEnter)await cur.onEnter();
+}
+function initScene(){
+  cur=SC[S.scene];P.x=S.x;P.y=S.y;P.moving=false;
+  if(cur.rocks)cur.rocks.forEach(o=>{o.x=o.hx});
+  parts=[];for(let i=0;i<34;i++)parts.push({x:Math.random(),y:Math.random(),s:1+Math.random()*2.2,ph:Math.random()*6.28,v:.01+Math.random()*.03});
+  $('#memWrap').hidden=S.scene!=='forest';
+  if(S.scene==='forest'&&!(S.mem>0))S.mem=memMax();
+  gust=false;gustT=0;setDrone();
+}
+let parts=[];
+
+/* ---------- story ---------- */
+async function benchUse(){
+  const f=F();
+  if(f.patientsHealed&&!f.p1done)return epilogue();
+  if(f.metTulip||f.tulipSeen){await talk(["مقعدكِ المعتاد بين زهور التوليب."]);return}
+  await talk(["مقعدها المعتاد بين زهور التوليب. جلست شهريان وفتحت كتابًا ضخمًا عن أمراض القلب السحرية."]);
+  await chapter('3');
+  await talk(["لكنها شعرت بالملل. رفعت رأسها، ونظرت إلى الزهور.","وفجأة لاحظت شيئًا غريبًا.","كانت هناك زهرة توليب سوداء بين جميع الزهور. لا تذبل، وقطرات الماء فوق أوراقها تلمع بلون أزرق."]);
+  f.tulipSeen=1;toast('اقتربي من الزهرة السوداء');
+}
+async function tulipTalk(){
+  const f=F();
+  await talk(["مدت شهريان يدها... وقبل أن تلمسها سمعت صوتًا.",['زهرة التوليب','لا تلمسيني.'],['شهريان','مين؟'],['زهرة التوليب','أنا.'],['شهريان','إنتِ؟ زهرة بتحكي؟'],['زهرة التوليب','وأنتِ طبيبة لا تعرفين أن النباتات تستطيع الكلام؟'],['شهريان','لسا ما صرت طبيبة!'],['زهرة التوليب','لكن لديكِ الوقت. لأن أمامكِ مهمة.']]);
+  await chapter('4');
+  const asked=new Set();
+  const Q=['شو دخل الطب بحماية المملكة؟','شو هو مرض الظل؟','مين المريض الآن؟'];
+  const A=[
+    [['شهريان','أي مهمة؟ وشو دخل الطب؟'],['زهرة التوليب','كل شيء. منذ ألف عام كانت أوراليا محمية بقوة سحرية عظيمة، وهذه القوة تحتاج طبيبًا يفهمها.']],
+    [['زهرة التوليب','مرض غامض عاش في المملكة منذ آلاف السنين. لم يكن يصيب الجسد فقط، بل كان يمحو الذاكرة تدريجيًا.'],['زهرة التوليب','كان المصابون ينسون أسماءهم، ثم عائلاتهم، ثم حياتهم... وفي النهاية ينسون كيف يكونون بشرًا.']],
+    [['زهرة التوليب','المملكة قضت على المرض منذ قرون، لكنه بدأ بالعودة.'],['شهريان','مين المريض؟'],['زهرة التوليب','المملكة بأكملها.']]
+  ];
+  while(asked.size<3){
+    const rest=[0,1,2].filter(i=>!asked.has(i));
+    const k=await choose('ماذا تسألين الزهرة؟',rest.map(i=>Q[i]),'شهريان');
+    const q=rest[k];asked.add(q);await talk(A[q]);
+  }
+  note('مرض الظل: مرض قديم يمحو الذاكرة تدريجيًا ثم يطمس هوية المصاب.');
+  await talk([['زهرة التوليب','تعالي. هناك ما يجب أن تريه. الباب الحجري عند البرج القديم يفتح لكِ الآن.']]);
+  f.metTulip=1;
+}
+const PAT=[
+  ['المريض الأول','ينسى اسمه كل دقيقة.',[['نبضه','نبضه بطيء ومنتظم، لكن يده باردة كأن شيئًا يمتص منها الدفء.'],['عينيه','بؤبؤ عينه واسع، وتحت الجلد قرب صدره بقعة رمادية باهتة.'],['ذاكرته','يخبركِ باسمه بثقة... ثم يسأل بعد لحظة: «من أنا؟»']]],
+  ['المريضة الثانية','ترى أشياء غير موجودة.',[['نبضها','نبضها متسارع كلما حدّقت في زاوية فارغة من الغرفة.'],['عينيها','عيناها تتبعان شيئًا لا تريانه، وعلى رقبتها ظل رمادي كأنه وشم باهت.'],['ذاكرتها','تتذكر طفولتها بوضوح، لكنها لا تتعرف على الممرضة التي تعتني بها كل يوم.']]],
+  ['المريض الثالث','ينام لأسابيع.',[['نبضه','نبضه هادئ جدًا، كأن الجسد يحاول أن يختفي من العالم.'],['عينيه','جفناه ثقيلان، ومن تحت ياقة ثوبه يمتد خيط رمادي نحو القلب.'],['ذاكرته','حين أيقظتِه لدقيقة، سأل عن بيت لم يعد موجودًا منذ سنوات.']]]
+];
+async function patientUse(i){
+  const f=F();
+  if(f.returned&&!f['heal'+i]){
+    if(!has('cure')){await talk(["لا دواء معك. عودي بعد أن تحضّري العلاج."]);return}
+    await talk(["أعطت شهريان المريض الجرعة بحذر، وانتظرت.","ارتجفت أصابعه... ثم فتح عينيه، وقال اسمه بصوت ثابت."]);
+    f['heal'+i]=1;sfx.heal();
+    const n=[0,1,2].filter(k=>f['heal'+k]).length;
+    if(n===3){f.patientsHealed=1;take('cure',9);await talk(["وبعد أشهر، بدأ المرض يختفي. عادت ذاكرة المرضى، وعادت الحياة إلى المملكة."])}
+    else toast('تم علاج '+n+' من 3');
+    return;
+  }
+  if(f['heal'+i]){await talk([['المريض','شكرًا لكِ، أيتها الطبيبة.']]);return}
+  const P0=PAT[i];
+  if(f['ex'+i]){await talk(["سبق أن فحصتِه. دوّنتِ ملاحظاتكِ."]);return}
+  await talk(["اقتربت شهريان من "+P0[0]+". "+P0[1]]);
+  const k=await choose('بماذا تبدئين الفحص؟',P0[2].map(x=>'فحص '+x[0]),'شهريان');
+  await talk([P0[2][k][1]]);
+  f['ex'+i]=1;note(P0[0]+': '+P0[2][k][1]);chime();
+  const n=[0,1,2].filter(q=>f['ex'+q]).length;
+  if(n<3){toast('فُحص '+n+' من 3');return}
+  await diagnose();
+}
+async function diagnose(){
+  const f=F();
+  await talk([['شهريان','في شيء مش طبيعي.'],['شهريان','نسيان، وهلوسة، ونوم طويل... وكلهم عندهم نفس الظل الرمادي تحت الجلد.'],['زهرة التوليب','أنتِ أول طالبة تلاحظ ذلك.']]);
+  const FB=['التسمم لا يترك ظلًا رمادي الشكل نفسه عند الجميع، ولا يمحو الأسماء.','النوم السحري لا يفسر النسيان ولا الهلوسة عند من هم مستيقظون.'];
+  for(;;){
+    const k=await choose('ما الذي يجمع هؤلاء المرضى؟',['تسمم بأعشاب الحديقة','سحر نوم قديم','مرض الظل، المرض الذي يمحو الذاكرة تدريجيًا'],'شهريان');
+    if(k===2)break;
+    sfx.wrong();await talk([['شهريان',FB[k]]]);
+  }
+  sfx.right();
+  note('التشخيص: مرض الظل. ظل رمادي تحت الجلد، نسيان، هلوسة، ونوم طويل.');
+  await talk([['شهريان','شو عم يصير؟ هذا مرض الظل... الجدّات كنّ يحكين عنه.'],['زهرة التوليب','مرض قديم عاد إلى المملكة. والعلاج موجود.'],['شهريان','وين؟'],['زهرة التوليب','في مكان لم يصل إليه أحد منذ ألف عام.'],['زهرة التوليب','خذي معكِ عشبة ضوء القمر من حديقة الأكاديمية، فهي توقظ الذاكرة النائمة. ثم اخرجي من البوابة الجنوبية.']]);
+  f.diagnosed=1;
+}
+async function leaveAcademy(){
+  const f=F();
+  if(!f.diagnosed){await talk(["بوابة الأكاديمية الجنوبية. لا يمكنها أن تغادر قبل أن تفهم ما يحدث للمرضى تحت الأرض."]);return}
+  if(!f.leftAcademy&&!has('moonHerb')){await talk([['زهرة التوليب','لا تنسي عشبة ضوء القمر. تنمو في الزاوية البنفسجية من الحديقة، حيث يسطع القمر أكثر.']]);return}
+  if(f.leftAcademy){await goto('road',450,2700);return}
+  await talk(["خرجت شهريان من الأكاديمية في صباح اليوم التالي. كانت تحمل حقيبة صغيرة فيها أدوات طبية وكتب وأعشاب ومصباح سحري.","وفي حقيبتها كانت الزهرة السوداء."]);
+  await chapter('6');f.leftAcademy=1;
+  await goto('road',450,2700);
+}
+async function statueUse(){
+  const f=F();
+  if(f.mapSeen){await talk(["أول طبيب عرف أن الجسد والعقل والروح ليست ثلاثة أشياء... بل شيء واحد."]);return}
+  await chapter('7');
+  await talk(["في وسط المدينة، وجدت شهريان تمثالًا حجريًا لرجل يحمل كتابًا. وتحته كلمات منقوشة:","«أول طبيب عرف أن الجسد والعقل والروح ليست ثلاثة أشياء... بل شيء واحد.»","اقتربت شهريان، ووضعت يدها على الكتاب. وفجأة... انفتح."]);
+  await mapUI();
+  await talk(["ظهرت أمامها خريطة، وفي وسطها نقطة حمراء.",['زهرة التوليب','هناك يوجد العلاج.'],"لكن الخريطة كانت تشير إلى مكان مخيف... غابة النسيان."]);
+  f.mapSeen=1;note('الخريطة: العلاج في غابة النسيان، شمال مدينة التوليب.');
+}
+async function forgetEvent(){
+  const f=F();S.mem=0;sfx.forget();
+  if(!f.forgot1){
+    f.forgot1=1;
+    await talk(["نسيت لماذا جاءت. ثم نسيت اسمها. ثم نسيت الجامعة. ثم نسيت الطب.",['شهريان','أنا... وين؟'],"ثم نظرت إلى الزهرة. لكنها لم تتذكر ما هي."]);
+    await fade(true);const c=CPS[S.cp||0];P.x=c[0];P.y=c[1]+30;S.mem=memMax()*.7;await fade(false);
+    await talk(["وفجأة رأت زهرة توليب حمراء. لم تعرف لماذا، لكنها شعرت بالراحة.","اقتربت منها، ثم تذكرت شيئًا."]);
+  }else{
+    await talk(["ضاعت ملامح الطريق من رأسها لحظة... ثم تذكرت."]);
+    await fade(true);const c=CPS[S.cp||0];P.x=c[0];P.y=c[1]+30;S.mem=memMax()*.7;await fade(false);
+  }
+}
+async function guardianMeet(){
+  const f=F();f.guardianMet=1;P.y=620;sfx.growl();
+  await talk(["لكن عندما اقتربت منه، ظهر مخلوق ضخم.",['المخلوق','لن تأخذي الزهرة.']]);
+  for(;;){
+    const k=await choose('ماذا تقولين؟',['أنا طالبة طب.','ابتعد عن طريقي!']);
+    if(k===0)break;
+    sfx.growl();await talk(["زمجر المخلوق، فارتجفت الأرض تحت قدميها. رجعت شهريان خطوتين إلى الوراء."]);
+  }
+  await talk([['شهريان','أنا طالبة طب.'],"ضحك المخلوق.",['المخلوق','وهل سيحميكِ الطب مني؟'],['شهريان','لا.'],['شهريان','لكن المعرفة يمكن أن تنقذ حياة.'],"وقفت أمامه خائفة، لكنها لم تهرب. بدأت تفحص المكان."]);
+}
+async function guardUse(){
+  const f=F();
+  if(f.cured){await talk([['الحارس','منذ ألف عام لم أنم نومة هادئة مثل هذه. شكرًا لكِ، أيتها الطبيبة.']]);return}
+  if(!f.gVerdict){
+    const seen=f.gSeen||[];
+    const opts=['أفحص ذراعه','أنظر في عينيه','أستنتج ما يحدث له'];
+    const k=await choose('ما الذي تفعله شهريان؟',opts,'شهريان');
+    if(k===0){await talk(["وضعت يدها على ذراعه، وبدأت تفحصه. تحت الفرو القاسي ظل رمادي يزحف، والجلد بارد."]);f.gA=1;note('الحارس: ظل رمادي يزحف تحت فرو ذراعه.')}
+    else if(k===1){await talk(["في عينيه بريق برتقالي، لكن خلفه ضباب متعب. لم يكن غضبًا... كان ألمًا."]);f.gB=1;note('الحارس: ضباب متعب خلف عينيه، لا غضب.')}
+    else{
+      if(!(f.gA&&f.gB)){await talk([['شهريان','لازم أفحصه أولًا. الطبيب ما يحكم قبل ما يشوف.']]);return}
+      const v=await choose('ما الذي تراه شهريان؟',['وحش خطير يجب الهروب منه','حارس غاضب يدافع عن الزهرة','مريض يحتاج إلى علاج'],'شهريان');
+      if(v!==2){sfx.wrong();await talk([['شهريان',v===0?'الوحش ما بيتألم... وهذا بيتألم.':'الغاضب ما بيحرس الزهرة وهو بارد هيك. في شيء غلط.']]);return}
+      await talk([['شهريان','أنت مو حارس الزهرة.'],"صمت المخلوق.",['شهريان','أنت مريض.'],"لأول مرة، انخفض رأسه."]);
+      await chapter('10');
+      await talk([['الحارس','منذ ألف عام... لم يقل لي أحد ذلك. خذي ما تحتاجين من النبتة إن كنتِ تعرفين كيف تشفيني.']]);
+      f.gVerdict=1;give('blueLeaf');give('blackBloom');note('وصفة الظل: الزهرة السوداء + الورقة الزرقاء + عشبة تُوقظ الذاكرة.');
+      await talk(["استخدمت شهريان معرفتها الطبية. وقفت تحضّر العلاج، تمزج الأعشاب، وتفكر بالسحر المناسب."]);
+    }
+    return;
+  }
+  await brew();
+}
+async function brew(){
+  const f=F();
+  const ok=await mixUI('تحضير دواء مرض الظل','الزهرة السوداء تحمل الشفاء، والورقة الزرقاء تثبّته، والعشبة الثالثة توقظ ما نام من الذاكرة. اختاري ثلاثة مكوّنات فقط.',['moonHerb','silverWater','petal','blueLeaf','blackBloom'],['moonHerb','blueLeaf','blackBloom']);
+  if(!ok)return;
+  await talk(["مزجت الأعشاب، واستخدمت السحر، وأعطت المخلوق الدواء.","مرت دقائق. ثم بدأ جسده يتغير. اختفى الظلام من عينيه، وعاد شكله الحقيقي. كان حارسًا قديمًا للمدينة.",['الحارس','منذ ألف عام، لم يستطع أحد علاجي.'],['شهريان','يمكن لأنك ما كنت بحاجة لمحارب.'],['شهريان','كنت بحاجة لطبيبة.']]);
+  f.cured=1;sfx.heal();give('cure',3);
+  await talk(["قطفت شهريان ما يكفي من النبتة لتصنع دواءً للمملكة كلها. حان وقت العودة."]);
+}
+async function returnToAcademy(){
+  const f=F();
+  await chapter('R');
+  await talk(["عادت شهريان إلى أكاديمية أوريليا بعد أسابيع. كان الأساتذة قد اعتقدوا أنها اختفت.","لكنها عادت وهي تحمل معها العلاج."]);
+  f.returned=1;
+  await goto('garden',130,650);
+}
+async function epilogue(){
+  const f=F();
+  await talk(["أما شهريان... فأكملت دراستها. كانت لا تزال في السنة الرابعة، ولا تزال أمامها سنوات قبل أن تصبح طبيبة كاملة.","لكنها أصبحت تعرف شيئًا لم يكن في أي كتاب: أن الطب ليس مجرد معرفة الأمراض، وليس حفظ أسماء الأدوية.","الطب أن تنظر إلى المريض وتحاول أن تفهم ما وراء الألم، وأن تبحث عن الحل حتى عندما يخبرك الجميع أنه لا يوجد حل.","التوليب لم يكن مجرد زهرة جميلة. كان رمزًا للذاكرة، وللبداية، وللصبر، وللأشياء التي تحتاج وقتًا حتى تتفتح.",['شهريان','لسا قدامي طريق طويل.'],['زهرة التوليب','وأنتِ مستعدة له.']]);
+  f.p1done=1;
+  await chapter('11');
+  await talk(["عادت شهريان إلى حديقة الفصول الأربعة. كانت زهرة التوليب السوداء تنتظرها، لكن القطرات فوقها هذه المرة كانت تتألق بلون قوس قزح.",['زهرة التوليب','يا شهريان، إن شفاء أوريليا لم يكن سوى البداية. هناك ممالك أخرى تحيط بعالمنا، وقد وصل إلينا صدى ألمها.']]);
+  f.gateOpen=1;
+  await talk(["فتحت الزهرة بتلاتها، وانبعث منها ضوء باهر رسم في الهواء بابًا دائريًا يطفو فوق الأرض."]);
+}
+async function crossGate(){
+  const f=F();
+  await chapter('12');
+  await talk(["كان الباب مصنوعًا من زجاج فضي ومرصع بنجوم صغيرة تنبض بالحياة. أدركت شهريان أن عليها عبوره.","ودّعت أصدقاءها في الأكاديمية، وحزمت حقيبتها الطبية التي تحتوي على الأعشاب المضيئة وكتبها القديمة، وقفزت شجاعةً نحو المجهول."]);
+  give('luminous');f.crossed=1;
+  await goto('crystal',750,980);
+}
+async function crystalUse(i){
+  const f=F();
+  if(f['kh'+i]){await talk([i===3?['ملك الكريستال','أشعر أن الدفء يعود إلى كل بلورة في المملكة.']:'بلورة دافئة، وصاحبها يبتسم من الداخل.']);return}
+  if(i===0&&!f.dxCrystal){
+    await chapter('14');
+    await talk(["بدأت شهريان بفحص إحدى البلورات باستخدام أدواتها الطبية الممزوجة بالسحر."]);
+    const seen={};
+    while(!(seen[0]&&seen[1])){
+      const k=await choose('بماذا تفحصين البلورة؟',['النبض السحري داخلها','هالة البلورة وألوانها'].filter((_,q)=>!seen[q]),'شهريان');
+      const idx=[0,1].filter(q=>!seen[q])[k];seen[idx]=1;
+      if(idx===0){await talk(["نبض داخلها، لكنه بطيء جدًا ومكتوم، كأن القلب نفسه يخشى أن يصدر صوتًا."]);note('البلورة: نبض بطيء ومكتوم.')}
+      else{await talk(["الهالة رمادية مزرقة، وفيها خيوط من الحزن والخوف تلتف حول القلب."]);note('البلورة: هالة رمادية مزرقة، خيوط حزن وخوف.')}
+    }
+    for(;;){
+      const k=await choose('ما التشخيص؟',['مرض الظل القديم','لعنة جليد عابرة','سحر أسود يغذي الحزن والخوف فيمنع الأرواح من التعبير'],'شهريان');
+      if(k===2)break;
+      sfx.wrong();await talk([['شهريان',k===0?'مرض الظل يمحو الذاكرة. هؤلاء ما نسوا شيئًا، هم صامتون.':'اللعنة العابرة لا تتشبّع بالحزن بهذا الشكل.']]);
+    }
+    note('التشخيص: وباء الصمت المطبق. سحر أسود يحوّل القلب إلى حجر ويمنع الأرواح من التعبير.');
+    await talk(["لم يكن مرضًا جسديًا عادياً، بل كان «وباء الصمت المطبق». سحر أسود يغذي الحزن والخوف حتى يتحول قلب الكريستال إلى حجارة باردة.","تذكرت كلمات أستاذها القديم: «الطبيب الحقيقي لا يعالج العضو المريض فحسب، بل يداوي الجرح الخفي في روح المريض.»",['شهريان','العلاج مو بس دواء... لازم لحن، لازم أمل.'],"على الجهة الغربية من المملكة، ممر ضيق يؤدي إلى وادي الصدى."]);
+    f.dxCrystal=1;return;
+  }
+  if(!f.dxCrystal){await talk(["بلورة نائمة. ابدئي بالفحص عند بلورة نافذة القصر."]);return}
+  if(!f.potion2){
+    if(!has('nectar')){await talk(["البلورة باردة وصامتة. تحتاج رحيقًا يحمل الأمل. وادي الصدى غربًا."]);return}
+    await chapter('16');
+    const ok=await mixUI('دواء الكريستال','الرحيق يحمل اللحن، والأعشاب المضيئة تحمل الدفء. لا تضيفي ما لا يلزم.',['nectar','luminous','shard','silverWater','petal'],['nectar','luminous']);
+    if(!ok)return;
+    f.potion2=1;
+    await talk(["عادت شهريان مسرعة إلى القصر حاملةً قطرات من رحيق زهرة التناغم. مزجته بأعشابها الطبية ورشّته بحذر على البلورات."]);
+  }
+  f['kh'+i]=1;sfx.heal();
+  await talk(["تدريجيًا بدأ الجليد البارد ينصهر، وتحولت البلورة إلى ألوان زاهية ودافئة. فتح صاحبها عينيه."]);
+  const n=KC.filter((_,k)=>f['kh'+k]).length;
+  if(n<4){toast('بلورات أُيقظت: '+n+' / 4');return}
+  await talk(["وفتح سكان المملكة أعينهم، وعادت الضحكات تملأ الشوارع، وعلت أصوات الشكر والامتنان ترحيبًا بالطبيبة التي أنقذت عالمهم."]);
+  await chapter('17');
+  await talk(["قبل أن تودع شهريان مملكة الكريستال، قدم لها ملك الكريستال هديةً خاصة.",['ملك الكريستال','هذه بوصلة لا تشير إلى الاتجاهات الأربعة، بل إلى القلوب التي تحتاج إلى العلاج في أي عالم وأي زمان.'],"أمسكت شهريان بالبوصلة، فبدأت إبرتها تدور بسرعة، ثم استقرت مشيرة نحو أفق بعيد ومظلم يحمل اسم «مملكة الغيوم المضيئة»."]);
+  give('compass');
+  await chapter('F');
+  await talk(["ابتسمت شهريان وهي تنظر إلى بوصلتها، وإلى زهرة التوليب السوداء التي ترافقها على كتفها كسوار سحري.","أدركت أن رسالتها أوسع بكثير مما كانت تتخيل، وأن كل ألم في هذا الكون هو مجرد نداء لبحث جديد عن العلاج.","رفعت رأسها نحو الأفق، وخطت خطوتها الأولى نحو مغامرة جديدة تنتظر أن تُروى."]);
+  f.done=1;save();
+  openOv($('#endOv'));
+}
+async function valleyAsk(){
+  const f=F();
+  for(;;){
+    const k=await choose('يهمس الوادي: «لماذا جئتِ إلى هنا؟»',['لأصبح مشهورة بين الممالك','لأوقظ من هم نائمون وأعيد إليهم صوتهم','لآخذ الزهرة النادرة لنفسي'],'');
+    if(k===1)break;
+    sfx.wrong();await talk(["هبّت ريح عاتية تحاول إسكات خطواتها، ولم يرد الوادي بكلمة. عليها أن تجيب بصدق."]);
+  }
+  await talk(["تذكرت أنها طبيبة، وأن صوت الطبيب هو دائمًا صوت الرحمة والشفاء. فخفّت الريح قليلًا."]);
+  f.intentOk=1;
+}
+async function harmonyUse(){
+  const f=F();
+  if(!f.intentOk){await talk(["الوادي لا يسمعكِ بعد."]);return}
+  await talk(["وفي قلب الوادي، عثرت على زهرة نادرة تُدعى «زهرة التناغم»، تنمو فقط على ألحان الأمل. لا تفتح بتلاتها إلا لمن يرد عليها بنغمة صادقة."]);
+  const ok=await simonUI();
+  if(!ok)return;
+  f.nectarGot=1;give('nectar');
+  await talk(["انفتحت الزهرة، وسال منها رحيق يلمع كأنه ضوء ذائب. جمعت شهريان قطرات منه في قارورة صغيرة.","حان وقت العودة إلى القصر."]);
+}
+
+/* ---------- goals ---------- */
+function goalText(){
+  const f=F(),sc=S.scene;
+  if(f.done)return 'انتهت الرحلة. تجولي كما تشائين، فالحكاية تستمر.';
+  if(!f.metTulip)return f.tulipSeen?'اقتربي من الزهرة السوداء قرب المقعد.':'استكشفي حديقة الفصول الأربعة، ثم اجلسي على المقعد بين زهور التوليب.';
+  if(!f.diagnosed){if(sc==='hospital'){const n=[0,1,2].filter(k=>f['ex'+k]).length;return 'افحصي المرضى الثلاثة ('+n+'/3).'}return 'انزلي إلى المستشفى عبر الباب الحجري عند البرج القديم.'}
+  if(!f.leftAcademy)return has('moonHerb')?'اخرجي من بوابة الأكاديمية الجنوبية.':'اقطفي عشبة ضوء القمر من الزاوية البنفسجية في الحديقة.';
+  if(!f.mapSeen)return sc==='road'?'اعبري الغابة والنهر والجبل نحو الشمال.':'اقتربي من تمثال الطبيب الأول وسط المدينة.';
+  if(!f.orbsAll){if(sc==='forest'){const n=ORBS.filter((_,k)=>f['o'+k]).length;return S.mem<35?'؟ ؟ ؟  ما الذي جئتُ لأجله؟':'اجمعي ذكرياتك ('+n+'/5)، واستريحي عند التوليب الأحمر.'}return 'اتجهي إلى غابة النسيان شمال المدينة.'}
+  if(!f.cured){if(sc==='forest')return 'اعبري ستار الضباب في آخر الغابة.';if(!f.guardianMet)return 'اقتربي من النبتة.';if(!f.gVerdict)return 'افحصي المخلوق، ثم شخّصي حالته.';return 'تحدثي إلى المخلوق وحضّري الدواء.'}
+  if(!f.returned)return 'عودي إلى أكاديمية أوريليا.';
+  if(!f.patientsHealed){const n=[0,1,2].filter(k=>f['heal'+k]).length;return 'عالجي المرضى في المستشفى السري ('+n+'/3).'}
+  if(!f.p1done)return 'اجلسي بين زهور التوليب في الحديقة.';
+  if(!f.crossed)return 'ادخلي بوابة النجوم المعلقة في الحديقة.';
+  if(!f.dxCrystal)return 'افحصي البلورة عند نافذة القصر.';
+  if(!f.nectarGot)return sc==='valley'?'اصعدي إلى قلب الوادي وابحثي عن زهرة التناغم.':'اعثري على زهرة التناغم في وادي الصدى غربًا.';
+  const n=KC.filter((_,k)=>f['kh'+k]).length;
+  if(!f.potion2)return 'عودي إلى القصر وحضّري الدواء من البلورة.';
+  return 'أيقظي سكان المملكة ('+n+'/4).';
+}
+function hintText(){
+  const f=F(),sc=S.scene;
+  if(f.done)return 'أنهيتِ الحكاية. تجولي كما تشائين، أو ابدئي من جديد من الحقيبة.';
+  if(!f.metTulip)return 'اجلسي على المقعد الخشبي في الجنوب الغربي من الحديقة، قرب التوليب الملون. بعد أن تظهر الزهرة السوداء اقتربي منها وتحدثي معها.';
+  if(!f.diagnosed)return sc==='hospital'?'اقتربي من كل سرير واختاري فحصًا واحدًا لكل مريض. بعد الثلاثة اختاري التشخيص الذي يجمعهم: مرض الظل، المرض الذي يمحو الذاكرة تدريجيًا.':'الباب الحجري عند قاعدة البرج القديم على الحافة الغربية من الحديقة.';
+  if(!f.leftAcademy)return has('moonHerb')?'بوابة الأكاديمية في أسفل الحديقة (جنوبًا) في منتصف الجدار.':'عشبة ضوء القمر تتوهج في الزاوية الشمالية الشرقية من الحديقة بين أزهار القمر البنفسجية.';
+  if(!f.mapSeen)return sc==='road'?'اتجهي إلى الأعلى. الجسر الخشبي في وسط النهر، والصخور تنفتح عندما تقتربين منها.':'التمثال جنوب الساحة الكبيرة في وسط المدينة. بعد أن ترين الخريطة، الشارع الشمالي هو الطريق إلى الغابة.';
+  if(!f.orbsAll)return sc==='forest'?'اتبعي الأرض الأفتح لونًا نحو الأعلى. توقفي عند التوليب الأحمر ليمتلئ شريط الذاكرة، واجمعي الكرات المضيئة الخمس. بتلات التوليب الملونة الخمس من المدينة تبطئ النسيان.':'الشارع الشمالي في مدينة التوليب يؤدي إلى غابة النسيان.';
+  if(!f.cured){
+    if(sc==='forest')return 'الستار الرمادي في آخر الغابة (أعلى الخريطة) يفتح بعد جمع الذكريات الخمس.';
+    if(!f.guardianMet)return 'تقدمي من النبتة في وسط الساحة واختاري أن تقولي إنك طالبة طب.';
+    if(!f.gVerdict)return 'تفاعلي مع المخلوق: افحصي ذراعه ثم عينيه، ثم اختاري «أستنتج ما يحدث له» وقولي إنه مريض.';
+    return 'الوصفة: الزهرة السوداء + الورقة الزرقاء + عشبة ضوء القمر. لا تضيفي الماء الفضي ولا البتلات الملونة.';
+  }
+  if(!f.returned)return 'اخرجي من الجنوب في قلب الغابة، فالطريق يعيدكِ إلى الأكاديمية.';
+  if(!f.patientsHealed)return 'الباب الحجري عند البرج. تفاعلي مع المرضى الثلاثة واحدًا واحدًا لتعطيهم الدواء.';
+  if(!f.p1done)return 'اجلسي على المقعد الخشبي قرب التوليب مرة أخرى.';
+  if(!f.crossed)return 'بوابة النجوم المعلقة في الجنوب الشرقي من الحديقة.';
+  if(!f.dxCrystal)return 'البلورة عند نافذة القصر في أعلى الساحة. افحصي النبض ثم الهالة، ثم اختاري سحرًا أسود يغذي الحزن والخوف.';
+  if(!f.nectarGot)return 'الممر الغربي من المملكة يؤدي إلى وادي الصدى. أجيبي بصدق: لأوقظ من هم نائمون. ثم في قمة الوادي كرري اللحن الذي تسمعينه.';
+  if(!f.potion2)return 'تفاعلي مع أي بلورة واخلطي الرحيق مع الأعشاب المضيئة فقط.';
+  return 'تفاعلي مع البلورات الأربع واحدة واحدة لتوقظي سكانها.';
+}
+let lastGoal='';
+function hud(){
+  const g=S?goalText():'';
+  if(g!==lastGoal){lastGoal=g;$('#goal').textContent=g}
+  if(S&&S.scene==='forest')$('#memFill').style.width=clamp(S.mem/memMax()*100,0,100)+'%';
+}
+
+/* ---------- main loop ---------- */
+const cam={x:0,y:0};
+function nearest(){
+  let b=null,bd=1e9;
+  for(const o of cur.objs){if(o.auto||!o.show())continue;const d=dist(P.x,P.y,o.x,o.y);if(d<o.r&&d<bd){bd=d;b=o}}
+  return b;
+}
+function act(){
+  if(!S)return;
+  if(dlgRes){advance();return}
+  if(busy||ovOpen)return;
+  const o=nearest();if(o)run(()=>o.use(o));
+}
+function resolve(x,y,rad){
+  x=clamp(x,rad,cur.w-rad);y=clamp(y,rad,cur.h-rad);
+  for(let k=0;k<2;k++)for(const s of cur.solids){
+    if(s.w!==undefined){const cx=clamp(x,s.x,s.x+s.w),cy=clamp(y,s.y,s.y+s.h),dx=x-cx,dy=y-cy,d=Math.hypot(dx,dy);if(d<rad){if(d>.001){x=cx+dx/d*rad;y=cy+dy/d*rad}else y=s.y-rad}}
+    else{if(Math.abs(s.x-x)>s.r+rad||Math.abs(s.y-y)>s.r+rad)continue;const dx=x-s.x,dy=y-s.y,d=Math.hypot(dx,dy),m=s.r+rad;if(d<m){if(d>.001){x=s.x+dx/d*m;y=s.y+dy/d*m}else x+=m}}
+  }
+  return [x,y];
+}
+function update(dt,t){
+  if(!S)return;
+  const free=!busy&&!ovOpen&&$('#title').hidden;
+  if(cur.rocks)for(const o of cur.rocks){const tx=dist(P.x,P.y,o.hx,o.y)<190?o.ax:o.hx;o.x+=clamp(tx-o.x,-120*dt,120*dt)}
+  if(S.scene==='valley'){gustT-=dt;if(gustT<=0){gust=!gust;gustT=gust?2.2:(F().intentOk?5:3);if(gust)wind(2.2)}}
+  if(!free){P.moving=false;return}
+  let dx=keys.r-keys.l+joy.x,dy=keys.d-keys.u+joy.y;const m=Math.hypot(dx,dy);
+  if(m>1){dx/=m;dy/=m}
+  let sp=m>.08?170:0;
+  P.moving=sp>0;
+  let vx=dx*sp,vy=dy*sp;
+  if(gust&&P.moving){const w=F().intentOk?70:120;vy+=w}
+  if(P.moving){
+    if(dx>.1)P.face=1;else if(dx<-.1)P.face=-1;
+    if(P.moving){P.walk+=dt;stepT+=dt;if(stepT>.3){stepT=0;sfx.step(S.scene)}}
+    const r=resolve(P.x+vx*dt,P.y+vy*dt,11);P.x=r[0];P.y=r[1];
+  }
+  if(S.scene==='forest'){
+    if(P.moving)S.mem-=18*(F().bouquet?.7:1)*dt;
+    let near=-1;CPS.forEach((p,k)=>{if(dist(P.x,P.y,p[0],p[1])<64)near=k});
+    if(near>=0){if(inCp!==near&&S.mem<memMax()-5)sfx.refill();S.mem=Math.min(memMax(),S.mem+80*dt);S.cp=near}
+    inCp=near;
+    if(S.mem<30){pulseT-=dt;if(pulseT<=0){pulseT=1.1;sfx.pulse()}}
+    if(S.mem<=0){run(forgetEvent);return}
+  }
+  for(const o of cur.objs)if(o.auto&&o.show()&&dist(P.x,P.y,o.x,o.y)<o.auto){run(()=>o.use(o));return}
+  for(const tr of cur.trig){
+    if(P.x>=tr.x&&P.x<=tr.x+tr.w&&P.y>=tr.y&&P.y<=tr.y+tr.h){
+      if(tr.when&&!tr.when())continue;
+      if(tr.once){if(F()['t_'+tr.id])continue;F()['t_'+tr.id]=1}
+      run(tr.fn);return;
+    }
+  }
+}
+function render(t){
+  const c=ctx;
+  c.setTransform(DPR,0,0,DPR,0,0);c.fillStyle='#0a0918';c.fillRect(0,0,W,H);
+  if(!S||!cur)return;
+  const vw=W/Z,vh=H/Z;
+  cam.x=cur.w<=vw?(cur.w-vw)/2:clamp(P.x-vw/2,0,cur.w-vw);
+  cam.y=cur.h<=vh?(cur.h-vh)/2:clamp(P.y-vh/2-20,0,cur.h-vh);
+  c.setTransform(DPR*Z,0,0,DPR*Z,-cam.x*DPR*Z,-cam.y*DPR*Z);
+  cur.ground(c,t);
+  const x0=cam.x-60,x1=cam.x+vw+60,y0=cam.y-80,y1=cam.y+vh+120;
+  for(const q of cur.tuft)if(q.x>x0&&q.x<x1&&q.y>y0&&q.y<y1){c.fillStyle=q.c;c.fillRect(q.x,q.y,2,6)}
+  const L=[];
+  for(const d of cur.deco){const dx=d.x;if(dx+d.r<x0||dx-d.r>x1||d.y+30<y0||d.y-d.r>y1)continue;L.push([d.y,d])}
+  for(const o of cur.objs){if(o.x+90<x0||o.x-90>x1||o.y+30<y0||o.y-160>y1)continue;if(!o.show())continue;L.push([o.y,o])}
+  L.push([P.y,'p']);
+  if(F().metTulip&&!(S.scene==='forest'&&S.mem<20))L.push([P.y+.1,'c']);
+  L.sort((a,b)=>a[0]-b[0]);
+  for(const e of L){const o=e[1];if(o==='p')drawPlayer(c,t);else if(o==='c')drawCompanion(c,t);else o.f(c,t,o)}
+  c.setTransform(DPR,0,0,DPR,0,0);
+  // ambient particles
+  const rgb=cur.amb;
+  for(const p of parts){p.y-=p.v*.016;p.x+=Math.sin(t*.6+p.ph)*.0004;if(p.y<-.05){p.y=1.05;p.x=Math.random()}
+    const a=.25+.35*Math.abs(Math.sin(t*1.3+p.ph));glow(c,p.x*W,p.y*H,10*p.s,rgb,a*.8)}
+  if(S.scene==='forest'){
+    const k=1-clamp(S.mem/memMax(),0,1);
+    if(k>.05){const g=c.createRadialGradient(W/2,H/2,Math.min(W,H)*(.45-k*.35),W/2,H/2,Math.max(W,H)*.75);g.addColorStop(0,'rgba(10,12,30,0)');g.addColorStop(1,'rgba(10,12,30,'+Math.min(.96,k*1.1)+')');c.fillStyle=g;c.fillRect(0,0,W,H)}
+  }
+  // prompt
+  const pr=$('#prompt'),ac=$('#act');
+  const o=(busy||ovOpen||!$('#title').hidden)?null:nearest();
+  if(o){pr.hidden=false;pr.textContent=o.label;pr.style.left=((o.x-cam.x)*Z)+'px';pr.style.top=((o.y-cam.y-(o.lab||56))*Z)+'px';ac.classList.add('hot')}
+  else{pr.hidden=true;ac.classList.remove('hot')}
+}
+let last=0;
+function frame(ts){
+  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+  try{update(dt,ts/1000);render(ts/1000);hud();music(dt)}catch(e){console.error(e)}
+  requestAnimationFrame(frame);
+}
+
+/* ---------- boot ---------- */
+function build(){
+  SC.garden=gardenScene();SC.hospital=hospitalScene();SC.road=roadScene();SC.city=cityScene();SC.forest=forestScene();SC.grove=groveScene();SC.crystal=crystalScene();SC.valley=valleyScene();
+}
+async function newGame(){
+  closeDlg();S=fresh();initScene();
+  $('#title').hidden=true;
+  ac();
+  await run(async()=>{
+    await fade(true);await fade(false);
+    await card('مقدمة','شهريان ومدينة التوليب السحري');S.chapters.push('p');
+    await talk(["في عالمٍ بعيد عن عالمنا، حيث كانت الغابات تلمع تحت ضوء القمر، وحيث كانت بعض الزهور تستطيع أن تتحدث مع من يفهم لغتها...","كانت هناك مملكة صغيرة تُدعى أوراليا. وفي قلبها جامعة ضخمة اسمها أكاديمية أوريليا للطب والسحر.","كان الأطباء هناك يستخدمون المعرفة الطبية مع أنواع نادرة من السحر لعلاج ما لا يعالجه الطب العادي. ولكل طالب أن يتعلم الاثنين: العلم... والسحر.","وفي إحدى قرى المملكة، عاشت فتاة اسمها شهريان. في الحادية والعشرين من عمرها، بعينين عسليتين وفضول لا ينتهي.","وأكثر ما كانت تحبه منذ طفولتها... التوليب. كانت تشعر أن وراء جمالها سرًا لا يعرفه الناس."]);
+    await chapter('1');
+    await talk(["عندما كانت شهريان صغيرة، كانت تحلم بأن تصبح مهندسة. كانت تفكك الألعاب القديمة لترى كيف تعمل، وترسم آلات غريبة على الأوراق.",['شهريان','يومًا ما رح أبني آلة ما حدا بالعالم قدر يبنيها.'],['الأب','يمكن فعلًا تصيري مهندسة عظيمة.'],"مرت السنوات. وفي أحد الأيام شاهدت طبيبًا يعالج طفلًا يحتضر، ولم يعرف أحد كيف يساعده. بعد ساعات طويلة، استطاع الطبيب أن ينقذه.","وفي تلك الليلة، لم تستطع شهريان النوم."]);
+    await choose('ماذا قالت شهريان لنفسها؟',['«الهندسة بتخليني أبني أشياء... بس الطب ممكن يخليني أنقذ حياة.»','«لو صرت طبيبة، رح أبني شي ما حدا بنى مثله: شفاء.»']);
+    await talk(["وفي صباح اليوم التالي، اتخذت قرارًا غيّر مستقبلها. ستدرس الطب."]);
+    await chapter('2');
+    await talk(["بعد سنوات من الدراسة، وصلت شهريان إلى السنة الرابعة في أكاديمية أوريليا. قاعات تشريح، ومختبرات أعشاب، ومكتبة فيها مليون كتاب، وبرج قديم ممنوع الاقتراب منه.","وكانت هناك حديقة ضخمة تُسمى حديقة الفصول الأربعة: نباتات لا تنمو إلا في الشتاء، وأخرى لا تزهر إلا عند اكتمال القمر.","في زاوية صغيرة منها زهور توليب، وشهريان تزورها كل يوم تقريبًا."]);
+    place(cur.name);
+  });
+}
+function continueGame(){
+  ac();
+  const sv=loadSave();if(!sv){newGame();return}
+  S=Object.assign(fresh(),sv);initScene();$('#title').hidden=true;
+  const lastC=CH.find(c=>c.id===S.chapters[S.chapters.length-1]);if(lastC)$('#chTag').textContent=lastC.l+' · '+lastC.t;
+  place(cur.name);if(S.flags.done)openOv($('#endOv'));
+}
+$('#btnNew').addEventListener('click',()=>{try{localStorage.removeItem(KEY)}catch(e){}newGame()});
+$('#btnCont').addEventListener('click',continueGame);
+$('#endStay').addEventListener('click',()=>closeOv($('#endOv')));
+$('#endNew').addEventListener('click',()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
+
+$('#dAv').src=FACE;$('#tFace').src=FACE;syncSettings();
+build();resize();requestAnimationFrame(resize);
+cur=SC.garden;
+if(loadSave())$('#btnCont').hidden=false;
+setInterval(()=>{if(S&&$('#title').hidden)save()},4000);
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
