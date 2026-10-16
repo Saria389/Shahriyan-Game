@@ -120,7 +120,7 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
       <div id="goal"></div>
       <div id="memWrap" hidden><span>الذاكرة</span><div id="memBar"><div id="memFill"></div></div></div>
     </div>
-    <div id="hudR"><button id="btnRead" class="hbtn" type="button">الرواية</button><button id="btnBook" class="hbtn" type="button">الحقيبة</button></div>
+    <div id="hudR"><button id="btnRead" class="hbtn" type="button">الرواية</button><button id="btnBook" class="hbtn" type="button">الحقيبة</button><button id="btnSari" class="hbtn" type="button" hidden>ساري</button></div>
   </div>
   <div id="place"></div>
   <div id="toast"></div>
@@ -201,9 +201,10 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
     <div id="endL" style="font-family:var(--f-display);color:var(--lantern);letter-spacing:.14em">انتهت هذه الرحلة</div>
     <div style="font-family:var(--f-display);font-size:clamp(26px,7vw,44px);font-weight:700;text-align:center;line-height:1.4;max-width:14em">البوصلة تشير إلى مملكة الغيوم المضيئة</div>
     <p style="color:var(--moon-dim);max-width:24em;text-align:center;line-height:1.9;margin:0">بعض الحكايات لا تبدأ عندما تصل إلى النهاية... بل عندما تكتشف أنك لم تصل بعد.</p>
-    <div class="row"><button id="endStay" class="btn main" type="button">أكملي التجوال</button><button id="endNew" class="btn" type="button">ابدئي من جديد</button></div>
+    <div class="row"><button id="endGo" class="btn main" type="button">اعبري إلى مملكة الغيوم</button><button id="endStay" class="btn" type="button">أكملي التجوال</button><button id="endNew" class="btn" type="button">ابدئي من جديد</button></div>
   </div>
 
+  <div id="finOv" class="ovl" hidden style="z-index:35;background:radial-gradient(ellipse at 50% 40%,#2a2468 0%,#0c0b1d 80%)"><div style="font-family:var(--f-display);color:var(--lantern);letter-spacing:.14em">الفصل الأخير</div><div style="font-family:var(--f-display);font-size:clamp(26px,7vw,44px);font-weight:700;text-align:center;line-height:1.4;max-width:14em">الأفق المفتوح</div><p style="color:var(--moon-dim);max-width:24em;text-align:center;line-height:1.9;margin:0">حكاية جديدة لا تنتهي... حكاية الحب والطب والسحر في العوالم اللانهائية.</p><div class="row"><button id="finStay" class="btn main" type="button">أكملي التجوال</button><button id="finNew" class="btn" type="button">ابدئي من جديد</button></div></div>
   <div id="title" class="ovl">
     <img id="tFace" alt="شهريان">
     <svg viewBox="0 0 100 130" aria-hidden="true">
@@ -219,7 +220,7 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
     <h1>شهريان</h1>
     <h2 style="color:var(--moon)">ومدينة التوليب السحري</h2>
     <p>طالبة طب في السنة الرابعة، وزهرة سوداء تتكلم، ومرض قديم يمحو الذاكرة.</p>
-    <div class="row"><button id="btnNew" class="btn main" type="button">ابدئي الحكاية</button><button id="btnCont" class="btn" type="button" hidden>متابعة</button></div>
+    <div class="row"><button id="btnNew" class="btn main" type="button">ابدئي الحكاية</button><button id="btnCont" class="btn" type="button" hidden>متابعة</button><button id="btnSkip" class="btn" type="button">لعبتُ سابقًا: ابدئي من ساري (الفصل 18)</button></div>
   </div>
 </div>
 
@@ -311,11 +312,11 @@ const DR={garden:98,hospital:82.4,road:87.3,city:110,forest:73.4,grove:87.3,crys
 let musT=2;
 function music(dt){
   if(!AC||!settings.music||AC.state!=='running'||!S)return;
-  musT-=dt;if(musT>0)return;musT=1.1+Math.random()*1.6;
-  const sc=MUS[S.scene]||MUS.garden,f=sc[Math.random()*sc.length|0]*(Math.random()<.25?.5:1);
-  tone(f,2.8,'sine',.045,0,musicBus);if(Math.random()<.4)tone(f*1.5,2.2,'sine',.022,.05,musicBus);
+  musT-=dt;if(musT>0)return;musT=F().sariJoin?.55+Math.random()*.8:1.1+Math.random()*1.6;
+  const sc=MUS[musKey()]||MUS.garden,f=sc[Math.random()*sc.length|0]*(Math.random()<.25?.5:1);
+  tone(f,F().sariJoin?1.5:2.8,F().sariJoin?'triangle':'sine',.045,0,musicBus);if(Math.random()<.4)tone(f*1.5,2.2,'sine',.022,.05,musicBus);
 }
-function setDrone(){if(drone&&AC&&S)drone.frequency.setTargetAtTime(DR[S.scene]||98,AC.currentTime,1.2)}
+function setDrone(){if(drone&&AC&&S)drone.frequency.setTargetAtTime(DR[musKey()]||98,AC.currentTime,1.2)}
 document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('button');if(b&&b.id!=='act')sfx.ui()},true);
 
 /* ---------- data ---------- */
@@ -372,7 +373,7 @@ let W=0,H=0,DPR=1,Z=1;
 function resize(){
   const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
   W=Math.max(1,r.width);H=Math.max(1,r.height);
-  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);ctx.imageSmoothingQuality='high';
   Z=clamp(Math.min(W/460,H/520),.85,1.8);
 }
 window.addEventListener('resize',resize);
@@ -444,7 +445,7 @@ function drawBuilding(c,x,y,w,h,body,roof,t){
   poly(c,[[x-w/2-10,y-h],[x,y-h-h*.38],[x+w/2+10,y-h]],roof);
   const cols=Math.max(2,Math.floor(w/70));
   for(let i=0;i<cols;i++){const wx=x-w/2+(i+.5)*w/cols;
-    rrect(c,wx-9,y-h*.7,18,h*.34,[9,9,0,0],'#ffcf80');glow(c,wx,y-h*.55,34,'255,200,110',.2)}
+    rrect(c,wx-9,y-h*.77,18,h*.34,[9,9,0,0],'#ffcf80');glow(c,wx,y-h*.55,34,'255,200,110',.2)}
   rrect(c,x-14,y-h*.34,28,h*.34,[14,14,0,0],'#241c3f');
 }
 function drawTower(c,x,y,h){
@@ -452,7 +453,7 @@ function drawTower(c,x,y,h){
   rect(c,x-30,y-h,60,h,'#3b3a66');
   for(let i=1;i<7;i++)rect(c,x-30,y-i*h/7,60,2,'rgba(0,0,0,.25)');
   poly(c,[[x-40,y-h],[x,y-h-90],[x+40,y-h]],'#2a2a52');
-  rrect(c,x-7,y-h*.7,14,28,[7,7,0,0],'#a6b0ff');
+  rrect(c,x-7,y-h*.77,14,28,[7,7,0,0],'#a6b0ff');
 }
 
 /* ---------- scenes ---------- */
@@ -467,7 +468,7 @@ function addTulips(sc,r,cx,cy,rx,ry,n,cols){
 }
 function tufts(sc,r,n,colfn){for(let i=0;i<n;i++){const x=r()*sc.w,y=r()*sc.h;sc.tuft.push({x,y,c:colfn(x,y)})}}
 function dToPath(x,y,pts){let m=1e9;for(let i=0;i<pts.length-1;i++){const ax=pts[i][0],ay=pts[i][1],dx=pts[i+1][0]-ax,dy=pts[i+1][1]-ay;const t=clamp(((x-ax)*dx+(y-ay)*dy)/(dx*dx+dy*dy),0,1);m=Math.min(m,Math.hypot(x-(ax+t*dx),y-(ay+t*dy)))}return m}
-const OBJ=o=>Object.assign({r:56,show:()=>true,lab:56},o);
+const OBJ=o=>Object.assign({r:56,show:()=>true,lab:56,f:()=>{}},o);
 function lore(id,x,y,lab,lines,f){return OBJ({id,x,y,label:lab,f:f||(()=>{}),use:async()=>{await talk(lines)}})}
 
 /* ===== garden ===== */
@@ -1339,8 +1340,10 @@ function render(t){
   for(const o of cur.objs){if(o.x+90<x0||o.x-90>x1||o.y+30<y0||o.y-160>y1)continue;if(!o.show())continue;L.push([o.y,o])}
   L.push([P.y,'p']);
   if(F().metTulip&&!(S.scene==='forest'&&S.mem<20))L.push([P.y+.1,'c']);
+  if(F().sariJoin)L.push([SAR.y+.2,'s']);
   L.sort((a,b)=>a[0]-b[0]);
-  for(const e of L){const o=e[1];if(o==='p')drawPlayer(c,t);else if(o==='c')drawCompanion(c,t);else o.f(c,t,o)}
+  for(const e of L){const o=e[1];if(o==='p')drawPlayer(c,t);else if(o==='c')drawCompanion(c,t);else if(o==='s')drawSari(c,t,SAR,sDown?'down':'');else o.f(c,t,o)}
+  fxAll(c,t,vw,vh);
   c.setTransform(DPR,0,0,DPR,0,0);
   // ambient particles
   const rgb=cur.amb;
@@ -1363,9 +1366,740 @@ function frame(ts){
   requestAnimationFrame(frame);
 }
 
+/* ===================== الجزء الثاني: مملكة الغيوم المضيئة + ساري ===================== */
+const SARI='data:image/jpeg;base64,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';
+const sariImg=new Image();let SARI_OK=false;sariImg.onload=()=>{SARI_OK=true};sariImg.src=SARI;
+SPK['ساري']='#8fd2ff';BLIP['ساري']=190;
+ITEMS.fireTulip={n:'التوليب الناري',d:'ينمو حيث يلتقي البركان بالجليد. يرفع حرارة الجسد والروح دون أن يحرق النسيج.',c:'#ff7a2f'};
+CH.push(
+ {id:'18',l:'الفصل الثامن عشر',t:'بوابة الغيوم المضيئة',s:'أرض من سحاب متماسك تحت شمسين فضيتين، وجمال يخفي ألمًا.'},
+ {id:'19',l:'الفصل التاسع عشر',t:'أرض السحاب والظل الخفي',s:'مدينة معلقة صامتة، وظلال بلا أجساد، ومرض يمتص الحياة والذاكرة.'},
+ {id:'20',l:'الفصل العشرون',t:'الفارس المصاب عند أطراف الغابة',s:'فارس يقاتل وحوش الظلال حتى يخرّ مغمى عليه فوق السحاب.'},
+ {id:'21',l:'الفصل الحادي والعشرون',t:'التشريح السحري للعنة',s:'لعنة الدم المتجمد، ومشرط شهريان، وقطرة من التوليب الأحمر.'},
+ {id:'22',l:'الفصل الثاني والعشرون',t:'حارس الأفق الأخير',s:'اسمه ساري، وروحه مربوطة بسيفه.'},
+ {id:'23',l:'الفصل الثالث والعشرون',t:'زهرة التوليب النارية',s:'مركّب ناري يتصدى لبرد الظلام، ودرعٌ اسمه ساري.'},
+ {id:'24',l:'الفصل الرابع والعشرون',t:'حوار تحت ضوء النجوم',s:'مخيم صغير فوق الغيوم، وسؤال عن الشغف والخوف.'},
+ {id:'25',l:'الفصل الخامس والعشرون',t:'سر السيف والدرع',s:'بلورة السيف تنبض بتردد قلبه.'}
+);
+NOVEL.push(...CH.slice(-8).map(c=>({id:c.id,l:c.l,t:c.t,p:[c.s]})));
+
+/* ---- portrait ---- */
+portrait=function(spk){
+  if(spk==='ساري'&&SARI_OK){if(dAv.getAttribute('src')!==SARI)dAv.src=SARI;dAv.hidden=false}
+  else{if(dAv.getAttribute('src')!==FACE)dAv.src=FACE;dAv.hidden=!(spk==='شهريان'&&FACE_OK)}
+};
+
+/* ---- drawing ---- */
+const SAR={x:0,y:0,face:1,walk:0,moving:false};
+function drawSari(c,t,s,pose){
+  const f=s.face,sw=s.moving?Math.sin(s.walk*10)*3:0,bob=s.moving?Math.abs(Math.sin(s.walk*10))*-1.5:Math.sin(t*2)*.5;
+  const down=pose==='down',sw0=F().swordFixed?'255,205,110':'110,170,255';
+  ell(c,s.x,s.y+1,down?26:13,5,'rgba(0,0,0,.35)');
+  c.save();c.translate(s.x,s.y);if(down)c.rotate(-1.45*f);
+  poly(c,[[-9,-26+bob],[9,-26+bob],[12-f*3,-3],[-12-f*3,-3]],'#24336e');
+  poly(c,[[-10+sw*.6,0],[-6,-26+bob],[6,-26+bob],[10-sw*.6,0]],'#2c3552');
+  poly(c,[[-10,-28+bob],[10,-28+bob],[7,-14+bob],[-7,-14+bob]],'#b8c2dc');
+  rect(c,-1,-27+bob,2,12,'rgba(255,255,255,.35)');
+  line(c,[[f*8,-20+bob],[f*17,-47+bob]],3,'rgba('+sw0+',1)');
+  glow(c,f*17,-47+bob,down?20:30,sw0,.5+Math.sin(t*3)*.12);
+  const hy=-39+bob,hr=12;
+  circ(c,0,hy,hr+1.8,'#8fd2ff');
+  if(SARI_OK){c.save();c.beginPath();c.arc(0,hy,hr,0,6.2832);c.clip();c.drawImage(sariImg,-hr,hy-hr,hr*2,hr*2);c.restore()}
+  else circ(c,0,hy,hr,'#d9a77a');
+  c.restore();
+}
+function drawShade(c,x,y,t){
+  const b=Math.sin(t*3+x)*3;ell(c,x,y+2,22,7,'rgba(0,0,0,.35)');
+  c.fillStyle='rgba(30,10,50,.88)';c.beginPath();c.moveTo(x-20,y);c.quadraticCurveTo(x-26,y-40+b,x,y-50+b);c.quadraticCurveTo(x+26,y-40+b,x+20,y);c.quadraticCurveTo(x,y-8,x-20,y);c.fill();
+  circ(c,x-7,y-31+b,3,'#e7a0ff');circ(c,x+7,y-31+b,3,'#e7a0ff');glow(c,x,y-31+b,36,'200,100,255',.25);
+}
+function drawGhost(c,x,y,t,ph){
+  const gx=x+Math.sin(t*.4+ph)*34;c.fillStyle='rgba(205,215,245,'+(.16+.1*Math.sin(t+ph))+')';
+  c.beginPath();c.moveTo(gx-9,y);c.quadraticCurveTo(gx-12,y-30,gx,y-35);c.quadraticCurveTo(gx+12,y-30,gx+9,y);c.closePath();c.fill();
+}
+function drawFire(c,x,y,t){
+  glow(c,x,y-14,90,'255,140,60',.35+Math.sin(t*7)*.08);
+  rect(c,x-16,y-4,32,5,'#4a3342');
+  const h=22+Math.sin(t*9)*4;poly(c,[[x-10,y-3],[x-2,y-h],[x+2,y-8],[x+8,y-h*.8],[x+11,y-3]],'#ff8a3d');
+  poly(c,[[x-5,y-3],[x,y-h*.6],[x+5,y-3]],'#ffd98a');
+}
+function drawFireTulip(c,x,y,t){glow(c,x,y-16,40,'255,120,50',.45+Math.sin(t*5+x)*.12);drawTulip(c,x,y,'#ff7a2f',1.5,t)}
+
+/* ---- scenes ---- */
+function cloudScene(){
+  const r=rng(18),sc=mk('cloud','مملكة الغيوم المضيئة',1400,1000,[200,900],'200,215,255');
+  const puffs=[];for(let i=0;i<60;i++)puffs.push([r()*1400,r()*1000,40+r()*70]);
+  sc.ground=(c,t)=>{
+    rect(c,0,0,1400,1000,'#2b3566');
+    puffs.forEach(p=>ell(c,p[0],p[1],p[2],p[2]*.45,'rgba(170,185,235,.14)'));
+    glow(c,350,30,320,'210,225,255',.32);glow(c,1050,30,320,'210,225,255',.28);
+    rect(c,0,740,1400,110,'#34427c');
+  };
+  [[430,470,200,110],[760,430,240,120],[1010,540,190,110],[300,300,180,100],[650,250,180,100]].forEach(b=>{
+    addDeco(sc,b[0],b[1],b[2]*.7,(c,t)=>drawBuilding(c,b[0],b[1],b[2],b[3],'#9fb8e8','#7f98cc',t));
+    sc.solids.push({x:b[0]-b[2]/2,y:b[1]-70,w:b[2],h:70});
+  });
+  for(let i=0;i<14;i++){const x=1240+r()*140,y=160+r()*470;addTree(sc,x,y,.9+r()*.4,'w')}
+  [[180,640,0],[520,700,2],[900,700,4],[640,560,5],[1100,420,1]].forEach(g=>addDeco(sc,g[0],g[1],60,(c,t)=>drawGhost(c,g[0],g[1],t,g[2])));
+  addDeco(sc,700,90,120,(c,t)=>{glow(c,700,60,110,'160,190,255',.3+Math.sin(t*2)*.08);c.strokeStyle='#cdd6f4';c.lineWidth=6;c.beginPath();c.ellipse(700,60,34,48,0,0,6.2832);c.stroke()});
+  const sh=[[1130,730],[1270,730],[1200,650]];
+  sh.forEach(p=>sc.objs.push(OBJ({id:'shade'+p[0],x:p[0],y:p[1],auto:true,show:()=>F().heard&&!F().sariJoin,f:(c,t)=>drawShade(c,p[0],p[1],t),use:()=>{}})));
+  const SW={x:1200,y:700,face:-1,walk:0,moving:false};
+  sc.objs.push(
+    OBJ({id:'wall',x:760,y:468,r:64,label:'جدار المنزل',use:()=>wallUse()}),
+    OBJ({id:'wounded',x:1200,y:700,r:74,lab:80,label:'الفارس المصاب',show:()=>F().heard&&!F().sariJoin,f:(c,t)=>drawSari(c,t,SW,'down'),use:()=>woundedUse()}),
+    OBJ({id:'toPeak',x:700,y:130,r:80,label:'الطريق إلى قمة الغيوم',use:()=>peakUse()})
+  );
+  return sc;
+}
+function emberScene(){
+  const r=rng(25),sc=mk('ember','منحدر التوليب الناري',1200,900,[200,780],'255,150,90');
+  const spots=[];for(let i=0;i<30;i++)spots.push([r()*1200,r()*900,30+r()*60]);
+  sc.ground=(c,t)=>{
+    rect(c,0,0,1200,900,'#1b2145');
+    spots.forEach(p=>ell(c,p[0],p[1],p[2],p[2]*.4,'rgba(190,215,240,.1)'));
+    poly(c,[[300,330],[600,40],[900,330]],'#2a2250');poly(c,[[540,90],[600,40],[660,90],[600,110]],'#3a2a50');
+    glow(c,600,70,170,'255,110,40',.35+Math.sin(t*2)*.07);
+    c.strokeStyle='rgba(255,120,50,.55)';c.lineWidth=3;c.beginPath();c.moveTo(600,100);c.quadraticCurveTo(570,180,620,260);c.quadraticCurveTo(650,310,600,380);c.stroke();
+  };
+  sc.solids.push({x:300,y:240,w:600,h:100});
+  for(let i=0;i<10;i++){const x=80+r()*1040,y=420+r()*400;if(dist(x,y,300,660)>110&&dist(x,y,880,330)>120&&dist(x,y,200,780)>100){const s=.6+r()*.7;addDeco(sc,x,y,60*s,(c,t)=>drawCrystal(c,x,y,s,'#8fb9dc',t,0));sc.solids.push({x,y,r:11*s})}}
+  [[850,340],[900,300],[950,350]].forEach(p=>addDeco(sc,p[0],p[1],40,(c,t)=>{if(!F().fireTulip)drawFireTulip(c,p[0],p[1],t)}));
+  addDeco(sc,300,660,90,(c,t)=>drawFire(c,300,660,t));sc.solids.push({x:300,y:652,r:14});
+  sc.objs.push(
+    OBJ({id:'fireT',x:900,y:360,r:80,label:'التوليب الناري',show:()=>!F().fireTulip,f:()=>{},use:()=>fireUse()}),
+    OBJ({id:'camp',x:300,y:690,r:76,label:'المخيم',show:()=>F().fireTulip&&!F().camped,f:()=>{},use:()=>campUse()}),
+    OBJ({id:'backCloud',x:80,y:850,r:70,label:'العودة إلى المدينة',f:()=>{},use:()=>goto('cloud',700,190)})
+  );
+  return sc;
+}
+
+/* ---- story flow ---- */
+async function quiz(q,opts,right,bads,spk){for(;;){const k=await choose(q,opts,spk||'شهريان');if(k===right)return;await talk([bads[k]||'ليس هذا.'])}}
+async function cloudCross(){
+  const f=F();f.done=0;f.cloudOn=1;
+  await chapter('18');
+  await talk(["وقفت شهريان على حافة مملكة الكريستال، والبوصلة السحرية في يدها تنبض بضوء خافت يشير نحو الأعالي. كانت زهرة التوليب السوداء قد استقرت على كتفها مثل سحرٍ واقٍ.","فتحت حقيبتها الطبية، وتفقدت أدواتها: مشرط الكريستال، وقوارير رحيق الأمل، وأوراق الأعشاب المضيئة. أغمضت عينيها واستجمعت شجاعتها، ثم خطت خطوتها الأولى عبر البوابة الضوئية."]);
+  await goto('cloud',200,900);
+  await talk(["في لحظة، شعرت وكأن الهواء ينسحب من حولها، ليحل محله عبق غريب يجمع بين رائحة المطر وزهر الليمون الأزرق. كانت تقف فوق أرض مصنوعة بالكامل من السحاب المتماسك تحت ضوء شمسين فضيتين.",['شهريان','هذه إذاً... مملكة الغيوم المضيئة.'],['زهرة التوليب','احذري يا شهريان. الجمال هنا يخفي أطيافًا من الألم.']]);
+  await chapter('19');
+  await talk(["مشت شهريان بين شوارع المدينة المعلقة. كانت البيوت مصنوعة من سحب بلورية متجمدة، لكن المكان يخيم عليه صمت مريب. لم تكن هناك أرواح تتجول، بل ظلال باهتة تتحرك بين الجدران بلا أجساد."]);
+}
+async function wallUse(){
+  const f=F();
+  if(f.heard){await talk([['شهريان','النبض هنا يكاد لا يُسمع... يجب أن أصل إلى مصدر الصوت.']]);return}
+  await talk(["أخرجت شهريان سماعة الفحص السحرية ووضعتها على جدار أحد المنازل. سمعت نبضًا ضعيفًا جدًا، وكأن المدينة بأكملها تحتضر تحت وطأة مرض نادٍ يمتص طاقة الحياة والذاكرة.",['شهريان','هذا ليس مجرد مرض ظل عادي... هذا المرض يتغذى على القوة والروح معًا.']]);
+  sfx.growl();f.heard=1;
+  await talk(["وفجأة، سمعت صوت صليل حديد يتردد من أطراف غابة الغيوم في الشرق، يتبعه زئير كائن ظلي ضخم!"]);
+  await chapter('20');
+  await talk(["ركضت شهريان باتجاه الصوت. وعند مشارف الغابة السحابية رأت مشهدًا حبس أنفاسها: شاب قوي البنية بدرع فضي ثقيل وسيف ينبض بضوء أزرق، يقاتل وحوش الظلال بغضب وشجاعة لا مثيل لها.","لكن حركته كانت تتباطأ، وكان ينزف دمًا يميل إلى السواد من جرح غائر في كتفه. سقط على ركبتيه، ورفع سيفه بصعوبة ليدفع هجومًا أخيرًا، ثم خرّ مغمى عليه فوق السحاب.","تراجعت الوحوش قليلًا أمام شعاع أطلقته زهرة التوليب السوداء لحماية شهريان."]);
+}
+async function woundedUse(){
+  const f=F();
+  await talk([['شهريان','نبضه ضعيف ومضطرب... والدم يلتصق به سحر أسود يمنع التجلط الطبيعي!']]);
+  await chapter('21');
+  await talk(["فتحت شهريان حقيبتها، وأخرجت مشرطها السحري وقارورة فيها خلاصة التوليب الأحمر."]);
+  const seen={};
+  while(!(seen[0]&&seen[1])){
+    const left=['فحص الدم حول الجرح','فحص النبض والتنفس'].filter((_,q)=>!seen[q]);
+    const k=await choose('بماذا تبدئين؟',left,'شهريان');const idx=[0,1].filter(q=>!seen[q])[k];seen[idx]=1;
+    await talk([idx===0?"الدم داكن، تلتصق به خيوط سوداء رفيعة كأنها تمنعه من التجلط.":"النبض ضعيف ومضطرب، والتنفس سطحي كمن يقاوم نومًا بلا نهاية."]);
+  }
+  await quiz('ما الذي يحدث لجسده؟',['سحر أسود يمنع التجلط الطبيعي','نزيف عادي من جرح عميق','سم نباتي من أشواك الغابة'],0,{1:'نزيف عادي لا يحوّل الدم إلى هذا السواد.',2:'لا آثار أشواك، والسواد يزحف مع السحر لا مع السم.'});
+  await quiz('ماذا تضعين على الجرح؟',['خلاصة التوليب الأحمر والأعشاب المهدئة','الأعشاب المضيئة وحدها','ماء النهر الفضي'],0,{1:'الأعشاب المضيئة وحدها لا تذيب هذا السحر.',2:'الماء سيخفف المصل ويضيّع أثره.'});
+  sfx.heal();
+  await talk(["وضعت يدها على صدره، وقرأت كلمات شفاء قديمة تعلمتها في السنة الرابعة بالأكاديمية، ثم بدأت بتطهير الجرح. حين لامس المصل جرحه صرخ ألمًا وفتح عينين بلون الكهرمان الدافئ.","قبض على معصمها بقوة وهيبة.",['ساري','من أنتِ؟... وكيف تجرؤين على لمس لعنة الدم المتجمد؟'],['شهريان','أنا شهريان، طالبة طب وسحر من أكاديمية أوريليا. وإذا لم تدعني أُكمل علاجك الآن، ستتحول إلى ظل خلال دقائق!'],"تأمل وجهها الشجاع، ثم أرخى قبضته ببطء.",['ساري','افعلي ما يلزم... يا طبيبة.']]);
+  await chapter('22');
+  await talk(["بعد ساعات من العمل الدؤوب، أوقفت شهريان النزيف وطردت السحر الأسود من جسده. جلس يتكئ على جذع شجرة سحابية وهو يتأمل يده التي عادت إليها الحياة.",['ساري','أنا ساري... حارس الأفق الأخير. كنت أطارد ظلال الفناء التي تسللت من أعماق العوالم المنسية لتصيب هذه المملكة.'],['شهريان','جاءت بي البوصلة السحرية لأجد علاجًا لمرض الظل. لكن لماذا كان دمك يتجمد؟'],['ساري','لأن حراس الأفق يربطون أرواحهم بسيوفهم. وعندما يمرض العالم، تنكسر أرواحنا. لم أعد أجد حلًا بسيفي وحده.'],['شهريان','السيف يحمي الجسد، لكنه لا يداوي الروح... أنت بحاجة إلى طبيب يا ساري.']]);
+  f.sariJoin=1;SAR.x=1200;SAR.y=700;SAR.face=-1;
+  toast('ساري ينضم إليكِ. زر «ساري» في الأعلى للحديث معه');sfx.pick();
+  await chapter('23');
+  await talk(["أخبر ساري شهريان أن لعنة الظل تتغذى على قلب القصر الملكي في قمة جبل الغيوم، وأن أي قتال هناك يحتاج إلى طاقة تتصدى لبرد الظلام.",['شهريان','نحتاج إلى مركّب طبي ناري، يرفع حرارة الجسد والروح دون أن يحرق النسيج الحيوي. نحتاج إلى «التوليب الناري» الذي ينمو بين بركان وبرد.'],['ساري','أعرف ذلك المكان. الطريق إليه مليء بالوحوش والأخطار، لكنني سأكون درعكِ يا شهريان.'],['شهريان','وأنا سأكون دواءك وسلاحك الخفي يا ساري.']]);
+}
+async function peakUse(){
+  if(!F().sariJoin){await talk([['شهريان','لن أصعد وحدي. هناك صوت قتال في الشرق... يجب أن أعرف ما يحدث.']]);return}
+  await talk([['ساري','اتبعيني على المنحدر، وابقي خلف ظهري.']]);
+  await goto('ember',200,780);
+}
+async function fireUse(){
+  const f=F();
+  await talk(["على منحدر الجبل، وسط جليد لا يذوب، تتوهج زهور توليب حمراء كالجمر. ظل ضخم يتسلل من خلف الصخور، فاندفع ساري بسيفه المضيء وصدّه قبل أن يقترب.",['ساري','أنهي عملك يا طبيبة، وأنا أحرس ظهرك.']]);
+  await quiz('كيف تقطفين الزهرة؟',['بيد عارية','بالمشرط مع قطرة من رحيق الأمل'],1,{0:'احترقت أصابعها قليلًا. الحرارة هنا تحتاج وسيطًا يخففها.'});
+  f.fireTulip=1;give('fireTulip');
+  await talk([['ساري','إنها تتوهج في يدكِ ولا تحرقكِ... لم أرَ أحدًا يفعل ذلك من قبل.'],"بدأ الليل يهبط على الغيوم. اقترحت شهريان أن يستريحا قليلًا قبل الصعود."]);
+}
+async function campUse(){
+  const f=F();
+  await chapter('24');
+  await talk(["في الليل، وأثناء استراحتهما في مخيم صغير فوق الغيوم، كان ساري يراقب شهريان وهي تدرس أوراقها وتزن الجرعات بدقة على ضوء مصباحها السحري.",['ساري','كيف لفتاة في مثل سنك أن تحمل كل هذا الشغف والعلم؟ ألم تخافي عندما واجهتِ الوحوش معي؟']]);
+  await choose('بماذا تجيبين ساري؟',['«في صغري كنت أريد أن أصبح مهندسة تفكك الآلات... لكنني تعلمت أن الإنسان أعقد آلة خُبئت فيها الروح.»','«الخوف موجود دائمًا يا ساري... لكن الخوف من فقدان أرواح الناس أشد من الخوف من الموت.»'],'شهريان');
+  await talk([['شهريان','الخوف موجود دائمًا يا ساري، لكن الخوف من فقدان أرواح الناس أشد بكثير من الخوف من الموت.'],"تأملها ساري بإعجاب عميق.",['ساري','لقد قضيت حياتي كلها أقاتل بالسيف وأظن أن القوة هي الحل الوحيد... لكنكِ علمتني في يوم واحد أن الحكمة والرحمة أقوى من ألف سيف.']]);
+  f.camped=1;sfx.card();
+  await fade(true);await fade(false);
+  toast('طلع الصباح. تحدثي إلى ساري (زر «ساري»)');
+}
+async function swordScene(){
+  const f=F();
+  await chapter('25');
+  await talk(["في الصباح التالي، رأت شهريان ساري يتدرب بسيفه. لاحظت بشغفها الهندسي والطبي أن البلورة في مقبض السيف تنبض بنفس تردد قلبه."]);
+  const k=await choose('ماذا تفعلين؟',['أضع قطرة من مصل التوليب على السيف','أضع قطرة من رحيق الأمل','أتركه كما هو'],'شهريان');
+  if(k!==0){await talk([k===1?"الرحيق لطيف لكنه لا يصلح التناغم بين الطاقة والسيف.":"السيف ينبض بالفعل بتردد مضطرب... لا يمكن تركه هكذا."]);return}
+  await talk([['شهريان','ساري، دعني أضع قطرة من مصل التوليب على سيفك.']]);
+  f.swordFixed=1;sfx.heal();
+  await talk(["استغرب ساري لكنه وافق. وعندما وضعت شهريان القطرة، أضاء السيف بنور ذهبي دافئ، واختفت الهالة المظلمة التي كانت تحيط به.",['ساري','ما هذا؟ السيف يشتعل بطاقة لم أشعر بها من قبل!'],['شهريان','السيف كان مريضًا مثلك تمامًا. أصلحتُ التناغم بين طاقتك وجسد السيف. الآن يمكنك القتال دون أن تنزف روحك.']]);
+  await card('تابعا الرحلة','وادي الأصداء ينتظر','الممر الشرقي يقود إلى وادي الأصداء');
+  toast('الممر الشرقي من المنحدر: وادي الأصداء');
+}
+let sariChat=0;
+async function sariTalkUse(){
+  const f=F();
+  if(f.camped&&!f.swordFixed){await swordScene();return}
+  const L={
+    cloud:[['ساري','الصمت هنا أثقل من أي معركة. هذه المدينة كانت تضج بالحياة.'],['ساري','لا تبتعدي عن ضوء زهرتكِ. الظلال تكره النور.']],
+    ember:[['ساري','الجليد والنار معًا... كأن الجبل نفسه ينتظر من يداويه.'],['ساري','سيفي أخف بعد أن مسّه توليبكِ.']]
+  }[S.scene]||[['ساري','أنا معكِ حيث تشير البوصلة.']];
+  const l=L[sariChat++%L.length];
+  await talk([l]);
+}
+$('#btnSari').addEventListener('click',()=>{if(busy||ovOpen||!S||!F().sariJoin)return;run(sariTalkUse)});
+
+/* ---- follower ---- */
+function sariStep(dt){
+  if(!S||!F().sariJoin||!cur)return;
+  const tx=P.x-P.face*30,ty=P.y+4,dx=tx-SAR.x,dy=ty-SAR.y,d=Math.hypot(dx,dy);
+  SAR.moving=d>10;
+  if(d>220){SAR.x=tx;SAR.y=ty}
+  else if(SAR.moving){const st=Math.min(d,Math.max(70,d*3.5)*dt);SAR.x+=dx/d*st;SAR.y+=dy/d*st;SAR.walk+=dt*.9;if(Math.abs(dx)>3)SAR.face=dx>0?1:-1}
+  else SAR.face=P.x>=SAR.x?1:-1;
+  const q=resolve(SAR.x,SAR.y,10);SAR.x=q[0];SAR.y=q[1];
+}
+const _up=update;update=function(dt,t){_up(dt,t);sariStep(dt)};
+const _is=initScene;initScene=function(){_is();SAR.x=P.x-30;SAR.y=P.y+4};
+const _hud=hud;hud=function(){_hud();$('#btnSari').hidden=!(S&&F().sariJoin&&$('#title').hidden)};
+
+/* ---- goals ---- */
+function cloudGoal(h){
+  const f=F(),sc=S.scene;
+  if(!f.heard)return h?'اقتربي من جدار المنزل وسط المدينة المعلقة واستمعي إليه بسماعة الفحص.':'اقتربي من جدار المنزل وسط المدينة المعلقة.';
+  if(!f.sariJoin)return h?'الفارس المصاب في الشرق عند أطراف الغابة. افحصي الدم ثم النبض، ثم اختاري: سحر أسود، والعلاج: خلاصة التوليب الأحمر مع الأعشاب المهدئة.':'اركضي نحو الفارس المصاب شرقًا.';
+  if(!f.fireTulip)return sc==='ember'?'اصعدي إلى توليب النار المتوهج في أعلى المنحدر.':'خذي الطريق الشمالي نحو قمة الغيوم، وساري يرافقكِ.';
+  if(!f.camped)return 'اقتربي من المخيم عند المنحدر واستريحي مع ساري.';
+  if(!f.swordFixed)return 'اضغطي زر «ساري» وأصلحي تناغم سيفه بمصل التوليب.';
+  return 'انتهى هذا الجزء. تجولي مع ساري... الفصل 26: وادي الأصداء يتبع.';
+}
+const _gt=goalText,_ht=hintText;
+goalText=function(){return F().cloudOn?cloudGoal(false):_gt()};
+hintText=function(){return F().cloudOn?cloudGoal(true):_ht()};
+$('#endGo').addEventListener('click',()=>{closeOv($('#endOv'));run(cloudCross)});
+
+/* ===================== الجزء الثالث: الفصول 26–38 + موسيقى ساري + تخطي ===================== */
+ITEMS.sariBlood={n:'قطرة من دم ساري',d:'طاقة الحارس: المركب الأساسي لإعادة التجسد.',c:'#d64560'};
+ITEMS.elixir={n:'إكسير التجسد',d:'قارورة متوهجة بلون بنفسجي تعيد الأجساد إلى الأطياف.',c:'#b070ff'};
+SPK['سيد الظلال']='#c06bff';BLIP['سيد الظلال']=90;
+CH.push(
+ {id:'26',l:'الفصل السادس والعشرون',t:'معركة وادي الأصداء',s:'ذئاب الظلال تهجم، وساري في المقدمة وشهريان خلفه.'},
+ {id:'27',l:'الفصل السابع والعشرون',t:'مدينة الأطياف الزجاجية',s:'سكان بلا أجساد بسبب طاعون الذاكرة، ومختبر قديم.'},
+ {id:'28',l:'الفصل الثامن والعشرون',t:'معادلة نبض الحياة',s:'ليلة كاملة من الخلط، وإكسير التجسد.'},
+ {id:'29',l:'الفصل التاسع والعشرون',t:'لمسة التوليب الذهبية',s:'الأطياف تستعيد أجسادها، وساري يسأل سؤالًا.'},
+ {id:'30',l:'الفصل الثلاثون',t:'عاصفة الذاكرة الضائعة',s:'سيد الظلال يحاول محو ذكريات العاشقين.'},
+ {id:'31',l:'الفصل الحادي والثلاثون',t:'قلعة البرق الفضي',s:'درع نوراني وتعويذة مفككة لمادة الظلام.'},
+ {id:'32',l:'الفصل الثاني والثلاثون',t:'مملكة الجليد',s:'ثنائي العقل والسيف يطوفان بالممالك.'},
+ {id:'33',l:'الفصل الثالث والثلاثون',t:'مملكة الأنهار الفضية',s:'ثنائي تدرّسه كتب التاريخ.'},
+ {id:'34',l:'الفصل الرابع والثلاثون',t:'وادي الفناء',s:'مصدر مرض الظل الأول.'},
+ {id:'35',l:'الفصل الخامس والثلاثون',t:'الترياق الأخير',s:'التوليب الأسود مع دماء الحراس، وسيف لا ينكسر.'},
+ {id:'36',l:'الفصل السادس والثلاثون',t:'العودة إلى أكاديمية أوريليا',s:'أسطورة الطب والسحر تعود إلى الحديقة.'},
+ {id:'37',l:'الفصل السابع والثلاثون',t:'ليلة العرس السحري',s:'ألف توليب مضيء وعهد أمام الممالك.'},
+ {id:'38',l:'الفصل الثامن والثلاثون والأخير',t:'الأفق المفتوح',s:'كتاب أبيض الصفحات، وبوصلة تنبض.'}
+);
+NOVEL.push(...CH.slice(-13).map(c=>({id:c.id,l:c.l,t:c.t,p:[c.s]})));
+
+/* ---- music: different feel whenever Sari is with Shahriyan ---- */
+const HM=[293.7,329.6,370,440,493.9,587.3];
+['garden','cloud','ember','echo','glass','storm','fanaa'].forEach(k=>{MUS[k+'_s']=HM});
+Object.assign(MUS,{cloud:MUS.crystal,ember:MUS.valley,echo:MUS.valley,glass:MUS.crystal,storm:MUS.forest,fanaa:MUS.forest});
+Object.assign(DR,{cloud:130.8,ember:98,echo:98,glass:110,storm:73.4,fanaa:65.4,garden_s:73.4,cloud_s:87.3,ember_s:82.4,echo_s:73.4,glass_s:98,storm_s:55,fanaa_s:61.7});
+function musKey(){return F().sariJoin&&MUS[S.scene+'_s']?S.scene+'_s':S.scene}
+let lastMK='';
+
+/* ---- helpers ---- */
+let sDown=false;
+function plainScene(id,name,w,h,spawn,amb,bg,tint,seed,n,hook){
+  const r=rng(seed),sc=mk(id,name,w,h,spawn,amb),sp=[];
+  for(let i=0;i<n;i++)sp.push([r()*w,r()*h,30+r()*60]);
+  sc.ground=(c,t)=>{rect(c,0,0,w,h,bg);sp.forEach(p=>ell(c,p[0],p[1],p[2],p[2]*.4,tint));if(hook)hook(c,t)};
+  return sc;
+}
+function drawWolf(c,x,y,t){const b=Math.sin(t*4+x)*2;ell(c,x,y+2,28,7,'rgba(0,0,0,.35)');ell(c,x,y-14+b,28,13,'rgba(25,8,45,.92)');circ(c,x+24,y-22+b,10,'rgba(25,8,45,.92)');circ(c,x+28,y-25+b,2.2,'#e7a0ff');glow(c,x,y-16,48,'200,90,255',.22)}
+function drawFolk(c,x,y,t,ph,on){
+  const gx=on?x:x+Math.sin(t*.4+ph)*20;
+  if(!on){c.fillStyle='rgba(190,230,245,'+(.2+.1*Math.sin(t+ph))+')';c.beginPath();c.moveTo(gx-9,y);c.quadraticCurveTo(gx-12,y-30,gx,y-35);c.quadraticCurveTo(gx+12,y-30,gx+9,y);c.closePath();c.fill();return}
+  const cols=['#e0405f','#f4b95c','#6a8fff','#b06bd6'];ell(c,gx,y+1,10,4,'rgba(0,0,0,.3)');
+  poly(c,[[gx-8,y],[gx-6,y-26],[gx+6,y-26],[gx+8,y]],cols[ph%4]);circ(c,gx,y-33,8,'#f0c9a4');
+}
+const peopleSpots=[[300,640,0],[520,760,1],[900,700,2],[1050,560,3],[620,420,4],[1200,760,5],[200,500,6]];
+function quizBlood(){return quiz('ما المركب الأساسي لإعادة التجسد؟',['قطرة من دم ساري السليم','ماء النهر الفضي','شظية كريستال'],0,{1:'الماء الفضي يخفف الأثر ولا يصنع جسدًا.',2:'الشظية باردة وصامتة، ولا تحمل حياة.'})}
+
+/* ---- scenes ---- */
+function echoScene(){
+  const sc=plainScene('echo','وادي الأصداء',1400,900,[150,780],'200,150,255','#1b2342','rgba(120,110,200,.12)',33,40);
+  for(const p of [[400,300],[700,200],[1000,260],[300,600]])addDeco(sc,p[0],p[1],60,(c,t)=>drawCrystal(c,p[0],p[1],1.1,'#6f86c8',t,0));
+  [[600,600],[850,420],[1100,640]].forEach((p,i)=>sc.objs.push(OBJ({id:'wolf'+i,x:p[0],y:p[1],r:90,lab:70,label:'قطيع ذئاب الظلال',show:()=>!F()['w'+i],f:(c,t)=>{drawWolf(c,p[0],p[1],t);drawWolf(c,p[0]+34,p[1]+18,t+1)},use:()=>wolfUse(i)})));
+  sc.objs.push(OBJ({id:'toGlass',x:1300,y:130,r:80,label:'مدينة الأطياف الزجاجية',show:()=>F().w0&&F().w1&&F().w2,f:(c,t)=>glow(c,1300,110,70,'160,190,255',.4),use:()=>goto('glass',150,800)}));
+  return sc;
+}
+function glassScene(){
+  const sc=plainScene('glass','مدينة الأطياف الزجاجية',1400,1000,[150,800],'160,230,245','#16294a','rgba(143,210,230,.1)',44,40);
+  addDeco(sc,400,330,200,(c,t)=>drawBuilding(c,400,330,260,150,'#6f9cc4','#547eac',t));sc.solids.push({x:270,y:260,w:260,h:70});
+  addDeco(sc,1120,330,120,(c,t)=>drawTower(c,1120,330,230));sc.solids.push({x:1080,y:255,w:80,h:75});
+  addDeco(sc,700,570,80,(c,t)=>{ell(c,700,570,54,20,'#3b5a8a');ell(c,700,566,44,14,F().spread?'#7fd6ff':'#2a3f66');if(F().spread)glow(c,700,540,70,'150,220,255',.4)});sc.solids.push({x:700,y:566,r:34});
+  peopleSpots.forEach(p=>addDeco(sc,p[0],p[1],40,(c,t)=>drawFolk(c,p[0],p[1],t,p[2],F().spread)));
+  sc.objs.push(
+    OBJ({id:'lab',x:400,y:362,r:70,label:'المختبر القديم',f:()=>{},use:()=>labUse()}),
+    OBJ({id:'fount',x:700,y:610,r:70,label:'النافورة المركزية',f:()=>{},use:()=>fountUse()}),
+    OBJ({id:'tower',x:1120,y:362,r:70,label:'برج المدينة',show:()=>F().spread&&!F().proposed,f:()=>{},use:()=>towerUse()})
+  );
+  sc.onEnter=async()=>{await chapter('27');await talk(["بعد تطهير الوادي، وصلا إلى مدينة الأطياف الزجاجية، حيث فقد السكان أجسادهم المادية وأصبحوا كالخيالات الشفافة بسبب طاعون الذاكرة."])};
+  return sc;
+}
+function stormScene(){
+  const sc=plainScene('storm','قلعة البرق الفضي',1400,900,[700,800],'200,160,255','#120f26','rgba(90,70,160,.15)',55,40,(c,t)=>{if(Math.sin(t*1.7)>.96){c.fillStyle='rgba(220,230,255,.18)';c.fillRect(0,0,1400,900)}});
+  addDeco(sc,700,230,260,(c,t)=>drawBuilding(c,700,230,500,180,'#4a4f8a','#2c2f5e',t));sc.solids.push({x:450,y:130,w:500,h:100});
+  sc.objs.push(
+    OBJ({id:'lord',x:700,y:430,r:110,lab:150,label:'سيد الظلال',show:()=>!F().lordDown,f:(c,t)=>{c.save();c.translate(700,430);c.scale(2.6,2.6);drawShade(c,0,0,t);c.restore()},use:()=>lordUse()}),
+    OBJ({id:'journey',x:700,y:700,r:90,label:'الطريق إلى وادي الفناء',show:()=>F().lordDown&&!F().antidote,f:(c,t)=>glow(c,700,690,60,'255,205,110',.35),use:()=>journeyUse()})
+  );
+  sc.onEnter=()=>stormIntro();
+  return sc;
+}
+function fanaaScene(){
+  const sc=plainScene('fanaa','وادي الفناء',1200,900,[200,800],'210,110,255','#140d26','rgba(110,60,150,.15)',66,36);
+  sc.objs.push(OBJ({id:'source',x:600,y:360,r:110,lab:120,label:'مصدر مرض الظل',show:()=>!F().antidote,f:(c,t)=>{glow(c,600,330,120,'200,90,255',.4+Math.sin(t*3)*.1);circ(c,600,330,32,'#2a0f4a');circ(c,600,330,18,'#c06bff')},use:()=>sourceUse()}));
+  sc.onEnter=async()=>{await chapter('34');await talk(["وصلا إلى «وادي الفناء»، المصدر الأساسي لمرض الظل. الهواء هنا ثقيل، والصمت يزن أكثر من الجبال."])};
+  return sc;
+}
+function patchGarden(){
+  const g=SC.garden;
+  g.deco.push({x:750,y:500,r:420,f:(c,t)=>{if(!F().wed)return;const cols=['#ffd98a','#ff9ec0','#8fd2e6','#e0405f'];for(let i=0;i<16;i++){const a=i*.39,x=750+Math.cos(a)*(150+(i%3)*30),y=500+Math.sin(a)*(120+(i%3)*20);glow(c,x,y-12,30,'255,220,150',.4+Math.sin(t*3+i)*.1);drawTulip(c,x,y,cols[i%4],1.4,t)}}});
+  g.objs.push(
+    OBJ({id:'wedding',x:750,y:540,r:90,label:'ساحة الحفل',show:()=>F().home&&!F().wed,f:()=>{},use:()=>weddingUse()}),
+    OBJ({id:'finalLib',x:230,y:305,r:70,label:'مكتبة الأكاديمية الضخمة',show:()=>F().wed&&!F().fin,f:()=>{},use:()=>finalUse()})
+  );
+  SC.ember.objs.push(OBJ({id:'toEcho',x:1100,y:790,r:80,label:'وادي الأصداء',show:()=>F().swordFixed,f:(c,t)=>glow(c,1100,780,60,'160,190,255',.4),use:()=>echoGo()}));
+}
+
+/* ---- story ---- */
+async function echoGo(){await chapter('26');await talk([['ساري','الظلال تتجمع في وادي الأصداء. ابقي خلفي يا شهريان.']]);await goto('echo',150,780)}
+async function wolfUse(i){
+  await talk(["وصلا إلى «وادي الأصداء»، فهجمت عليهما قطعان من ذئاب الظلال المكونة من السحر الأسود. برز ساري في المقدمة وسيفه يقطع الظلام بضربات مشبعة بضوء التوليب."]);
+  let k;for(;;){k=await choose('ماذا تفعلين من الخلف؟',['أرسل تعويذة علاج لتقوية ساري','أطلق مسحوق الزهور السحرية لشل حركة الوحوش','أهاجمهم بمشرط الكريستال'],'شهريان');if(k<2)break;await talk(["المشرط للجراحة لا للقتال، ومكانكِ الخلف يا طبيبة."])}
+  sfx.heal();
+  await talk([k===0?"أطلقت شهريان طاقة شفائية، فاشتعل سيف ساري أكثر.":"تطاير مسحوق الزهور السحرية، فتجمدت الوحوش في أماكنها.",['ساري','أنتِ أفضل شريك قتال حلمت به يا شهريان!'],['شهريان','ركّز في قتالك يا فارس، أمامي مهام طبية تنتظرني!']]);
+  F()['w'+i]=1;
+  if(F().w0&&F().w1&&F().w2)await talk(["بعد تطهير الوادي، لاح في الشمال الشرقي طريق نحو مدينة مضيئة بالزجاج."]);
+}
+async function labUse(){
+  const f=F();
+  if(!f.blood){
+    await talk(["دخلت شهريان المختبر القديم للمدينة، وبدأت تعمل على دمج السحر بالطب، وساري يجهز لها الأعشاب ويحمي المختبر."]);
+    await quizBlood();
+    await talk([['شهريان','ساري، أحتاج إلى قطرة من دمك السليم... طاقتك كحارس هي المركب الأساسي لإعادة التجسد للأطياف.'],"دون تردد، جرح ساري يده.",['ساري','دمي وحياتي ملك لرسالتك الشريفة يا شهريان.']]);
+    f.blood=1;give('sariBlood');return;
+  }
+  if(!f.elixir){
+    await chapter('28');
+    await talk(["عملت شهريان طوال الليل وهي تخلط المركبات الطبية. كان ساري يجلس بجانبها، يمسح العرق عن جبهتها، ويقدم لها الماء، ويتأمل إصرارها العجيب."]);
+    await quiz('ماذا تخلطين؟',['دم ساري مع زهرة التوليب السوداء والأعشاب المضيئة','دم ساري مع ماء النهر الفضي فقط','التوليب الأحمر وحده'],0,{1:'الماء الفضي خفف المزيج حتى ضاع أثره.',2:'التوليب الأحمر وحده لا يعيد الأجساد.'});
+    take('sariBlood');give('elixir');f.elixir=1;sfx.heal();
+    await talk([['شهريان','نجحت! هذا هو إكسير التجسد!'],['ساري','أنتِ لستِ مجرد طالبة طب يا شهريان... أنتِ معجزة هذا العالم.']]);
+    return;
+  }
+  await talk([['ساري','المختبر هادئ الآن. اذهبي إلى النافورة.']]);
+}
+async function fountUse(){
+  const f=F();
+  if(!f.elixir){await talk(["نافورة المدينة المركزية جافة وصامتة. تحتاج شهريان إلى الإكسير أولًا."]);return}
+  if(f.spread){await talk(["الضحكات تملأ الشوارع من جديد."]);return}
+  await chapter('29');
+  take('elixir');f.spread=1;sfx.heal();
+  await talk(["نشرا الإكسير عبر نافورة المدينة المركزية. وفجأة، بدأت الأطياف الزجاجية تستعيد أجسادها البشرية، وعادت الأصوات والضحكات لتملأ الشوارع.",['ساري','انظري... لقد عادوا.'],"وقف ساري وشهريان على برج المدينة يراقبان الفرحة."]);
+}
+async function towerUse(){
+  const f=F();
+  await talk(["اقترب ساري من شهريان، وأمسك بيدها الرقيقة، ثم وضع بين أصابعها زهرة توليب ذهبية نادرة كان قد قطفها لها من قمة الجبل.",['ساري','شهريان... لقد حميتُ الممالك لسنوات طويلة، لكنني لم أشعر برغبة في الحياة كما شعرت بها منذ أن التقيتكِ. هل تسمحين لي أن أكون حارسكِ الأبدي؟']]);
+  for(;;){const k=await choose('بماذا تجيبين؟',['«الفارس يحتاج إلى طبيبة تعتني بجراحه... وأقبل بك حارسًا لقلبي ورفيقًا لدربي.»','«أحتاج وقتًا لأفكر...»'],'شهريان');if(k===0)break;await talk([['ساري','سأنتظر ما تشائين... لكن قلبي يعرف جوابه.']])}
+  f.proposed=1;sfx.card();
+  await talk(["الدفء لم يدم طويلًا، فقد ضربت عاصفة سوداء السماء."]);
+  await goto('storm',700,800);
+}
+async function stormIntro(){
+  const f=F();if(f.stormIntro)return;f.stormIntro=1;
+  await chapter('30');
+  await talk(["ظهر خيال «سيد الظلال»، الكائن الأسطوري الذي يتغذى على ذكريات البشر وأرواحهم.",['سيد الظلال','لن تدعاني أستعيد المملكة... سأمحو ذكرياتكما معًا!'],"أطلقت العاصفة موجة سحرية أصابت ساري وشهريان. سقط ساري أرضًا وهو يحاول التشبث بذكرياته عن شهريان."]);
+  sDown=true;
+  await quiz('بماذا تنادين ساري؟',['«ساري! تذكر التوليب! تذكر عهدنا!»','«ابتعد يا ساري!»'],0,{1:'لن يستجيب لهذا... يحتاج إلى ما يربطه بها.'});
+  await chapter('31');
+  await quiz('كيف تحمين ساري؟',['أستخدم زهرة التوليب السوداء لأشكّل درعًا نورانيًا حوله','أركض هاربة'],0,{1:'ليست من تترك رفيقها وراءها.'});
+  sDown=false;sfx.heal();
+  await talk(["استعاد ساري وعيه، ووقف بصعوبة، يرى شهريان تدافع عنه ببديهة الهندسة وحكمة الطب.",['ساري','لن تمسها بسوء أيها الظل!']]);
+}
+async function lordUse(){
+  const f=F();
+  if(!f.stormIntro)await stormIntro();
+  await talk(["اندفع ساري كالبرق بسيفه المضيء، واخترق قلب العاصفة."]);
+  await quiz('ما تعويذتك؟',['تعويذة طبية مفككة لمادة الظلام','تعويذة تدفئة','تعويذة نوم'],0,{1:'الدفء لا يفكك الظلام.',2:'النوم يمنحه فرصة ليأكل ما بقي من الذكريات.'});
+  sfx.heal();f.lordDown=1;
+  await talk(["صممت شهريان تعويذة طبية مفككة لمادة الظلام، فسقطت قلعة البرق الفضي وتطهرت من اللعنة."]);
+}
+async function journeyUse(){
+  await chapter('32');
+  await talk(["في الفصول التالية، طاف شهريان وساري عبر الممالك المجاورة. كانا يشكلان ثنائيًا أسطوريًا: شهريان بعقلها الطبي المبتكر وشغفها بالشفاء، وساري بشجاعته وسيفه الذي يدفع كل شر."]);
+  await chapter('33');
+  await talk(["من مملكة الجليد إلى مملكة الأنهار الفضية، كان الناس يستقبلانهما بالدعاء، وتُحكى قصتهما للأطفال."]);
+  await goto('fanaa',200,800);
+}
+async function sourceUse(){
+  const f=F();
+  await chapter('35');
+  await talk(["في المعركة الكبرى ضد المصدر الأساسي لمرض الظل، اندفعت الظلال نحو شهريان، لكن ساري وقف في وجهها."]);
+  await quiz('ما الترياق النهائي؟',['التوليب الأسود مع دماء الحراس','التوليب الأسود وحده','ماء النهر الفضي'],0,{1:'قوة الزهرة وحدها لا تكفي لهذا الظلام.',2:'الماء يخفف ولا يشفي.'});
+  await talk(["ابتكرت شهريان علاجًا كيميائيًا-سحريًا دمجت فيه خواص التوليب الأسود مع دماء الحراس. وقاتل ساري حتى آخر قطرة من قوته ليحميها وهي تنهي إعداد الترياق النهائي."]);
+  f.antidote=1;sfx.heal();
+  await talk(["أُطلق الترياق في سماء العوالم السبعة، لتنكسر لعنة الظل للأبد، وتعود الأرواح والذكريات لكافة البشر والمخلوقات السحرية."]);
+  await goto('garden',750,760);
+  await chapter('36');
+  await talk(["عادت شهريان إلى أكاديمية أوريليا بعد رحلة الممالك الطويلة. لم تعد مجرد طالبة في السنة الرابعة، بل استقبلها الأطباء والأساتذة والطلاب كـ«أسطورة الطب والسحر»، وكان يرافقها الفارس ساري بدرعه الفضي وسيفه المتألق بنور التوليب.",['ساري','ما هي خطوتك التالية يا دكتورة شهريان؟'],['شهريان','أريد أن أفتح عيادة أعلّم فيها الأطباء والفرسان كيف يعالجون أجساد الناس وأرواحهم معًا.']]);
+  f.home=1;
+}
+async function weddingUse(){
+  const f=F();await chapter('37');
+  await talk(["في ليلة اكتمال القمر، أقيم حفل زفاف أسطوري لم تشهد أوراليا مثيلًا له.","تفتحت آلاف زهور التوليب المضيئة بألوان زاهية، وعزفت الأشجار ألحانًا سحرية. ارتدت شهريان فستانًا أبيض مطرزًا ببتلات التوليب الفضية، وارتدى ساري عباءة الفرسان الملوكية.",['ساري','أتعهد أمام جميع الممالك أن أحمي شهريان ورسالتها الطبية طوال حياتي.'],['شهريان','وأتعهد أن أكون دواءك ونورك الدافئ.']]);
+  f.wed=1;sfx.card();
+}
+async function finalUse(){
+  const f=F();await chapter('38');
+  await talk(["مرت السنوات... أصبحت شهريان أعظم طبيبة ومهندسة سحرية في تاريخ المملكة، وتخرج على يديها آلاف الأطباء الفرسان.","وفي مساء أحد الأيام، كانت تجلس في مكتبتها الضخمة برفقة ساري وزهرة التوليب السوداء، وفتحت كتابًا جديدًا أبيض الصفحات.",['ساري','هل تدرسين مجددًا؟'],"نظرت شهريان إلى النافذة حيث كانت البوصلة السحرية تنبض بهدوء مشيرة إلى جبال بعيدة.",['شهريان','الطب يا ساري لا يتوقف عند حد... والعالم مليء بأسرار تنتظر من يكتشفها.'],['ساري','وأنا وسيفي سنكون معكِ في كل مكان تشير إليه بوصلتكِ.'],['زهرة التوليب','أنتِ جاهزة للمغامرة القادمة يا طبيبة الأفق.']]);
+  f.fin=1;save();
+  await card('الفصل الأخير','الأفق المفتوح','حكاية جديدة لا تنتهي... حكاية الحب والطب والسحر في العوالم اللانهائية.');
+  openOv($('#finOv'));
+}
+$('#finStay').addEventListener('click',()=>closeOv($('#finOv')));
+$('#finNew').addEventListener('click',()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
+
+/* ---- goals (replaces the earlier cloudGoal) ---- */
+cloudGoal=function(h){
+  const f=F(),sc=S.scene;
+  if(!f.heard)return h?'اقتربي من جدار المنزل وسط المدينة المعلقة واستمعي إليه بسماعة الفحص.':'اقتربي من جدار المنزل وسط المدينة المعلقة.';
+  if(!f.sariJoin)return h?'الفارس المصاب في الشرق عند أطراف الغابة. افحصي الدم ثم النبض، ثم اختاري: سحر أسود، والعلاج: خلاصة التوليب الأحمر مع الأعشاب المهدئة.':'اركضي نحو الفارس المصاب شرقًا.';
+  if(!f.fireTulip)return sc==='ember'?'اصعدي إلى توليب النار المتوهج في أعلى المنحدر.':'خذي الطريق الشمالي نحو قمة الغيوم، وساري يرافقكِ.';
+  if(!f.camped)return 'اقتربي من المخيم عند المنحدر واستريحي مع ساري.';
+  if(!f.swordFixed)return 'اضغطي زر «ساري» وأصلحي تناغم سيفه بمصل التوليب.';
+  if(!(f.w0&&f.w1&&f.w2))return sc==='echo'?'تصدّي لقطعان ذئاب الظلال ('+[f.w0,f.w1,f.w2].filter(Boolean).length+'/3). الحل: العلاج أو شل الحركة، لا المشرط.':'اتبعي الممر الشرقي من المخيم إلى وادي الأصداء.';
+  if(!f.blood)return sc==='glass'?'ادخلي المختبر القديم واطلبي من ساري المركب الأساسي.':'اتبعي الطريق في أعلى اليمين إلى مدينة الأطياف الزجاجية.';
+  if(!f.elixir)return 'عودي إلى المختبر وركّبي الإكسير: دم ساري + التوليب الأسود + الأعشاب المضيئة.';
+  if(!f.spread)return 'انشري الإكسير في النافورة المركزية.';
+  if(!f.proposed)return 'اصعدي إلى برج المدينة.';
+  if(!f.lordDown)return 'واجهي سيد الظلال: اجعلي تعويذتك مفككة للظلام.';
+  if(!f.antidote)return sc==='fanaa'?'اقتربي من مصدر مرض الظل وركّبي الترياق: التوليب الأسود + دماء الحراس.':'اتبعي الطريق إلى وادي الفناء.';
+  if(!f.home)return 'عودي إلى حديقة الفصول الأربعة.';
+  if(!f.wed)return 'اذهبي إلى ساحة الحفل في وسط الحديقة.';
+  if(!f.fin)return 'اقتربي من مكتبة الأكاديمية الضخمة.';
+  return 'انتهت الحكاية. تجولي مع ساري كما تشائين، أو ابدئي من جديد من الحقيبة.';
+};
+
+/* ---- skip: start from Sari for players of the earlier version ---- */
+async function skipToSari(){
+  closeDlg();S=fresh();
+  const f=S.flags;
+  ['tulipSeen','metTulip','hospSeen','diagnosed','leftAcademy','mapSeen','orbsAll','guardianMet','gVerdict','cured','returned','patientsHealed','p1done','gateOpen','crossed','dxCrystal','nectarGot','potion2','intentOk','kh0','kh1','kh2','kh3','done'].forEach(k=>f[k]=1);
+  S.chapters=['p','1','2','3','4','5','6','7','8','9','10','R','11','12','13','14','15','16','17','F'];
+  S.inv={compass:1,luminous:1};S.scene='crystal';S.x=750;S.y=980;
+  initScene();$('#title').hidden=true;ac();
+  await run(cloudCross);
+}
+$('#btnSkip').addEventListener('click',skipToSari);
+const _hud2=hud;hud=function(){_hud2();const k=S?musKey():'';if(k!==lastMK){lastMK=k;if(S)setDrone()}};
+
+/* ===================== تحسين الأداء + مؤثرات فانتازيا ===================== */
+/* 1) توهج سريع: صورة مصغّرة جاهزة بدل إنشاء تدرج لوني في كل إطار */
+const _gs={};
+function gspr(rgb){let s=_gs[rgb];if(!s){s=document.createElement('canvas');s.width=s.height=64;const g=s.getContext('2d'),gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba('+rgb+',1)');gr.addColorStop(1,'rgba('+rgb+',0)');g.fillStyle=gr;g.fillRect(0,0,64,64);_gs[rgb]=s}return s}
+glow=function(c,x,y,r,rgb,a){const pa=c.globalAlpha;c.globalAlpha=pa*Math.max(0,Math.min(1,a));c.drawImage(gspr(rgb),x-r,y-r,r*2,r*2);c.globalAlpha=pa};
+/* 2) أرضية المشاهد الجديدة تُرسم مرة واحدة ثم تُنسخ للجزء المرئي فقط */
+const CACHED=['cloud','ember','echo','glass','storm','fanaa'];
+function cacheGround(sc){
+  const g=sc.ground,w=sc.w,h=sc.h,cv2=document.createElement('canvas');cv2.width=w;cv2.height=h;g(cv2.getContext('2d'),0);
+  sc.ground=(c)=>{const vw=W/Z,vh=H/Z,sx=Math.max(0,Math.floor(cam.x)-2),sy=Math.max(0,Math.floor(cam.y)-2),sw=Math.min(w-sx,Math.ceil(vw)+6),sh=Math.min(h-sy,Math.ceil(vh)+6);if(sw>0&&sh>0)c.drawImage(cv2,sx,sy,sw,sh,sx,sy,sw,sh)};
+}
+const _is3=initScene;initScene=function(){_is3();if(CACHED.includes(S.scene)&&!cur._cached){cur._cached=1;cacheGround(cur)}};
+/* 3) مؤثرات */
+const bursts=[],trail=[];let fxT=0,trailT=0;
+function burst(x,y,rgb,n){n=n||22;for(let i=0;i<n;i++){const a=Math.random()*6.28,v=40+Math.random()*90;bursts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-30,l:1,rgb})}if(bursts.length>120)bursts.splice(0,bursts.length-120)}
+const _heal=sfx.heal,_gr=sfx.growl,_pk=sfx.pick;
+sfx.heal=function(){_heal();burst(P.x,P.y-24,'255,215,140',26)};
+sfx.growl=function(){_gr();burst(P.x+30,P.y-20,'200,90,255',18)};
+sfx.pick=function(){_pk();if(S&&S.scene!=='garden'&&$('#title').hidden)burst(P.x,P.y-24,'143,210,255',14)};
+const _ss=sariStep;sariStep=function(dt){_ss(dt);if(S&&F().sariJoin&&SAR.moving&&(trailT+=dt)>.06){trailT=0;trail.push({x:SAR.x,y:SAR.y-6,l:1});if(trail.length>40)trail.shift()}};
+function fxAll(c,t,vw,vh){
+  const dt=Math.min(.05,Math.max(0,t-fxT));fxT=t;
+  const k=S.scene,cx=cam.x,cy=cam.y,pa=c.globalAlpha;
+  if(k==='cloud'){
+    for(let i=0;i<14;i++){const x=cx+((i*131+t*(8+i%5*3))%vw),y=cy+(((i*89-t*6+Math.sin(t*.5+i)*20)%vh)+vh)%vh;glow(c,x,y,6+i%3*3,'220,235,255',.5+.3*Math.sin(t*2+i))}
+    for(let i=0;i<3;i++){const x=((t*14+i*520)%(cur.w+400))-200;ell(c,x,200+i*300,170,34,'rgba(220,230,255,.07)')}
+    const ph=t%9;if(ph<.7){const x=cx+vw*(.2+ph*.8),y=cy+vh*.05+ph*180;c.strokeStyle='rgba(255,255,255,'+(1-ph/.7)+')';c.lineWidth=2;c.beginPath();c.moveTo(x,y);c.lineTo(x-70,y-30);c.stroke()}
+  }else if(k==='ember'){
+    glow(c,600,70,170+Math.sin(t*2)*14,'255,110,40',.4);
+    for(let i=0;i<14;i++){const x=cx+((i*53+Math.sin(t+i)*24)%vw+vw)%vw,y=cy+vh-((t*38+i*47)%vh);glow(c,x,y,4+i%3*2,'255,140,60',.7)}
+    for(let i=0;i<12;i++){const x=cx+((i*71+t*10+Math.sin(t*.7+i)*18)%vw),y=cy+((t*24+i*61)%vh);glow(c,x,y,3,'235,245,255',.8)}
+  }else if(k==='echo'){
+    [[700,450],[380,300],[1000,640]].forEach((p,j)=>{const r=((t*38+j*60)%150);c.strokeStyle='rgba(170,160,255,'+Math.max(0,.4-r/400)+')';c.lineWidth=2;c.beginPath();c.arc(p[0],p[1],r,0,6.2832);c.stroke()});
+    for(let i=0;i<18;i++){const x=cx+((i*97+t*12)%vw),y=cy+((i*61+Math.sin(t+i)*30+vh)%vh);glow(c,x,y,8,'170,160,255',.5)}
+  }else if(k==='glass'){
+    for(let i=0;i<14;i++){const x=(i*173)%cur.w,y=(i*127)%cur.h,a=Math.max(0,Math.sin(t*1.5+i));glow(c,x,y,14,'200,240,255',a*.7)}
+    if(F().spread)for(let i=0;i<16;i++){const x=cx+((i*61+Math.sin(t+i)*30)%vw+vw)%vw,y=cy+((t*40+i*83)%vh);glow(c,x,y,7,i%2?'255,210,120':'255,150,190',.8)}
+  }else if(k==='storm'){
+    c.strokeStyle='rgba(170,185,235,.35)';c.lineWidth=1;c.beginPath();
+    for(let i=0;i<40;i++){const x=cx+((i*47+t*90)%vw),y=cy+((i*83+t*520)%vh);c.moveTo(x,y);c.lineTo(x-4,y+14)}c.stroke();
+    if(Math.sin(t*1.7)>.96){c.fillStyle='rgba(220,230,255,.18)';c.fillRect(cx,cy,vw,vh)}
+  }else if(k==='fanaa'){
+    for(let i=0;i<14;i++){const x=cx+((i*59+Math.sin(t*.8+i)*30)%vw+vw)%vw,y=cy+vh-((t*30+i*71)%vh);glow(c,x,y,12,'190,90,255',.55)}
+  }
+  if(F().sariJoin){
+    const rgb=F().swordFixed?'255,205,110':'110,170,255';
+    for(let i=trail.length-1;i>=0;i--){const q=trail[i];q.l-=dt*1.6;if(q.l<=0){trail.splice(i,1);continue}glow(c,q.x,q.y,10*q.l+3,rgb,q.l*.6)}
+  }
+  for(let i=bursts.length-1;i>=0;i--){const b=bursts[i];b.l-=dt*1.1;if(b.l<=0){bursts.splice(i,1);continue}b.x+=b.vx*dt;b.y+=b.vy*dt;b.vy+=60*dt;glow(c,b.x,b.y,9*b.l+2,b.rgb,b.l)}
+  c.globalAlpha=pa;
+}
+
+/* ===================== الجزء الرابع: رفع جودة الرسوم + مطبخ الأرواح (الفصول 39–53) ===================== */
+/* ---- 1) جودة الرسم: توهج شاشي، أشجار وزهور بتدرجات، شخصيات بإضاءة حافة ---- */
+glow=function(c,x,y,r,rgb,a){const pa=c.globalAlpha,po=c.globalCompositeOperation;c.globalAlpha=pa*clamp(a,0,1);c.globalCompositeOperation='screen';c.drawImage(gspr(rgb),x-r,y-r,r*2,r*2);c.globalCompositeOperation=po;c.globalAlpha=pa};
+function blob(c,x,y,r,hi,lo){const g=c.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r);g.addColorStop(0,hi);g.addColorStop(1,lo);c.beginPath();c.arc(x,y,r,0,6.2832);c.fillStyle=g;c.fill()}
+drawTree=function(c,x,y,s,k){
+  const P=TREE[k],t=performance.now()/1000,sw=Math.sin(t*.8+x*.03)*1.3*s;
+  ell(c,x+7*s,y+2,22*s,6*s,'rgba(0,0,0,.3)');
+  c.fillStyle=P.t;c.beginPath();c.moveTo(x-5.5*s,y+2);c.quadraticCurveTo(x-3*s,y-14*s,x-2.5*s,y-30*s);c.lineTo(x+2.5*s,y-30*s);c.quadraticCurveTo(x+3*s,y-14*s,x+5.5*s,y+2);c.fill();
+  rect(c,x+1*s,y-28*s,3*s,30*s,'rgba(0,0,0,.35)');
+  blob(c,x+sw*.5,y-40*s,23*s,P.b,P.a);blob(c,x-14*s+sw,y-31*s,16*s,P.b,P.a);blob(c,x+14*s+sw,y-32*s,16*s,P.c,P.b);blob(c,x-4*s+sw*1.4,y-51*s,13*s,P.c,P.b);
+  glow(c,x-6*s+sw*1.4,y-56*s,16*s,'255,255,230',.10);
+};
+drawTulip=function(c,x,y,col,s,t){
+  c.save();c.translate(x,y);c.scale(s,s);
+  const sw=Math.sin(t*1.4+x*.05)*1.5;
+  c.strokeStyle='#2f7a5a';c.lineWidth=2;c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(sw,-9,sw,-18);c.stroke();
+  c.strokeStyle='rgba(180,255,200,.25)';c.lineWidth=.6;c.beginPath();c.moveTo(.6,0);c.quadraticCurveTo(sw+.6,-9,sw+.6,-18);c.stroke();
+  c.fillStyle='#2b6b50';c.beginPath();c.moveTo(0,-2);c.quadraticCurveTo(-10,-8,-7,-16);c.quadraticCurveTo(-2,-9,0,-2);c.fill();
+  c.translate(sw,-18);
+  const pt=()=>{c.beginPath();c.moveTo(-6,-2);c.lineTo(-5,-11);c.lineTo(-2,-6);c.lineTo(0,-12);c.lineTo(2,-6);c.lineTo(5,-11);c.lineTo(6,-2);c.quadraticCurveTo(6,6,0,7);c.quadraticCurveTo(-6,6,-6,-2)};
+  pt();c.fillStyle=col;c.fill();
+  const g=c.createLinearGradient(-6,-12,6,7);g.addColorStop(0,'rgba(255,255,255,.38)');g.addColorStop(.5,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(0,0,0,.38)');pt();c.fillStyle=g;c.fill();
+  c.restore();glow(c,x+sw*s,y-18*s,9*s,'255,235,220',.12);
+};
+drawPlayer=function(c,t){
+  const sw=P.moving?Math.sin(P.walk*10)*3:0,bob=P.moving?Math.abs(Math.sin(P.walk*10))*-1.5:Math.sin(t*2)*.5,x=P.x,y=P.y,f=P.face;
+  ell(c,x,y+1,13,5,'rgba(0,0,0,.4)');glow(c,x,y-24+bob,36,'244,185,92',.10);
+  poly(c,[[x-12+sw*.6,y],[x-7,y-27+bob],[x+7,y-27+bob],[x+12-sw*.6,y]],vgrad(c,y-28,y,[[0,'#2b2148'],[1,'#0d0b18']]));
+  line(c,[[x-12+sw*.6,y],[x-7,y-27+bob]],1,'rgba(190,175,255,.4)');
+  poly(c,[[x-9,y-27+bob],[x+9,y-27+bob],[x+6,y-15+bob],[x-6,y-15+bob]],vgrad(c,y-27,y-15,[[0,'#e8344f'],[1,'#8e0c24']]));
+  line(c,[[x-7,y-26+bob],[x+7*f,y-12+bob]],1.8,'#d8b678');circ(c,x+f*2,y-17+bob,1.6,'#ffe2a0');
+  const hy=y-38+bob,hr=12;
+  circ(c,x,hy,hr+2,'rgba(255,215,150,.55)');circ(c,x,hy,hr+1.4,'#c4122f');
+  if(FACE_OK){c.save();c.beginPath();c.arc(x,hy,hr,0,6.2832);c.clip();c.drawImage(faceImg,x-hr,hy-hr,hr*2,hr*2);const g=c.createRadialGradient(x-f*4,hy-4,2,x,hy,hr+2);g.addColorStop(0,'rgba(255,240,210,.12)');g.addColorStop(1,'rgba(10,5,25,.35)');c.fillStyle=g;c.fillRect(x-hr,hy-hr,hr*2,hr*2);c.restore()}
+  else circ(c,x,hy,hr,'#f0c9a4');
+};
+drawSari=function(c,t,s,pose){
+  const f=s.face,sw=s.moving?Math.sin(s.walk*10)*3:0,bob=s.moving?Math.abs(Math.sin(s.walk*10))*-1.5:Math.sin(t*2)*.5;
+  const down=pose==='down',sw0=F().swordFixed?'255,205,110':'110,170,255',fl=Math.sin(t*3)*2+(s.moving?5:0);
+  ell(c,s.x,s.y+1,down?26:14,5,'rgba(0,0,0,.4)');glow(c,s.x,s.y-24,38,sw0,.09);
+  c.save();c.translate(s.x,s.y);if(down)c.rotate(-1.45*f);
+  c.fillStyle=vgrad(c,-28,0,[[0,'#3156b8'],[1,'#141c45']]);c.beginPath();c.moveTo(-8,-27+bob);c.lineTo(8,-27+bob);c.quadraticCurveTo(12-f*(8+fl),-12,12-f*(11+fl),-1);c.lineTo(-12-f*(11+fl),-1);c.quadraticCurveTo(-12-f*(8+fl),-12,-8,-27+bob);c.fill();
+  poly(c,[[-10+sw*.6,0],[-6,-24+bob],[6,-24+bob],[10-sw*.6,0]],'#242c48');
+  poly(c,[[-10,-28+bob],[10,-28+bob],[7,-14+bob],[-7,-14+bob]],vgrad(c,-28,-14,[[0,'#e4ebff'],[1,'#8c98b8']]));
+  circ(c,-10,-27+bob,4.5,'#aeb9d6');circ(c,10,-27+bob,4.5,'#aeb9d6');rect(c,-7,-16+bob,14,2.4,'#c7a45a');rect(c,-1,-27+bob,2,11,'rgba(255,255,255,.5)');
+  line(c,[[f*8,-20+bob],[f*17,-48+bob]],3.4,'rgba('+sw0+',.55)');line(c,[[f*8,-20+bob],[f*17,-48+bob]],1.4,'#fff');line(c,[[f*5,-22+bob],[f*12,-20+bob]],2,'#c7a45a');
+  glow(c,f*17,-47+bob,down?22:34,sw0,.55+Math.sin(t*3)*.12);
+  const hy=-39+bob,hr=12;circ(c,0,hy,hr+2.2,'rgba(143,210,255,.5)');circ(c,0,hy,hr+1.6,'#8fd2ff');
+  if(SARI_OK){c.save();c.beginPath();c.arc(0,hy,hr,0,6.2832);c.clip();c.drawImage(sariImg,-hr,hy-hr,hr*2,hr*2);const g=c.createRadialGradient(-f*4,hy-4,2,0,hy,hr+2);g.addColorStop(0,'rgba(220,240,255,.12)');g.addColorStop(1,'rgba(5,10,35,.35)');c.fillStyle=g;c.fillRect(-hr,hy-hr,hr*2,hr*2);c.restore()}
+  else circ(c,0,hy,hr,'#d9a77a');
+  c.restore();
+};
+/* ملمس الأرضية (يُرسم على الجزء المرئي فقط) */
+const TXC=document.createElement('canvas');TXC.width=TXC.height=128;
+(function(){const g=TXC.getContext('2d'),r=rng(9);for(let i=0;i<230;i++){g.fillStyle=r()<.5?'rgba(255,255,255,.10)':'rgba(0,0,0,.14)';const s=1+r()*2.2;g.fillRect(r()*128,r()*128,s,s)}})();
+const _is4=initScene;initScene=function(){_is4();if(cur&&!cur._tx){cur._tx=1;const g0=cur.ground;cur.ground=(c,t)=>{g0(c,t);const p=c.createPattern(TXC,'repeat');if(p){c.fillStyle=p;c.fillRect(cam.x-4,cam.y-4,W/Z+8,H/Z+8)}}}};
+/* إضاءة وتدرج لوني وضباب فوق المشهد */
+let kT0=0;function mood(m){F().kMood=m;kT0=performance.now()/1000}
+const isK=()=>S&&/^k\d$/.test(S.scene);
+function lightPass(t){
+  if(!S||!cur||!$('#title').hidden)return;
+  const c=ctx,k=cur.amb,f=F(),m=isK()?f.kMood:'';
+  c.setTransform(DPR,0,0,DPR,0,0);const po=c.globalCompositeOperation;
+  const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba('+k+',.07)');g.addColorStop(.6,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(4,3,16,.3)');c.fillStyle=g;c.fillRect(0,0,W,H);
+  c.globalAlpha=.1;for(let i=0;i<3;i++){const x=((t*(6+i*4)+i*W*.5)%(W+400))-200,y=H*(.25+i*.25)+Math.sin(t*.3+i)*20;c.drawImage(gspr(k),x-260,y-70,520,140)}
+  const px=(P.x-cam.x)*Z,py=(P.y-cam.y-30)*Z;c.globalCompositeOperation='screen';c.globalAlpha=.16;c.drawImage(gspr(f.swordFixed?'255,205,110':'255,200,140'),px-150*Z,py-150*Z,300*Z,300*Z);
+  c.globalAlpha=1;c.globalCompositeOperation='source-over';
+  if(m==='red'){c.fillStyle='rgba(255,40,50,'+(.16+.06*Math.sin(t*6))+')';c.fillRect(0,0,W,H)}
+  else if(m==='blue'){c.fillStyle='rgba(80,140,255,.13)';c.fillRect(0,0,W,H)}
+  else if(m==='candle'){c.fillStyle='rgba(255,170,70,'+(.07+.03*Math.sin(t*9))+')';c.fillRect(0,0,W,H)}
+  else if(m==='mono'){c.globalCompositeOperation='saturation';c.fillStyle='#808080';c.fillRect(0,0,W,H);c.globalCompositeOperation='multiply';c.fillStyle='rgb(200,180,240)';c.fillRect(0,0,W,H)}
+  else if(m==='lens'){
+    const p=clamp((t-kT0)/8,0,1);
+    if(p<1){c.globalAlpha=1-p;c.globalCompositeOperation='saturation';c.fillStyle='#808080';c.fillRect(0,0,W,H)}
+    c.globalCompositeOperation='screen';c.globalAlpha=.3+.5*p;const sx=W*.82,sy=H*.16;c.drawImage(gspr('255,235,180'),sx-W*.55,sy-W*.55,W*1.1,W*1.1);
+    c.globalAlpha=.25*p;for(let j=1;j<5;j++){const q=j/5;c.drawImage(gspr(j%2?'255,190,140':'160,210,255'),sx+(W/2-sx)*q*1.6-30*j,sy+(H/2-sy)*q*1.6-30*j,60*j,60*j)}
+  }
+  c.globalCompositeOperation=po;c.globalAlpha=1;
+  const tr=(m==='shake')?'translate('+((Math.random()-.5)*5).toFixed(1)+'px,'+((Math.random()-.5)*5).toFixed(1)+'px)':'';if(cv.style.transform!==tr)cv.style.transform=tr;
+}
+const _rn=render;render=function(t){_rn(t);try{lightPass(t)}catch(e){console.error(e)}};
+
+/* ---- 2) مطبخ الأرواح والكيانات ---- */
+ITEMS.dhikra={n:'قطرات ذكرى سعيدة',d:'ثلاث قطرات ذهبية دافئة سقطت في المرجل.',c:'#ffd36b'};
+ITEMS.zayt={n:'الزيت الذهبي',d:'قادر على إعادة أي روح إلى عالم الأحياء.',c:'#ffc93c'};
+ITEMS.miftah={n:'مفتاح الباب الكريستالي',d:'مصنوع من طاقة الأرواح النقية.',c:'#9fe8ff'};
+SPK['أورفيل']='#7fc8ff';BLIP['أورفيل']=120;SPK['حاكم المطبخ']='#ffb347';BLIP['حاكم المطبخ']=80;if(!SPK['ساري'])SPK['ساري']='#8fd2ff';
+const ORD=['التاسع والثلاثون','الأربعون','الحادي والأربعون','الثاني والأربعون','الثالث والأربعون','الرابع والأربعون','الخامس والأربعون','السادس والأربعون','السابع والأربعون','الثامن والأربعون','التاسع والأربعون','الخمسون','الحادي والخمسون','الثاني والخمسون','الثالث والخمسون والأخير'];
+const KT=[['خلف ستار الزفاف','بابٌ خفي خلف العرش يبتلعهما.'],['عتبة مطبخ الأرواح','هنا الأرواح مكوّنات والذكريات توابل.'],['كبير طهاة الكيانات (أورفيل)','كيان بلا وجه يطلب ثمنًا.'],['مرجل الذكريات المفقودة','قطرات من ذكرى سعيدة.'],['شعلة الغضب الأزرق','تهدئة الشعلة بسحر الحماية.'],['تذوق الندم','وصفة تكشف ماضي ساري.'],['همسات المكونات الحية','ترياق الحقيقة.'],['سيد الظلال الملتهم','كيان مظلم يستهدف روح شهريان.'],['مائدة الأرواح المنسية','أسئلة الحراس الفلسفية.'],['سر الزيت الذهبي','عنصر يعيد الأرواح إلى الأحياء.'],['وصفة الخلود الخاطئة','فجوة زمنية يجب إغلاقها.'],['عناق الأرواح','طاقتان تندمجان.'],['مفتاح الباب الكريستالي','القطع الأخيرة للمفتاح.'],['المواجهة مع حاكم المطبخ','التحدي الأخير.'],['الصحوة بعد الفجر الأثيري','العودة إلى العالم الحقيقي.']];
+CH.push(...KT.map((x,i)=>({id:''+(39+i),l:'الفصل '+ORD[i],t:x[0],s:x[1]})));
+NOVEL.push(...CH.slice(-15).map(c=>({id:c.id,l:c.l,t:c.t,p:[c.s]})));
+const KP={k1:{bg:['#150b26','#2a1346'],fl:'#1c1233',acc:'180,110,255'},k2:{bg:['#0b1a26','#123a4a'],fl:'#0f2230',acc:'110,220,230'},k3:{bg:['#1f0b14','#3a1424'],fl:'#2a1119',acc:'255,110,120'},k4:{bg:['#1f1708','#3a2a0d'],fl:'#2a2010',acc:'255,205,110'}};
+CACHED.push('k1','k2','k3','k4');
+['k1','k2','k3','k4'].forEach((k,i)=>{MUS[k]=[MUS.valley,MUS.crystal,MUS.forest,MUS.garden][i];MUS[k+'_s']=HM;DR[k]=[73.4,82.4,65.4,98][i];DR[k+'_s']=[65.4,73.4,55,87.3][i]});
+sfx.key=()=>{tone(660,.25,'triangle',.06);tone(990,.3,'sine',.04,.08)};
+function drawCauldron(c,x,y,s,t,rgb){
+  ell(c,x,y+4*s,36*s,9*s,'rgba(0,0,0,.4)');
+  const g=c.createRadialGradient(x-10*s,y-22*s,4*s,x,y-14*s,38*s);g.addColorStop(0,'#4d4968');g.addColorStop(1,'#13111e');
+  c.fillStyle=g;c.beginPath();c.ellipse(x,y-14*s,32*s,24*s,0,0,6.2832);c.fill();
+  ell(c,x,y-30*s,30*s,9*s,'#1d1a2c');ell(c,x,y-31*s,25*s,6.5*s,'rgba('+rgb+',.9)');glow(c,x,y-34*s,52*s,rgb,.4);
+  for(let i=0;i<4;i++){const p=(t*.7+i*.27)%1;circ(c,x+Math.sin(i*2.3)*13*s,y-31*s-p*9*s,(1.5+i%2)*s,'rgba(255,255,255,'+(1-p)*.7+')')}
+  for(let i=0;i<4;i++){const p=(t*.25+i*.25)%1;glow(c,x+Math.sin(t+i*1.7)*10*s,y-36*s-p*72*s,(10+p*24)*s,rgb,(1-p)*.38)}
+}
+function drawShelf(c,x,y,w,t,rgb){
+  rect(c,x,y-50,w,6,'#3a2a24');rect(c,x,y-100,w,6,'#3a2a24');const cl=[rgb,'255,180,110','150,230,255'];
+  for(let i=0;i<w/26;i++)for(let j=0;j<2;j++){const jx=x+8+i*26,jy=y-50-j*50,col=cl[(i+j)%3],a=.55+.3*Math.sin(t*2+i*1.3+j);rrect(c,jx,jy-24,16,24,5,'#2b2740');rrect(c,jx+2,jy-18,12,16,4,'rgba('+col+','+a+')');glow(c,jx+8,jy-12,20,col,a*.5)}
+}
+function drawEntity(c,x,y,t,s,rgb,crown){
+  ell(c,x,y+3,26*s,8*s,'rgba(0,0,0,.4)');glow(c,x,y-50*s,90*s,rgb,.35+Math.sin(t*2)*.08);
+  poly(c,[[x-24*s,y],[x-12*s,y-66*s],[x+12*s,y-66*s],[x+24*s,y]],vgrad(c,y-70*s,y,[[0,'#0b0b1c'],[1,'#1b1a3a']]));
+  ell(c,x,y-76*s,14*s,17*s,'#05050f');ell(c,x,y-76*s,9*s,12*s,'rgba('+rgb+',.12)');
+  if(crown)for(let i=0;i<5;i++){const h=(16+Math.sin(t*7+i)*5)*s;poly(c,[[x-15*s+i*7.5*s,y-90*s],[x-12*s+i*7.5*s,y-90*s-h],[x-9*s+i*7.5*s,y-90*s]],'rgba('+rgb+',.9)')}
+  for(let i=0;i<8;i++){const a=t*.9+i*.8;glow(c,x+Math.cos(a)*34*s,y-48*s+Math.sin(a)*12*s,8*s,rgb,.6)}
+}
+function kitchenScene(id,name,w,h,spawn,seed){
+  const r=rng(seed),p=KP[id],sc=mk(id,name,w,h,spawn,p.acc),wy=h*.62;
+  sc.ground=(c,t)=>{
+    c.fillStyle=vgrad(c,0,h,[[0,p.bg[0]],[.6,p.bg[1]],[.62,p.fl],[1,'#070510']]);c.fillRect(0,0,w,h);
+    c.fillStyle='rgba(0,0,0,.3)';for(let x=0;x<w;x+=140){c.beginPath();c.moveTo(x+14,wy);c.lineTo(x+14,wy-110);c.quadraticCurveTo(x+70,wy-190,x+126,wy-110);c.lineTo(x+126,wy);c.fill()}
+    c.strokeStyle='rgba('+p.acc+',.07)';c.lineWidth=1;c.beginPath();for(let y=wy;y<h;y+=60){c.moveTo(0,y);c.lineTo(w,y)}for(let x=0;x<w;x+=80){c.moveTo(x,wy);c.lineTo(x,h)}c.stroke();
+    line(c,[[0,h*.77],[w,h*.77]],70,'rgba('+p.acc+',.05)');line(c,[[0,h*.77],[w,h*.77]],3,'rgba('+p.acc+',.18)');
+    for(let x=150;x<w;x+=260){c.strokeStyle='rgba('+p.acc+',.22)';c.lineWidth=1.5;c.beginPath();c.arc(x,h*.77,20,0,6.2832);c.moveTo(x-12,h*.77);c.lineTo(x+12,h*.77);c.stroke()}
+  };
+  for(let x=0;x<=w;x+=40)sc.solids.push({x,y:wy+10,r:26});
+  for(let x=170;x<w;x+=330){const s=.9+r()*.5;addDeco(sc,x,wy+30,70*s,(c,t)=>drawCauldron(c,x,wy+30,s,t,p.acc));sc.solids.push({x,y:wy+30,r:24*s})}
+  for(let x=70;x<w;x+=330)addDeco(sc,x,wy,90,(c,t)=>drawShelf(c,x,wy-6,130,t,p.acc));
+  for(let x=300;x<w;x+=330)addDeco(sc,x,wy+4,60,(c,t)=>{line(c,[[x,0],[x,wy-70]],1.2,'rgba(200,190,230,.3)');circ(c,x,wy-64,7,'#2b2740');glow(c,x,wy-64,60,p.acc,.55+Math.sin(t*8+x)*.12)});
+  [[w*.25,h*.82],[w*.7,h*.86]].forEach((q,i)=>addDeco(sc,q[0],q[1],40,(c,t)=>drawGhost(c,q[0],q[1],t,i*2)));
+  return sc;
+}
+function kOrb(x,y,rgb){return(c,t)=>{glow(c,x,y-20,46+Math.sin(t*3)*5,rgb,.55);for(let i=0;i<6;i++){const a=t*1.4+i*1.047;glow(c,x+Math.cos(a)*22,y-20+Math.sin(a)*8,7,rgb,.8)}circ(c,x,y-20,5,'rgba(255,255,255,.9)')}}
+const pickMem=async(n)=>{const pool=['ضحكة أبي في الحديقة','أول توليب أسود تكلّم معي','ليلة العرس وألف توليب','أول مريض شفيته'];for(let i=0;i<3;i++){const k=await choose('اختاري ذكرى سعيدة تسقط في المرجل ('+(i+1)+'/3)',pool,'شهريان');pool.splice(k,1);sfx.pick();burst(P.x,P.y-30,'255,210,110',16)}};
+const KS=[
+ [40,'k1',480,640,'عتبة المطبخ','اقتربي من الأضواء وسط القاعة الكبرى.','steam',async()=>{
+   await talk(['دخلا القاعة الكبرى؛ مراجل ضخمة يتصاعد منها بخار بألوان الأطياف، وهمسٌ بعيد يتردد بين الرفوف.',['ساري','اسمعي القانون يا شهريان: هنا الأرواح هي المكوّنات، والذكريات هي التوابل.'],['شهريان','وماذا يُطهى هنا بالضبط؟'],['ساري','كل ما لم نجرؤ على قوله. ابقي قريبة مني، ولا تذوقي شيئًا بلا سؤال.']])}],
+ [41,'k1',1150,620,'كبير الطهاة','تقدّمي نحو الكيان الأزرق.','cold',async()=>{
+   await talk(['خبت الأنوار، وظهر كيان قديم بلا وجه تحيط به هالة زرقاء باردة.',['أورفيل','لا يدخل مطبخي أحد، ولا يخرج منه، إلا بثمن.']]);
+   const k=await choose('ماذا تقدّمين؟',['ذكرى صغيرة من الطفولة','دمعة لم تُذرف بعد','لحنًا كنتِ تدندنينه'],'شهريان');
+   await talk([['أورفيل',['قبلتُ الذكرى. تذكّري أنها لم تعد لكِ.','قبلتُ الدمعة. ستبكينها في وقتٍ آخر.','قبلتُ اللحن. لن تدندنيه كما كان.'][k]],['ساري','حسنًا. الثمن دُفع، فلنتقدم قبل أن يغيّر رأيه.']]);
+   await goto('k2',150,640)}],
+ [42,'k2',480,640,'مرجل الذكريات','اجمعي ثلاث ذكريات سعيدة للمرجل.','gold',async()=>{
+   await talk(['مرجل صامت يحتاج إلى طاقة مخفية لا تُستعاد إلا بالفرح.',['ساري','ذكرى سعيدة حقيقية يا شهريان، لا ما يُفترض أن يُقال.']]);
+   await pickMem();give('dhikra',3);sfx.heal();
+   await talk(['توهج المرجل بذهبٍ ناعم، وتبعت الشراراتُ خطى ساري.',['ساري','هذه أول مرة أرى فيها هذا المكان يبتسم.']])}],
+ [43,'k2',900,620,'شعلة الغضب','اقتربي من الشعلة الحمراء.','red',async()=>{
+   await talk(['اندفعت شعلة غضب هائلة تهدد بإغلاق المخرج، واحمرّ كل شيء حولهما.',['ساري','لا تواجهيها بالصراخ. نحميها لا نحاربها.']]);
+   await quiz('كيف تهدئين الشعلة؟',['أصرخ بوجهها','أستخدم سحر الحماية مع كلمة هادئة','أرمي عليها الماء'],1,{0:'الغضب يكبر حين يُقابَل بالغضب.',2:'الماء يثير الدخان ولا يشفي الشعلة.'});
+   mood('blue');sfx.heal();
+   await talk(['خفتت الشعلة وتحولت إلى زرقة هادئة، وانفتح المخرج.',['ساري','أحسنتِ. السحر الحق لا يصرخ.']])}],
+ [44,'k2',1250,660,'وصفة الندم','تذوّقي الوصفة المتبقية على الطاولة.','mono',async()=>{
+   await talk(['ذاق ساري قطرة واحدة، فامتلأ المكان بذكرى رمادية بنفسجية.','رأيا فارسًا شابًا أقسم أن يحمي مملكته، ثم ترك بابًا مفتوحًا ليلةً واحدة، فدخل الظل عبره. ومن يومها ارتبط اسمه بهذا المطبخ.']);
+   await choose('ماذا تفعلين؟',['أمسك يده بصمت','أقول له: الندم ليس حكمًا نهائيًا'],'شهريان');
+   await talk([['ساري','لم أخبر أحدًا بهذا من قبل. لكنكِ لم تحكمي عليّ.']]);mood('')}],
+ [45,'k2',1500,620,'رفوف المكونات','حضّري ترياق الحقيقة عند الرفوف.','whisper',async()=>{
+   await talk(['بدأت المكونات في الرفوف تهمس وتتحرك كلما اقتربت شهريان، وتحركت الظلال على الجدران من تلقاء نفسها.',['ساري','هي تعرف ما تحتاجينه. أصغي جيدًا.']]);
+   await quiz('ما مكوّنات ترياق الحقيقة؟',['ملح الصبر مع زهرة الصدق','دخان الكتمان','رماد الغضب'],0,{1:'الدخان يخفي ولا يكشف.',2:'الرماد يحرق الحقيقة.'});
+   sfx.heal();await talk(['اكتمل الترياق وهو يتلألأ كالفجر.']);await goto('k3',150,640)}],
+ [46,'k3',480,640,'ظلال تقترب','واجهي سيد الظلال مع ساري.','shake',async()=>{
+   await talk(['هاجم كيان مظلم روح شهريان، فاندفع ساري يحميها بقدراته الأثيرية.',['سيد الظلال','روحكِ ستكون أشهى توابلي!']]);
+   let k;for(;;){k=await choose('ماذا تفعلين؟',['أرسل تعويذة حماية لساري','أطلق نورًا شافيًا يبدد الظل','أهاجم بالمشرط'],'شهريان');if(k<2)break;await talk(['المشرط للجراحة لا للقتال يا طبيبة!'])}
+   sfx.growl();await talk(['ومضت البروق، واختفت الظلال مع كل ضربة من سيف ساري.',['ساري','ابقي خلفي… ها قد ذهب.']]);mood('')}],
+ [47,'k3',1000,620,'مائدة الأرواح','اجلسي إلى المائدة وأجيبي الحراس.','candle',async()=>{
+   await talk(['مائدة ضخمة تحيط بها شموع راقصة، وحول المائدة جلس حراس المطبخ.',['حاكم المطبخ','أجيبي أيتها الطبيبة، وإلا بقيتِ على مائدتنا.']]);
+   await quiz('ما أثمن ما في الذاكرة؟',['أن نتذكر من خسرنا وحسب','أن نتذكر ما أحببنا ولماذا','أن ننسى كل شيء'],1,{0:'الحنين وحده يجرح.',2:'النسيان يمحو الحب مع الألم.'});
+   await quiz('هل الشفاء أن ننسى الألم؟',['نعم، دائمًا','لا، بل أن نعيش مع ما بقي منه','لا يوجد شفاء'],1,{0:'النسيان ليس شفاءً.',2:'الأمل أوسع من ذلك.'});
+   await talk(['ساد صمتٌ طويل، ثم ارتفع صدى الحراس: «عبرتِ.»']);mood('')}],
+ [48,'k3',1450,650,'الزيت الذهبي','اقتربي من القارورة المتوهجة.','float',async()=>{
+   await talk(['في آخر الرفوف، قارورة تتوهج بذهب شديد، وجزيئاتها تطفو ببطء كأن لا جاذبية لها.',['ساري','هذا أهم ما في المطبخ: القدرة على إعادة أي روح إلى عالم الأحياء.']]);
+   give('zayt');sfx.heal();await goto('k4',150,640)}],
+ [49,'k4',480,640,'فجوة الزمن','أغلقي الفجوة قبل أن تتسع.','vortex',async()=>{
+   await talk(['أخطأت التعويذة في وصفة الخلود، فانفتحت فجوة زمنية تدور كدوامة، وتباطأت خطاهما.',['ساري','بسرعة! لا وقت لدينا!']]);
+   await quiz('كيف تغلقين الفجوة؟',['أركض بعيدًا','أقلب المرجل ثلاث دورات عكس الزمن','أضيف مزيدًا من الملح'],1,{0:'الفجوة تتبعنا أينما ذهبنا.',2:'الملح لن يوقف الزمن.'});
+   sfx.heal();await talk(['انطوى الدوران على نفسه، وعاد الزمن إلى سرعته.']);mood('')}],
+ [50,'k4',840,630,'عناق الأرواح','اقتربي من ساري عند الضوء.','aura',async()=>{
+   await talk(['اقترب الخطر الأكبر، فنظرت شهريان إلى ساري بلا كلام.',['ساري','لست خائفًا من شيء ما دمتِ هنا.'],['شهريان','ولا أنا.']]);
+   F().kAura=1;mood('aura');sfx.heal();burst(P.x,P.y-30,'255,215,160',30);
+   await talk(['اندمجت طاقتاهما في هالة واحدة تحيط بهما، ولم يعد الظلام يستطيع الاقتراب.'])}],
+ [51,'k4',1200,650,'قطع المفتاح','ركّبي قطع المفتاح الأخيرة.','',async()=>{
+   await talk(['على الطاولة ثلاث قطع من طاقة الأرواح النقية.']);
+   for(let i=0;i<3;i++){await choose('ركّبي القطعة '+(i+1)+' من 3',['أضعها في مكانها'],'شهريان');sfx.key();burst(P.x,P.y-30,'160,230,255',14)}
+   give('miftah');await talk([['ساري','ها هو مفتاح الباب الكريستالي. ما بقي إلا حاكم المطبخ.']])}],
+ [52,'k4',1500,620,'حاكم المطبخ','واجهي حاكم المطبخ.','boss',async()=>{
+   await talk(['وقف الكيان الأكبر في وجههما، وتحركت الخلفية مع كل خطوة يخطوها.',['حاكم المطبخ','لا أحد يخرج من مطبخي… إلا إن أطعمني ما لا يملكه.']]);
+   const Q=[['كيف تواجهينه؟',['أدمج قوتي مع ساري','أهرب وحدي','أعطيه ذكرى غيري'],0],['وكيف تردّين عليه؟',['أقاتله بالغضب','أقدم له الزيت الذهبي وأعرض عليه الراحة','أصمت وأنتظر'],1],['والآن؟',['أفتح الباب بالمفتاح','أنسى وأعود','أطلب منه مهلة'],0]];
+   for(const q of Q){await quiz(q[0],q[1],q[2],{},'شهريان');burst(P.x+40,P.y-40,'255,190,90',24);sfx.growl()}
+   await talk([['حاكم المطبخ','أنتما… لا تشبهان مَن قبلكما. اذهبا.'],['ساري','هيا يا شهريان، الباب مفتوح.']]);mood('')}],
+ [53,'k4',1700,660,'الباب الكريستالي','افتحي الباب الكريستالي.','lens',async()=>{
+   mood('lens');sfx.key();
+   await talk(['انفتح الباب، وتدفق ضوء شمسٍ مشعٍّ طردت أشعته ألوان العالم السفلي تدريجيًا.',['ساري','هذا هو النهار الذي وعدتك به.'],['شهريان','وقد رجعنا… وبين روحينا رباط لا ينفصم.']]);
+   await goto('garden',750,300);F().kDone=1;F().kAura=0;mood('');
+   await card('النهاية','الصحوة بعد الفجر الأثيري','حكاية الحب والطب والسحر… وما زال الأفق مفتوحًا.');openOv($('#finOv'))}]
+];
+function patchKitchen(){
+  SC.k1=kitchenScene('k1','مطبخ الأرواح: القاعة الكبرى',1500,900,[150,640],101);
+  SC.k2=kitchenScene('k2','ممر وصفات المشاعر',1800,900,[150,640],102);
+  SC.k3=kitchenScene('k3','ممر صراع الكيانات',1700,900,[150,640],103);
+  SC.k4=kitchenScene('k4','ممر الهروب الأخير',1900,900,[150,640],104);
+  KS.forEach((e,i)=>{const[id,sc,x,y,lab,goal,md,fn]=e,rgb=KP[sc].acc;
+    SC[sc].objs.push(OBJ({id:'k'+id,x,y,r:76,label:lab,show:()=>F().kStep===i,f:id===41?(c,t)=>{drawEntity(c,x+60,y,t,1,'120,200,255');kOrb(x,y,rgb)(c,t)}:id===52?(c,t)=>{drawEntity(c,x+70,y,t,1.5,'255,170,70',1);kOrb(x,y,rgb)(c,t)}:kOrb(x,y,rgb),
+      use:async()=>{await chapter(''+id);mood(md);await fn();F().kStep=i+1;save()}}))});
+  {const fl=SC.garden.objs.find(o=>o.id==='finalLib');if(fl){fl.x=420;fl.y=500;fl.r=90;fl.label='المكتبة: كتاب متوهج';fl.f=(c,t)=>{glow(c,420,470,60+Math.sin(t*2.5)*6,'255,220,150',.6);rrect(c,404,478,32,22,3,'#6b3a2a');rrect(c,408,472,24,12,2,'#f3e6c4');glow(c,420,470,24,'255,255,255',.4)}}}
+  SC.garden.objs.push(OBJ({id:'secretDoor',x:750,y:540,r:80,label:'باب خفي خلف العرش',show:()=>F().fin&&!F().kStarted,
+    f:(c,t)=>{c.save();c.fillStyle='#1a1233';c.beginPath();c.moveTo(722,520);c.lineTo(722,455);c.quadraticCurveTo(750,423,778,455);c.lineTo(778,520);c.fill();c.restore();glow(c,750,475,70+Math.sin(t*2)*6,'190,110,255',.6);glow(c,750,465,28,'255,255,255',.35)},
+    use:async()=>{await chapter('39');await talk(['بعد انتهاء الحفل، انفتح بابٌ مخفي خلف العرش وابتلع شهريان وساري.','ووجدا نفسيهما في دهليز تملؤه أضواء أثيرية أرجوانية، والأرض تهتز اهتزازًا خفيفًا.']);F().kStarted=1;F().kStep=0;await goto('k1',150,640)}}));
+}
+/* مؤثرات المطبخ: بخار، جمرات، همسات، دوامة، هالة مشتركة */
+let kA=0,kB=0,kL=0;
+const _fx4=fxAll;fxAll=function(c,t,vw,vh){
+  _fx4(c,t,vw,vh);if(!isK())return;
+  const cx=cam.x,cy=cam.y,m=F().kMood,rgb=cur.amb,pa=c.globalAlpha,dt=Math.min(.05,Math.max(0,t-kL));kL=t;
+  for(let i=0;i<16;i++){const x=cx+((i*97+Math.sin(t*.5+i)*30)%vw+vw)%vw,y=cy+vh-((t*(18+i%4*6)+i*53)%vh);glow(c,x,y,4+i%3*2,rgb,.55)}
+  if((kA+=dt)>1.3){kA=0;noise(.5,.014,260,'lowpass',1)}
+  if((kB+=dt)>6){kB=0;noise(.7,.012,1400,'bandpass',4)}
+  if(m==='vortex')for(let i=0;i<26;i++){const a=t*2+i*.5,rd=(i*11+t*30)%240;glow(c,cx+vw/2+Math.cos(a)*rd,cy+vh/2+Math.sin(a)*rd*.6,9,'190,120,255',.8)}
+  if(m==='shake'&&Math.sin(t*5)>.9){c.fillStyle='rgba(220,230,255,.14)';c.fillRect(cx,cy,vw,vh)}
+  if(m==='float')for(let i=0;i<20;i++){const x=cx+((i*61+Math.sin(t*.6+i)*20)%vw+vw)%vw,y=cy+vh-((t*14+i*47)%vh);glow(c,x,y,8,'255,215,110',.7)}
+  if(m==='boss'){glow(c,cx+vw/2,cy+vh*.35,170+Math.sin(t*3)*20,'255,150,60',.22)}
+  if(F().kAura&&F().sariJoin){const mx=(P.x+SAR.x)/2,my=(P.y+SAR.y)/2-26,d=dist(P.x,P.y,SAR.x,SAR.y);glow(c,mx,my,(d<70?90:50)+Math.sin(t*3)*6,'255,215,160',d<70?.7:.3)}
+  c.globalAlpha=pa;
+};
+/* هدف الفصل الحالي */
+function kGoal(){return !F().kStarted?'اقتربي من الباب الخفي خلف العرش في حديقة الفصول الأربعة.':(KS[F().kStep]?KS[F().kStep][5]:'')}
+const _gt4=goalText,_ht4=hintText;
+goalText=function(){return F().wed&&!F().fin?'اتبعي الممر الحجري غربًا إلى الكتاب المتوهج (مكتبة الأكاديمية).':F().fin&&!F().kDone?kGoal():_gt4()};
+hintText=function(){return F().wed&&!F().fin?'اتبعي الممر الحجري غربًا إلى الكتاب المتوهج (مكتبة الأكاديمية).':F().fin&&!F().kDone?kGoal():_ht4()};
+
 /* ---------- boot ---------- */
 function build(){
-  SC.garden=gardenScene();SC.hospital=hospitalScene();SC.road=roadScene();SC.city=cityScene();SC.forest=forestScene();SC.grove=groveScene();SC.crystal=crystalScene();SC.valley=valleyScene();
+  SC.garden=gardenScene();SC.hospital=hospitalScene();SC.road=roadScene();SC.city=cityScene();SC.forest=forestScene();SC.grove=groveScene();SC.crystal=crystalScene();SC.valley=valleyScene();SC.cloud=cloudScene();SC.ember=emberScene();SC.echo=echoScene();SC.glass=glassScene();SC.storm=stormScene();SC.fanaa=fanaaScene();patchGarden();patchKitchen();
 }
 async function newGame(){
   closeDlg();S=fresh();initScene();
