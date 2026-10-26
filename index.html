@@ -112,6 +112,7 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
 #title.ovl{justify-content:flex-start}
 #title>:first-child{margin-top:auto}
 #title>:last-child{margin-bottom:auto}
+#petOpt{width:min(100%,520px);display:flex;align-items:center;gap:12px;background:rgba(244,185,92,.08);border:1px solid rgba(244,185,92,.42);border-radius:14px;padding:12px 14px}.petIcon{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:50%;color:#f4d29a;background:#9a6949;border:5px solid #d9ad79;box-shadow:0 0 20px rgba(244,185,92,.2)}.petCopy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.petCopy b{font-family:var(--f-display);color:var(--lantern);font-size:15px}.petCopy span{color:var(--moon-dim);font-size:14px;line-height:1.6}#btnPet{flex:none}#petOv .sheet{gap:16px}#petName{width:100%;box-sizing:border-box;background:var(--night);color:var(--moon);border:1px solid var(--line);border-radius:9px;padding:12px;font:18px var(--f-body);user-select:text;-webkit-user-select:text}#petName:focus{outline:2px solid var(--lantern)}@media(max-width:520px){#petOpt{flex-wrap:wrap}.petCopy{min-width:180px}#btnPet{width:100%}}
 #tOpt{width:min(100%,520px);display:flex;flex-direction:column;gap:12px;background:rgba(236,233,247,.05);border:1px solid var(--line);border-radius:14px;padding:14px}
 #tOpt h4,.volBox h4{margin:0;font-family:var(--f-display);font-size:14px;letter-spacing:.08em;color:var(--glass)}
 .outRow{display:flex;gap:12px;align-items:center}
@@ -255,6 +256,11 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
     <h2 style="color:var(--moon)">ومدينة التوليب السحري</h2>
     <p>طالبة طب في السنة الرابعة، وزهرة سوداء تتكلم، ومرض قديم يمحو الذاكرة.</p>
     <div class="row"><button id="btnNew" class="btn main" type="button">ابدئي الحكاية</button><button id="btnCont" class="btn" type="button" hidden>متابعة</button><button id="btnParts" class="btn" type="button">اختيار البارت</button><button id="btnSkip" class="btn" type="button" hidden>ابدئي من ساري</button></div>
+    <div id="petOpt" aria-label="رفيق الهامستر الاختياري">
+      <div class="petIcon" aria-hidden="true">●</div>
+      <div class="petCopy"><b>رفيق صغير اختياري</b><span id="petStatus">أضيفي هامسترًا واختاري اسمه ليرافق شهريان طوال الحكاية.</span></div>
+      <button id="btnPet" class="btn" type="button" aria-haspopup="dialog">إضافة هامستر أليف</button>
+    </div>
     <div id="tOpt">
       <h4>الأزياء</h4>
       <div class="outRow"><canvas id="pvH" width="152" height="208" aria-label="معاينة زي شهريان"></canvas><div class="outInfo"><div class="outName" id="nmH"></div><div class="sw" id="swH"></div></div></div>
@@ -281,7 +287,7 @@ function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(see
 
 /* ---------- settings & audio ---------- */
 const SKEY='shahriyan-tulip-settings-v1';
-const settings=Object.assign({sfx:true,music:true,auto:false,vm:.8,vs:1,oh:0,oa:0},(()=>{try{return JSON.parse(localStorage.getItem(SKEY))||{}}catch(e){return {}}})());
+const settings=Object.assign({sfx:true,music:true,auto:false,vm:.8,vs:1,oh:0,oa:0,petName:''},(()=>{try{return JSON.parse(localStorage.getItem(SKEY))||{}}catch(e){return {}}})());
 function saveSettings(){try{localStorage.setItem(SKEY,JSON.stringify(settings))}catch(e){}}
 let AC=null,master=null,musicBus=null,sfxBus=null,drone=null;
 function ac(){
@@ -1404,8 +1410,9 @@ function render(t){
   L.push([P.y,'p']);
   if(F().metTulip&&!(S.scene==='forest'&&S.mem<20))L.push([P.y+.1,'c']);
   if(F().sariJoin)L.push([SAR.y+.2,'s']);
+  if(settings.petName)L.push([PET.y+.25,'h']);
   L.sort((a,b)=>a[0]-b[0]);
-  for(const e of L){const o=e[1];if(o==='p')drawPlayer(c,t);else if(o==='c')drawCompanion(c,t);else if(o==='s')drawSari(c,t,SAR,sDown?'down':'');else o.f(c,t,o)}
+  for(const e of L){const o=e[1];if(o==='p')drawPlayer(c,t);else if(o==='c')drawCompanion(c,t);else if(o==='s')drawSari(c,t,SAR,sDown?'down':'');else if(o==='h')drawHamster(c,t);else o.f(c,t,o)}
   fxAll(c,t,vw,vh);
   c.setTransform(DPR,0,0,DPR,0,0);
   // ambient particles
@@ -2204,7 +2211,7 @@ CH.push(...([{"id": "54", "l": "الفصل 54", "t": "سماء بلا ضوء", "
 NOVEL.push(...([{"id": "54", "l": "الفصل 54", "t": "سماء بلا ضوء", "p": ["تبدأ القصة وهما يلاحظان انطفاء آخر نجمة مألوفة في سماء أوراليا، لتغرق عالمهم في ظلام مريب. يدركان أن الأمر ليس ظاهرة طبيعية بل بداية فناء كوني شامل."]}, {"id": "55", "l": "الفصل 55", "t": "عين ساري الخفية", "p": ["يكتشف ساري فجأة أن بإمكانه رؤية \"نجوم مخفية\" لا يراها البشر العاديون، طوقتها خيوط من الظلام الدامس. يقرعان أجراس الاستعداد ويبدآن الرحلة إلى المعابد السماوية."]}, {"id": "56", "l": "الفصل 56", "t": "لمسة الشفاء الكونية", "p": ["يعثران على أول نجمة مخفية في معبد مهجور. بلمسة من يدي شهريان، تستعيد النجمة بريقها، لتمنح شهريان قدرة جديدة: \"بصيرة النجوم\" (القدرة على استشعار مسارات الفضاء)، لكن هذا النور يوقظ أول حراس الظلام."]}, {"id": "57", "l": "الفصل 57", "t": "معبد المجرة العائمة", "p": ["ينتقل الثنائي عبر البوابات الأثيرية إلى معبد معلق في قلب مجرة ميتة. يواجهان ألغازًا هندسية تتطلب دمج مهارات شهريان الطبية ومهارات ساري القتالية."]}, {"id": "58", "l": "الفصل 58", "t": "صدى الكواكب الميتة", "p": ["يهبطان على كوكب مهجور قاحل، حيث يكتشفان كيف استنزفت قوى الظلام طاقة سكانه. تعالج شهريان نواة الكوكب المتصدعة، مما يمنح ساري قدرة جديدة: \"درع الأفق\" (درع طاقي يصد هجمات الظلال)."]}, {"id": "59", "l": "الفصل 59", "t": "ثمن النور", "p": ["يدرك الثنائي قاعدة الرحلة القاسية: كلما أنقذا نجمة، كلما استيقظ كيان أضخم وأكثر شراسة لتعقبهم. تظهر أولى \"وحوش الفراغ\" العملاقة."]}, {"id": "60", "l": "الفصل 60", "t": "بوابات الفراغ الأثيري", "p": ["يعبران منطقة خطرة تعرف بـ \"الفراغ الأثيري\"، حيث تنعدم القوانين الفيزيائية. يوجه ساري طريقهما بعينه التي ترى المسارات الخفية وسط العاصفة."]}, {"id": "61", "l": "الفصل 61", "t": "طبيبة الكواكب العليلة", "p": ["تصل شهريان إلى سديم كامل يعاني من \"حمى الإشعاع الأسود\". تستخدم أدواتها الأثيرية لمعالجة الغازات الكونية، لتكتسب قدرة \"التواصل الأثيري\" مع الكائنات السماوية."]}, {"id": "62", "l": "الفصل 62", "t": "القدر المتقاطع", "p": ["يعثران على مخطوطات قديمة في معبد منسي تؤكد الحقيقة المفزعة: النجمتان الأخيرتان في الكون مرتبطتان ارتباطًا وثيقًا بروحيهما وقصة حبهما؛ إن انطفأتا، انطفأت روحاهما للأبد."]}, {"id": "63", "l": "الفصل 63", "t": "قلب الظلام المطلق", "p": ["يقتربان من المصدر الأساسي للظلام الذي يحاول ابتلاع ما تبقى من سماء الكون. تحيط بهما هالة مرعبة من العدم."]}, {"id": "64", "l": "الفصل 64", "t": "اختبار القدرة المطلقة", "p": ["يتعرض ساري وشهريان لاختبار قاسي من حراس الظلام. يضطران لاستخدام القدرات التي اكتسباها من النجوم السابقة (البصيرة ودرع الأفق) في معركة ضارية ومستميتة."]}, {"id": "65", "l": "الفصل 65", "t": "التضحية الكونية", "p": ["تدرك شهريان أن الوصول إلى النجمتين الأخيرتين يتطلب التخلي عن جزء من طاقتهما المشتركة، لكنهما يقرران المضي قدمًا مهما كانت التضحية."]}, {"id": "66", "l": "الفصل 66", "t": "لمس النجمتين الأخيرتين", "p": ["اللحظة الحاسمة؛ يقف ساري حائط صدٍّ من النور المطلق بينما تمد شهريان يديها لتلمس النجمتين الأخيرتين في أقصى نقطة بالكون."]}, {"id": "67", "l": "الفصل 67", "t": "الخطر الأكبر يستيقظ", "p": ["مع إيقاظ النجمتين، يستيقظ الكيان الأكبر الذي كان يخبئهما ويسيطر على الظلام. تدور المعركة النهائية الفاصلة بين نور الكون وعدم الفراغ."]}, {"id": "68", "l": "الفصل 68", "t": "أفق الأكوان المتعددة والأمل الأبدي", "p": ["ينتصر النور بفضل اتحاد روحيهما. يعود ضوء النجوم يتدفق في كل المجرات، وتستيقظ أوراليا على فجر جديد. يمسك ساري بيد شهريان وهما ييراقبان السماء المنيرة، لتبدأ رحلة جديدة في أفق الأكوان المتعددة المفتوحة."]}]));
 
 /* ===================== الممرات السماوية (الفصول 54–68): المحرك ===================== */
-const isZ=()=>S&&/^z\d+$/.test(S.scene);
+const isZ=()=>S&&/^[zm]\d+$/.test(S.scene);
 let sightOn=false,shakeT=0,flashA=0,flashRGB='255,235,180',zSatCur=1,zT0=0,zL=0,ltNext=2,ltT=0,ltX=.5;
 function zmood(m){F().zM=m;zT0=performance.now()/1000}
 function shake(sec){shakeT=Math.max(shakeT,sec)}
@@ -2642,9 +2649,601 @@ $('#btnParts').addEventListener('click',()=>{
   openOv($('#partsOv'));
 });
 
+/* ---- بيانات الفصول 69–80: سوق الذكريات ---- */
+const MEM_PASS=[{"n": "الممر الأول", "t": "الدخول إلى أزقة النسيان", "first": "69"}, {"n": "الممر الثاني", "t": "المحو التام والبحث عن الخيوط", "first": "72"}, {"n": "الممر الثالث", "t": "الالتواء العظيم والأسرار الدفينة", "first": "75"}, {"n": "الممر الرابع", "t": "المواجهة الكبرى وانجلاء الظلام", "first": "78"}];
+CH.push(...([{"id": "69", "l": "الفصل 69", "t": "بوابات سوق الذكريات", "s": "يصل ساري وشهريان إلى سور المدينة العتيق المصنوع من زجاج رمادي معتم."}, {"id": "70", "l": "الفصل 70", "t": "عُملة الأيام والسنوات", "s": "يتجول الثنائي في الأسواق المركزية؛ يريان بشراً يبيعون سنوات شبابهم مقابل ثروات، وآخرين يشترون مهارات أبطال راحلين."}, {"id": "71", "l": "الفصل 71", "t": "الزقاق المظلم وتاجر الظلال", "s": "يبحث ساري عن ذكرى طفولته المحذوفة، بينما تشعر شهريان بغياب غريب في رأسها—ذكرى لا تتذكر حتى أنها فقدتها."}, {"id": "72", "l": "الفصل 72", "t": "الذكرى المفقودة لشهريان", "s": "تلتقي شهريان بـ \"دلال ذكريات\" عجوز يؤكد لها أن جزءاً كاملاً من عقلها قد أُزيل باحترافية، ليس لأنه مزعج، بل لأنه كان يحمل \"مفتاحاً\" لشيء عظيم."}, {"id": "73", "l": "الفصل 73", "t": "طفولة ساري المحذوفة", "s": "ينجح ساري في العثور على أثر لذكراه المحذوفة لدى أحد كبار التجار، لكنه يكتشف صدمة: الذكرى ليست مسلوبة فحسب، بل ممسوحة من سجلات الوجود ببرمجية سحرية سوداء."}, {"id": "74", "l": "الفصل 74", "t": "المحو التام لأرواح كاملة", "s": "كلما تعمقا في السوق، اكتشفا حقيقة مرعبة: هناك تاجر خفي لا يشتري ذكريات متفرقة فحسب، بل يشتري أشخاصاً كاملين، ويمحو وجودهم من ذاكرة العالم أجمع، حتى لا يبقى لهم "}, {"id": "75", "l": "الفصل 75", "t": "الخيط الغامض المشترك", "s": "يعثر الثنائي على سجل سرّي يؤكد أن ذكريات شهريان المفقودة وطفولة ساري المحذوفة ترتبطان بنقطة زمنية واحدة وحدث واحد وقع قبل سنوات طويلة في مكان لا يملكه سواهما."}, {"id": "76", "l": "الفصل 76", "t": "أقبية التخزين المحرمة", "s": "يتسللان سراً إلى أقبية التخزين المحرمة تحت السوق، حيث تُحفظ الأرواح المسلوبة في أوعية زجاجية تلمع بضوء شاحب ومظلم."}, {"id": "77", "l": "الفصل 77", "t": "الالتواء: الذكرى المشتركة المنسية", "s": "يكتشفان الحقيقة الصادمة (الالتواء): توجد ذكرى مشتركة بين ساري وشهريان، لكن لا أحد منهما يتذكرها على الإطلاق! إنها ذكرى لقائهما الأول في طفولتهما بقلب معبد زمني "}, {"id": "78", "l": "الفصل 78", "t": "مواجهة تاجر الأرواح", "s": "يواجهان \"التاجر الأعظم\" المسؤول عن عملية المحو الشامل."}, {"id": "79", "l": "الفصل 79", "t": "استعادة الوجود وكسر المحو", "s": "بفضل استرجاع الذكرى المشتركة وتفعيل قوة \"النور الأول\"، تتكسر أوعية التخزين المحرمة."}, {"id": "80", "l": "الفصل 80", "t": "فجر جديد فوق سوق الذكريات", "s": "يغادر ساري وشهريان سوق الذكريات، وقد استعاد كل منهما ذاته وهويته المرتبطة بالآخر."}]));
+NOVEL.push(...([{"id": "69", "l": "الفصل 69", "t": "بوابات سوق الذكريات", "p": ["يصل ساري وشهريان إلى سور المدينة العتيق المصنوع من زجاج رمادي معتم. يدخلان عبر البوابة حيث تُدفع الرسوم ليس بالنقود، بل بالتخلي عن ذكرى عابرة."]}, {"id": "70", "l": "الفصل 70", "t": "عُملة الأيام والسنوات", "p": ["يتجول الثنائي في الأسواق المركزية؛ يريان بشراً يبيعون سنوات شبابهم مقابل ثروات، وآخرين يشترون مهارات أبطال راحلين. يدرك ساري أن كل ركن هنا ينبض بتجارة البشر الأكثر حميمية."]}, {"id": "71", "l": "الفصل 71", "t": "الزقاق المظلم وتاجر الظلال", "p": ["يبحث ساري عن ذكرى طفولته المحذوفة، بينما تشعر شهريان بغياب غريب في رأسها—ذكرى لا تتذكر حتى أنها فقدتها. يلاحظان وجود زقاق خلفي مغلق ترفض الأرواح الاقتراب منه."]}, {"id": "72", "l": "الفصل 72", "t": "الذكرى المفقودة لشهريان", "p": ["تلتقي شهريان بـ \"دلال ذكريات\" عجوز يؤكد لها أن جزءاً كاملاً من عقلها قد أُزيل باحترافية، ليس لأنه مزعج، بل لأنه كان يحمل \"مفتاحاً\" لشيء عظيم."]}, {"id": "73", "l": "الفصل 73", "t": "طفولة ساري المحذوفة", "p": ["ينجح ساري في العثور على أثر لذكراه المحذوفة لدى أحد كبار التجار، لكنه يكتشف صدمة: الذكرى ليست مسلوبة فحسب، بل ممسوحة من سجلات الوجود ببرمجية سحرية سوداء."]}, {"id": "74", "l": "الفصل 74", "t": "المحو التام لأرواح كاملة", "p": ["كلما تعمقا في السوق، اكتشفا حقيقة مرعبة: هناك تاجر خفي لا يشتري ذكريات متفرقة فحسب، بل يشتري أشخاصاً كاملين، ويمحو وجودهم من ذاكرة العالم أجمع، حتى لا يبقى لهم أي أحباء يبكونهم."]}, {"id": "75", "l": "الفصل 75", "t": "الخيط الغامض المشترك", "p": ["يعثر الثنائي على سجل سرّي يؤكد أن ذكريات شهريان المفقودة وطفولة ساري المحذوفة ترتبطان بنقطة زمنية واحدة وحدث واحد وقع قبل سنوات طويلة في مكان لا يملكه سواهما."]}, {"id": "76", "l": "الفصل 76", "t": "أقبية التخزين المحرمة", "p": ["يتسللان سراً إلى أقبية التخزين المحرمة تحت السوق، حيث تُحفظ الأرواح المسلوبة في أوعية زجاجية تلمع بضوء شاحب ومظلم."]}, {"id": "77", "l": "الفصل 77", "t": "الالتواء: الذكرى المشتركة المنسية", "p": ["يكتشفان الحقيقة الصادمة (الالتواء): توجد ذكرى مشتركة بين ساري وشهريان، لكن لا أحد منهما يتذكرها على الإطلاق! إنها ذكرى لقائهما الأول في طفولتهما بقلب معبد زمني قديم، وهي المفتاح الوحيد لكشف هوية التاجر الخفي وإيقاف كارثة المحو الشامل."]}, {"id": "78", "l": "الفصل 78", "t": "مواجهة تاجر الأرواح", "p": ["يواجهان \"التاجر الأعظم\" المسؤول عن عملية المحو الشامل. يحاول التاجر محو ذكرياتهما المشتركة نهائياً قبل أن يستعيداها."]}, {"id": "79", "l": "الفصل 79", "t": "استعادة الوجود وكسر المحو", "p": ["بفضل استرجاع الذكرى المشتركة وتفعيل قوة \"النور الأول\"، تتكسر أوعية التخزين المحرمة. تعود آلاف الذكريات والأشخاص الممحوين إلى ذاكرة العالم وأحبائهم."]}, {"id": "80", "l": "الفصل 80", "t": "فجر جديد فوق سوق الذكريات", "p": ["يغادر ساري وشهريان سوق الذكريات، وقد استعاد كل منهما ذاته وهويته المرتبطة بالآخر. يمسك أحدهما بيد الآخر، ناظرين إلى أفق فجر جديد يثبت أن الذكريات الحقيقية لا يمكن شراؤها أو محوها مادامت تنبض بالحب الخالص."]}]));
+
+/* ===================== مسك اليد والجلوس معًا ===================== */
+let HAND=false,SIT=null,sitT=0,sitMsgT=0;
+const SEATS={garden:[[631,832,'g']]};
+function benchAdd(sc,x,y,col){
+  col=col||'#5c4638';
+  (SEATS[sc.id]=SEATS[sc.id]||[]).push([x,y,sc.id+(SEATS[sc.id]?SEATS[sc.id].length:0)]);
+  addDeco(sc,x,y+12,60,(c)=>{rrect(c,x-38,y-4,76,13,4,col);rrect(c,x-38,y-4,76,4,3,'rgba(255,255,255,.14)');rect(c,x-32,y+8,6,12,'#241a16');rect(c,x+26,y+8,6,12,'#241a16')});
+  sc.solids.push({x:x-40,y:y-6,w:80,h:22});
+}
+sfx.hand=()=>{tone(660,.35,'sine',.05);tone(990,.5,'sine',.04,.1)};
+sfx.sit=()=>{noise(.18,.05,500,'lowpass',.5);tone(262,.5,'sine',.04,.05)};
+function seatNear(){
+  if(!S||!cur||!SEATS[S.scene])return null;
+  let b=null,bd=1e9;for(const s of SEATS[S.scene]){const d=dist(P.x,P.y,s[0],s[1]+20);if(d<92&&d<bd){bd=d;b=s}}
+  return b;
+}
+function canPair(){return !!(S&&F().sariJoin&&$('#title').hidden&&!busy&&!ovOpen)}
+async function toggleHand(){
+  if(!canPair()||SIT)return;
+  if(!HAND){
+    if(dist(P.x,P.y,SAR.x,SAR.y)>150){toast('ساري بعيدة قليلًا. اقتربي منها.');return}
+    HAND=true;sfx.hand();burst((P.x+SAR.x)/2,P.y-26,'255,225,170',16);toast('أمسكتِ يد ساري');
+    if(!F().handDone){F().handDone=1;save();await run(async()=>{await talk([['ساري','يدكِ دافئة يا شهريان. ولا أريد أن أفلتها.'],['شهريان','ولا أنا. بس بدّك تمشي معي بنفس الخطوة، تمام؟'],'وسارا معًا خطوةً بخطوة، ويداهما متشابكتان.'])})}
+  }else{HAND=false;toast('تركتِ يد ساري. ما زالت بجانبكِ.')}
+}
+async function toggleSit(){
+  if(!canPair()&&!(SIT&&S))return;
+  if(SIT){standUp();return}
+  const s=seatNear();if(!s){toast('لا يوجد مكان للجلوس هنا.');return}
+  if(F().cChase)return;
+  HAND=false;const px=s[0]-18,sx=s[0]+18;
+  SIT={x:s[0],y:s[1],key:s[2],ox:P.x,oy:P.y};sitT=0;sitMsgT=4;
+  P.x=px;P.y=s[1];P.moving=false;SAR.x=sx;SAR.y=s[1];SAR.moving=false;P.face=1;SAR.face=-1;
+  cur.deco.push(SIT.deco={x:s[0],y:s[1]+16,r:110,f:drawSeatedPair});
+  sfx.sit();burst(s[0],s[1]-40,'255,225,170',12);
+  if(!F().sitDone){F().sitDone=1;save();await run(async()=>{await talk(['جلست شهريان بجانب ساري على المقعد، وعمّ سكون هادئ.',['ساري','أتعلمين؟ لم أجلس هكذا منذ... لا أذكر متى. الجلوس بجانب أحدٍ يحبك شيء مختلف.'],['شهريان','خلّينا هيك شوي. العالم بيستنّى.']])})}
+}
+function standUp(){
+  if(!SIT)return;const i=cur.deco.indexOf(SIT.deco);if(i>=0)cur.deco.splice(i,1);
+  const q=resolve(SIT.x,SIT.y+46,11);P.x=q[0];P.y=q[1];SAR.x=P.x-30;SAR.y=P.y;SIT=null;sfx.step(S.scene);
+}
+const SIT_LINES=['ساري: النجوم تبدو أقرب حين تجلسين بجانبي.','ساري: لو بقيت هنا للأبد لما شكوت.','شهريان: رأسكِ على كتفي يا ساري؟ تمام، خذي راحتكِ.','ساري: كل ما رأيناه يهون في هذه اللحظة.'];
+function seated(c,t,x,y,face,who,lean){
+  const HIP=13;c.save();
+  c.translate(x,y+4);if(lean){c.translate(0,-HIP);c.rotate(lean*face);c.translate(0,HIP)}
+  c.beginPath();c.rect(-70,-150,140,150-HIP);c.clip();
+  if(who==='h')drawShah(c,t,0,0,face,false,0,oH());else drawSari(c,t,{x:0,y:0,face:face,moving:false,walk:0},'');
+  c.restore();
+  const col=who==='h'?oH().robe:oA().body;
+  c.save();c.translate(x,y+4);
+  rrect(c,face>0?-6:-22,-HIP-1,28,9,4,col);
+  rrect(c,face>0?15:-23,-HIP+2,8,15,3,col);
+  rrect(c,face>0?15:-27,-HIP+15,12,5,2,'#2a1c1c');
+  c.restore();
+}
+function drawSeatedPair(c,t){
+  if(!SIT)return;const lean=Math.min(.1,Math.max(0,(sitT-4)*.03));
+  seated(c,t,SIT.x-18,SIT.y,1,'h',0);seated(c,t,SIT.x+18,SIT.y,-1,'s',lean);
+  glow(c,SIT.x,SIT.y-26,18+Math.sin(t*2)*2,'255,225,170',.35);
+  circ(c,SIT.x,SIT.y-22,3,'rgba(255,240,200,.9)');
+}
+(function(){
+  const mkb=(id,txt)=>{const b=document.createElement('button');b.id=id;b.className='hbtn';b.type='button';b.hidden=true;b.textContent=txt;$('#hudR').appendChild(b);return b};
+  const bh=mkb('btnHand','مسك اليد'),bs=mkb('btnSit','الجلوس معًا');
+  bh.addEventListener('click',()=>toggleHand());bs.addEventListener('click',()=>toggleSit());
+  window.addEventListener('keydown',e=>{if(e.repeat||!S)return;const k=e.key.toLowerCase();if(k==='h')toggleHand();if(k==='g')toggleSit()});
+  const _h=hud;hud=function(){_h();const on=!!(S&&F().sariJoin&&$('#title').hidden);
+    bh.hidden=!on;bh.textContent=HAND?'إفلات اليد':'مسك اليد';bh.classList.toggle('on',HAND);
+    bs.hidden=!(on&&(SIT||seatNear()));bs.textContent=SIT?'الوقوف':'الجلوس معًا';bs.classList.toggle('on',!!SIT)};
+  const _up=update;update=function(dt,t){
+    if(!S){return _up(dt,t)}
+    if(SIT){
+      if(busy||ovOpen){P.moving=false;return}
+      const m=Math.hypot(keys.r-keys.l+joy.x,keys.d-keys.u+joy.y);
+      if(m>.35){standUp();return}
+      sitT+=dt;P.moving=false;SAR.moving=false;
+      if((sitMsgT-=dt)<=0){sitMsgT=7;toast(SIT_LINES[Math.floor(Math.random()*SIT_LINES.length)]);burst(SIT.x,SIT.y-46,'255,200,215',6)}
+      return;
+    }
+    _up(dt,t);
+    if(HAND&&F().sariJoin&&cur){
+      if(dist(P.x,P.y,SAR.x,SAR.y)>260)HAND=false;else{
+        const tx=P.x-P.face*26,ty=P.y,k=Math.min(1,dt*14);
+        const q=resolve(SAR.x+(tx-SAR.x)*k,SAR.y+(ty-SAR.y)*k,10);SAR.x=q[0];SAR.y=q[1];SAR.face=P.face;SAR.moving=P.moving;SAR.walk=P.walk*.9}
+    }
+  };
+  const _dp=drawPlayer;drawPlayer=function(c,t){if(SIT)return;_dp(c,t)};
+  const _ds=drawSari;drawSari=function(c,t,s,pose){if(SIT&&s===SAR)return;_ds(c,t,s,pose)};
+  const _fx=fxAll;fxAll=function(c,t,vw,vh){_fx(c,t,vw,vh);
+    if(S&&(HAND||SIT)&&F().sariJoin){const mx=SIT?SIT.x:(P.x+SAR.x)/2,my=(SIT?SIT.y:P.y)-24;
+      glow(c,mx,my,14+Math.sin(t*3)*2,'255,225,170',.7);circ(c,mx,my,2.5,'rgba(255,248,225,.95)');
+      if(HAND&&Math.random()<.04)burst(mx,my,'255,215,150',2)}};
+  const _is=initScene;initScene=function(){SIT=null;_is()};
+})();
+
+/* ===================== سوق الذكريات: المشاهد والمؤثرات ===================== */
+Object.assign(ZT,{
+ m1:{bg:['#17171e','#34343f'],amb:'200,200,225',star:'225,225,240',plat:'#2a2a34',edge:'190,190,215'},
+ m2:{bg:['#1a0f22','#3a1d3e'],amb:'255,190,140',star:'255,220,190',plat:'#2d1c33',edge:'255,190,140'},
+ m3:{bg:['#050b16','#0d1d33'],amb:'110,170,230',star:'170,210,245',plat:'#0f1c2d',edge:'110,170,230'},
+ m4:{bg:['#1b1208','#3d2810'],amb:'255,200,120',star:'255,225,170',plat:'#33220f',edge:'255,200,120'},
+ m5:{bg:['#161008','#33260f'],amb:'230,190,120',star:'240,215,170',plat:'#2d2210',edge:'230,190,120'},
+ m6:{bg:['#06040f','#150a2a'],amb:'150,120,230',star:'190,170,245',plat:'#120a22',edge:'160,130,240'},
+ m7:{bg:['#0a0510','#26102e'],amb:'210,120,255',star:'230,170,255',plat:'#180b22',edge:'210,120,255'},
+ m8:{bg:['#3a2a50','#f0b48a'],amb:'255,225,180',star:'255,245,225',plat:'#4a3a62',edge:'255,230,190'}
+});
+Object.assign(ZM0,{m1:'fog',m2:'mkt',m3:'cold',m5:'clock',m6:'ripple',m7:'storm'});
+(function(){
+  const sc={m1:[196,233.1,293.7,349.2],m2:[220,261.6,329.6,392],m3:[185,220,277.2,329.6],m4:MUS.city,m5:[196,246.9,293.7,370],m6:[146.8,174.6,220,261.6],m7:[110,130.8,164.8,207.7],m8:HM};
+  const dr={m1:82.4,m2:110,m3:69.3,m4:98,m5:87.3,m6:73.4,m7:55,m8:110};
+  for(const k in sc){MUS[k]=sc[k];MUS[k+'_s']=HM;DR[k]=dr[k];DR[k+'_s']=dr[k]*.9}
+})();
+sfx.whisper=()=>{noise(.55,.025,1900,'bandpass',3);tone(1320+Math.random()*400,.3,'sine',.012,.1)};
+sfx.boil=()=>{noise(.3,.035,320,'lowpass',.7);tone(95+Math.random()*30,.25,'sine',.03)};
+sfx.tick=()=>tone(1700,.045,'square',.025);
+sfx.tock=()=>tone(1150,.06,'square',.025);
+sfx.vanish=()=>{tone(880,.5,'sine',.05);tone(440,.7,'sine',.04,.1);noise(.4,.03,2600,'highpass',.6)};
+sfx.coin=()=>{tone(1319,.25,'triangle',.06);tone(1760,.4,'triangle',.05,.08)};
+sfx.alarm=()=>{tone(300,.25,'sawtooth',.06);tone(220,.3,'sawtooth',.06,.2)};
+SPK['دلال الذكريات']='#e8c37a';BLIP['دلال الذكريات']=120;SPK['حارس البوابة']='#b8b8d0';BLIP['حارس البوابة']=85;SPK['التاجر الأعظم']='#d9b3ff';BLIP['التاجر الأعظم']=75;
+/* ---- مؤثرات الأجواء ---- */
+let mLast=0,mWT=2,mBT=1,mTT=1,mFl=0,mKF=0;
+const PAL=['255,120,120','120,255,170','120,170,255','255,220,110','230,130,255','110,240,240'];
+function vig(c,rgb,a){const g=c.createRadialGradient(W/2,H/2,Math.min(W,H)*.3,W/2,H/2,Math.max(W,H)*.75);g.addColorStop(0,'rgba('+rgb+',0)');g.addColorStop(1,'rgba('+rgb+','+a+')');c.fillStyle=g;c.fillRect(0,0,W,H)}
+const MMOOD={
+ fog(c,t,el,dt){
+  c.fillStyle='rgba(130,125,150,.2)';c.fillRect(0,0,W,H);
+  for(let i=0;i<9;i++)glow(c,W*((i*.13+.05+Math.sin(t*.2+i)*.05)%1),H*(.15+((i*.31+t*.015)%.8)),W*.16+i*8,'205,200,235',.12);
+  c.lineWidth=1.6;
+  for(let i=0;i<18;i++){const p=(t*.1+i*.157)%1,x=W*((i*.137+.07)%1)+Math.sin(t*.8+i)*16,y=H*(1.05-p*1.15),r=6+(i%4)*4;
+    c.strokeStyle='rgba(225,232,255,'+(.5*(1-p))+')';c.beginPath();c.arc(x,y,r,0,6.2832);c.stroke();
+    c.fillStyle='rgba(255,255,255,'+(.4*(1-p))+')';c.fillRect(x-r*.4,y-r*.5,2,2)}
+  vig(c,'20,18,30',.5);
+  if((mWT-=dt)<=0){mWT=2.5+Math.random()*3;sfx.whisper()}},
+ mkt(c,t,el,dt){
+  c.globalCompositeOperation='screen';
+  for(let i=0;i<6;i++){const ph=(t*.45+i*.37)%1,x=W*((i*.23+.09)%1),y=H*(.25+((i*.41)%.5));glow(c,x,y,60+ph*90,PAL[i],.32*(1-ph))}
+  const band=(t*.25)%1;c.globalAlpha=.1;c.fillStyle='rgba('+PAL[Math.floor(t*.5)%6]+',1)';c.fillRect(0,H*band,W,26);c.globalAlpha=1;
+  if((mFl-=dt)<=0){mFl=1.8+Math.random()*2;c.fillStyle='rgba('+PAL[Math.floor(Math.random()*6)]+',.1)';c.fillRect(0,0,W,H)}
+  c.globalCompositeOperation='source-over';vig(c,'12,4,18',.45)},
+ cold(c,t,el,dt){
+  c.fillStyle='rgba(50,90,160,.17)';c.fillRect(0,0,W,H);vig(c,'2,8,24',.65);
+  for(let i=0;i<26;i++){const x=W*((i*.173+Math.sin(t*.3+i)*.03)%1),y=H*((i*.29+t*.04)%1);c.fillStyle='rgba(230,245,255,'+(.25+.25*Math.sin(t*2+i))+')';c.fillRect(x,y,2,2)}
+  const px=(P.x-cam.x)*Z,py=(P.y-cam.y-52)*Z;for(let k=0;k<3;k++){const p=((t*.7+k*.33)%1);glow(c,px+P.face*(12+p*26),py-p*14,8+p*14,'210,235,255',.28*(1-p))}
+  if((mBT-=dt)<=0){mBT=2.2+Math.random()*2;sfx.boil()}},
+ fade(c,t,el){
+  const p=clamp(el/3.4,0,1),a=.6*Math.sin(p*Math.PI);c.fillStyle='rgba(246,240,255,'+a+')';c.fillRect(0,0,W,H);
+  c.globalCompositeOperation='screen';for(let i=0;i<40;i++){const q=(el*.35+i*.0251)%1,x=W*((i*.173)%1)+Math.sin(el*1.4+i)*50+q*80,y=H*(1-q*1.1);glow(c,x,y,6+(i%4)*3,i%2?'255,225,170':'190,215,255',.5*(1-q))}
+  c.globalCompositeOperation='source-over'},
+ sparks(c,t,el){
+  c.fillStyle='rgba(5,2,12,.38)';c.fillRect(0,0,W,H);vig(c,'4,0,10',.5);c.globalCompositeOperation='screen';
+  for(let i=0;i<34;i++){const q=(t*.12+i*.0294)%1,x=W*((i*.211+Math.sin(t*.5+i)*.02)%1),y=H*q;
+    for(let k=1;k<4;k++)glow(c,x-Math.sin(t*.5+i)*k*3,y-k*10,3+(4-k),'255,205,120',.16*(4-k)*(.5+.5*Math.sin(t*3+i)));glow(c,x,y,5,'255,225,160',.65)}
+  c.globalCompositeOperation='source-over'},
+ clock(c,t,el,dt){
+  c.fillStyle='rgba(120,85,35,.12)';c.fillRect(0,0,W,H);vig(c,'18,10,2',.5);
+  c.save();c.translate(W/2,H/2);c.strokeStyle='rgba(255,215,140,.1)';c.lineWidth=3;c.beginPath();c.arc(0,0,Math.min(W,H)*.36,0,6.2832);c.stroke();
+  c.rotate(t*.1);c.beginPath();c.moveTo(0,0);c.lineTo(0,-Math.min(W,H)*.3);c.stroke();c.rotate(t*.6);c.beginPath();c.moveTo(0,0);c.lineTo(0,-Math.min(W,H)*.22);c.stroke();c.restore();
+  if((mTT-=dt)<=0){mTT=1.3;mKF^=1;mKF?sfx.tick():sfx.tock();if(Math.random()<.2)sfx.whisper()}},
+ ripple(c,t,el,dt){
+  c.fillStyle='rgba(8,4,24,.3)';c.fillRect(0,0,W,H);vig(c,'2,0,10',.55);c.lineWidth=2;
+  for(let i=0;i<5;i++){const r=((t*38+i*80)%400);c.strokeStyle='rgba(180,150,255,'+Math.max(0,.34-r/1200)+')';c.beginPath();c.ellipse(W/2,H/2,r*1.6,r*.9,Math.sin(t*.2)*.2,0,6.2832);c.stroke()}
+  c.globalCompositeOperation='screen';
+  [[W*.15,H*.2],[W*.88,H*.8]].forEach((g,gi)=>{for(let a=0;a<2;a++)for(let k=0;k<36;k++){const ang=k*.3+t*.25*(gi?-1:1)+a*3.1416,r=k*5.5;glow(c,g[0]+Math.cos(ang)*r,g[1]+Math.sin(ang)*r*.6,5,'120,90,220',.3)}glow(c,g[0],g[1],26,'20,0,40',.7)});
+  c.globalCompositeOperation='source-over'},
+ thread(c,t,el){
+  c.globalCompositeOperation='screen';c.fillStyle='rgba(255,200,110,.08)';c.fillRect(0,0,W,H);
+  const ax=(P.x-cam.x)*Z,ay=(P.y-cam.y-34)*Z,bx=(SAR.x-cam.x)*Z,by=(SAR.y-cam.y-34)*Z;
+  c.lineWidth=1.8;for(let i=0;i<7;i++){c.strokeStyle='rgba(255,215,130,'+(.4+.25*Math.sin(t*2+i))+')';c.beginPath();c.moveTo(ax,ay);c.bezierCurveTo(ax+(bx-ax)*.3,ay-40-i*9+Math.sin(t*2+i)*10,ax+(bx-ax)*.7,by-40-i*9+Math.cos(t*2+i)*10,bx,by);c.stroke()}
+  for(let i=0;i<16;i++){const x=W*((i*.13+.04)%1),y=H*((i*.37)%1);c.strokeStyle='rgba(255,210,120,'+(.1+.1*Math.sin(t+i))+')';c.beginPath();c.moveTo(x,y);c.bezierCurveTo(x+60,y-30+Math.sin(t+i)*20,x+120,y+30,x+200,y+Math.cos(t+i)*30);c.stroke()}
+  glow(c,ax,ay,40+Math.sin(t*3)*5,'255,215,130',.7);glow(c,bx,by,40+Math.sin(t*3+1)*5,'255,215,130',.7);c.globalCompositeOperation='source-over'},
+ storm(c,t,el,dt){
+  c.fillStyle='rgba(22,8,40,.28)';c.fillRect(0,0,W,H);vig(c,'6,0,14',.55);shake(.14);
+  if((mFl-=dt)<=0){mFl=.8+Math.random()*2;mFl+=0;c.fillStyle='rgba(235,215,255,.3)';c.fillRect(0,0,W,H);c.strokeStyle='rgba(245,235,255,.95)';c.lineWidth=2.4;c.beginPath();let x=W*(.1+Math.random()*.8),y=0;c.moveTo(x,y);while(y<H*.7){x+=(Math.random()-.5)*60;y+=H*.07;c.lineTo(x,y)}c.stroke();sfx.thunder()}},
+ restore(c,t,el){
+  const p=clamp(el/5,0,1);c.globalCompositeOperation='screen';c.globalAlpha=.25+.5*p;c.drawImage(gspr('255,225,150'),W/2-W*.7,H/2-W*.7,W*1.4,W*1.4);c.globalAlpha=.3*p;c.drawImage(gspr('225,235,255'),W/2-W*.45,H/2-W*.45,W*.9,W*.9);c.globalAlpha=1;
+  for(let i=0;i<46;i++){const q=(el*.16+i*.0217)%1,x=W*((i*.173+Math.sin(t*.6+i)*.03)%1),y=H*(1.05-q*1.15);glow(c,x,y,5+(i%4)*3,i%2?'255,225,150':'225,235,255',.6*Math.min(1,q*4)*(1-q*.5))}
+  c.globalCompositeOperation='source-over'}
+};
+const _cpM=celPass;celPass=function(t){
+  _cpM(t);if(!S||!cur||!isZ()||!$('#title').hidden)return;
+  const m=F().zM||'',fn=MMOOD[m];if(!fn)return;
+  const dt=Math.min(.05,Math.max(0,t-mLast));mLast=t;
+  const c=ctx,po=c.globalCompositeOperation,pa=c.globalAlpha;c.setTransform(DPR,0,0,DPR,0,0);
+  try{fn(c,t,t-zT0,dt)}finally{c.globalCompositeOperation=po;c.globalAlpha=pa}
+};
+
+const skyBase2=(a,b,c,d,e,f,g)=>skyBase(a,b,c,d,e,f,g,null);
+/* ===================== سوق الذكريات: العالم والقصة ===================== */
+const GUARDS=[{x:560,sp:1.1,ph:0},{x:900,sp:1.35,ph:2},{x:1240,sp:1.0,ph:4}];
+const gY=(g,t)=>150+350*(1+Math.sin(t*g.sp+g.ph));
+function mWall(c,x,y,w,h,col){rect(c,x,y,w,h,col||'#3a3a46');c.strokeStyle='rgba(210,210,235,.25)';c.lineWidth=2;for(let i=0;i<w/46;i++)for(let j=0;j<h/60;j++)c.strokeRect(x+i*46+4,y+j*60+4,38,52);glow(c,x+w/2,y+h/2,Math.max(w,h)*.5,'200,200,230',.08)}
+function stallDeco(sc,x,y,col,i){addDeco(sc,x,y+30,90,(c,t)=>{
+  ell(c,x,y+34,62,9,'rgba(0,0,0,.35)');rect(c,x-52,y-6,104,40,'#2a1d26');rect(c,x-48,y-2,96,8,'#4a3040');
+  poly(c,[[x-62,y-40],[x+62,y-40],[x+54,y-8],[x-54,y-8]],col);for(let k=0;k<5;k++)rect(c,x-62+k*25,y-40,12,32,'rgba(255,255,255,.14)');
+  glow(c,x,y+6,50,'255,200,140',.3+.08*Math.sin(t*3+i));
+  if(!F()['vn'+i]){circ(c,x,y-14,9,'#1a1020');poly(c,[[x-12,y+6],[x-8,y-4],[x+8,y-4],[x+12,y+6]],'#241830');glow(c,x,y-14,22,'190,150,255',.2)}
+  for(let k=0;k<3;k++){circ(c,x-30+k*30,y+8,5,'rgba('+PAL[(i+k)%6]+',.9)');glow(c,x-30+k*30,y+8,14,PAL[(i+k)%6],.5)}})}
+function traderDraw(c,x,y,t){
+  const b=Math.sin(t*1.5)*3;ell(c,x,y+4,50,12,'rgba(0,0,0,.4)');glow(c,x,y-90,150,'210,120,255',.25);
+  poly(c,[[x-40,y],[x-26,y-110+b],[x+26,y-110+b],[x+40,y]],'#120a1e');poly(c,[[x-34,y-100+b],[x,y-170+b],[x+34,y-100+b]],'#1c1030');
+  circ(c,x-8,y-120+b,4,'#ffd36b');circ(c,x+8,y-120+b,4,'#ffd36b');glow(c,x,y-120+b,30,'255,210,110',.5);
+  for(let i=0;i<4;i++){const a=t*1.1+i*1.57;circ(c,x+Math.cos(a)*56,y-70+Math.sin(a*1.2)*24,6,'#f4c542');glow(c,x+Math.cos(a)*56,y-70+Math.sin(a*1.2)*24,12,'255,210,90',.6)}
+}
+function vessels(sc,x0,y0,cols,rows,sx,sy,key){
+  addDeco(sc,(x0+x0+cols*sx)/2,y0+rows*sy,cols*sx,(c,t)=>{
+    for(let r=0;r<rows;r++)for(let k=0;k<cols;k++){const x=x0+k*sx,y=y0+r*sy,br=F().mBroken;
+      if(br){for(let q=0;q<3;q++)poly(c,[[x-8+q*8,y],[x-4+q*8,y-9],[x+q*8,y]],'rgba(200,220,255,.5)');const p=(t*.2+k*.13+r*.31)%1;glow(c,x,y-p*90,9,(k+r)%2?'255,225,150':'225,235,255',.8*(1-p))}
+      else{rrect(c,x-9,y-30,18,30,6,'rgba(150,170,220,.22)');rrect(c,x-9,y-30,18,6,3,'#2a2640');glow(c,x,y-14,16+Math.sin(t*2+k+r)*2,'170,150,230',.35);circ(c,x,y-14,4,'rgba(230,220,255,.8)')}}})}
+function clockDeco(c,x,y,t,on){circ(c,x,y,32,'#3b2e1a');circ(c,x,y,27,on?'#f1e2b8':'#c9b98e');c.strokeStyle='#2a1c0c';c.lineWidth=3;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(t*.4)*14,y+Math.sin(t*.4)*14);c.stroke();c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(t*.05)*20,y+Math.sin(t*.05)*20);c.stroke();if(on)glow(c,x,y,60,'255,215,130',.5)}
+function memScenes(){
+  let sc;const wrapG=(sc,fn)=>{const g=sc.ground;sc.ground=(c,t)=>{g(c,t);fn(c,t)}};
+  const cob=(sc,w,h,col)=>wrapG(sc,(c)=>{c.strokeStyle=col||'rgba(255,255,255,.05)';c.lineWidth=1;for(let x=90;x<w-80;x+=64){c.beginPath();c.moveTo(x,80);c.lineTo(x,h-80);c.stroke()}for(let y=90;y<h-80;y+=64){c.beginPath();c.moveTo(80,y);c.lineTo(w-80,y);c.stroke()}});
+  /* m1 البوابات */
+  sc=skyBase2('m1','بوابات سوق الذكريات',1400,900,[180,450],301,{bare:true},0);cob(sc,1400,900);
+  sc.solids.push({x:1090,y:70,w:100,h:310},{x:1090,y:520,w:100,h:310});
+  addDeco(sc,1140,400,260,(c,t)=>{mWall(c,1090,70,100,310);mWall(c,1090,520,100,310);rrect(c,1070,370,140,30,10,'#4a4a5a');rrect(c,1070,500,140,30,10,'#4a4a5a');
+    c.strokeStyle='rgba(220,225,255,.75)';c.lineWidth=6;c.beginPath();c.arc(1140,450,66,3.14,6.2832);c.stroke();glow(c,1140,450,90+Math.sin(t*2)*8,'200,210,255',.35)});
+  addDeco(sc,520,450,60,(c,t)=>{ell(c,520,454,20,6,'rgba(0,0,0,.35)');poly(c,[[x2(520)-16,454],[x2(520)-10,380],[x2(520)+10,380],[x2(520)+16,454]],'#25252f');circ(c,520,368,12,'#15151c');glow(c,520,368,36,'190,190,225',.25)});
+  sc.trig.push({id:'m1e',x:1230,y:380,w:60,h:140,when:()=>F().mStep>=1,fn:()=>goto('m2',150,450)});
+  SC.m1=sc;
+  /* m2 الأسواق */
+  sc=skyBase2('m2','الأسواق المركزية',1800,900,[150,450],302,{bare:true},null);cob(sc,1800,900,'rgba(255,200,150,.05)');
+  [[420,250,'#6a2f5a'],[760,250,'#2f5a6a'],[1100,250,'#6a5a2f'],[1440,250,'#4a2f6a'],[420,650,'#2f6a4a'],[760,650,'#6a2f3a'],[1100,650,'#2f4a6a'],[1440,650,'#6a4a2f']].forEach((q,i)=>{stallDeco(sc,q[0],q[1],q[2],i%4);sc.solids.push({x:q[0]-60,y:q[1]-20,w:120,h:54})});
+  [[640,330,'بائع السنوات','0'],[1100,570,'مشتري المهارات','1'],[1440,330,'سوق الأبطال','2']].forEach((q,i)=>sc.objs.push(OBJ({id:'mk'+i,x:q[0],y:q[1]+30,r:84,label:q[2],show:()=>F().mStep===1&&!!F().cd70&&!F()['mk'+i],f:kOrb(q[0],q[1]+30,PAL[i+1]),
+    use:async()=>{await marketTalk(i)}})));
+  sc.trig.push({id:'m2w',x:70,y:380,w:40,h:140,when:()=>true,fn:()=>goto('m1',1050,450)});
+  SC.m2=sc;
+  /* m3 الزقاق */
+  sc=skyBase2('m3','الزقاق المظلم',900,1500,[450,1380],303,{bare:true},1);
+  sc.solids.push({x:70,y:70,w:250,h:1360},{x:580,y:70,w:250,h:1360});
+  addDeco(sc,450,700,700,(c,t)=>{mWall(c,70,70,250,1360,'#161c28');mWall(c,580,70,250,1360,'#161c28');
+    for(let k=0;k<5;k++){const y=1200-k*220;glow(c,330,y,40,'110,170,230',.2+.1*Math.sin(t*2+k));glow(c,570,y,40,'110,170,230',.2+.1*Math.cos(t*2+k))}
+    const bx=450,by=250;ell(c,bx,by+30,60,14,'rgba(0,0,0,.45)');rrect(c,bx-48,by-40,96,70,22,'#1b1f26');ell(c,bx,by-40,48,12,'#0e1a14');glow(c,bx,by-46,64+Math.sin(t*3)*5,'120,255,170',.45);
+    for(let k=0;k<5;k++){const p=(t*.5+k*.21)%1;circ(c,bx-24+k*12,by-46-p*60,3+k%2*2,'rgba(150,255,190,'+(.7*(1-p))+')')}
+    for(let k=0;k<4;k++){const sy=1150+Math.sin(t*.6+k)*20;glow(c,330+k*80,sy-k*30,14,'190,210,255',.25)}});
+  sc.deco.push({x:450,y:1260,r:160,f:(c,t)=>{for(let k=0;k<3;k++){const x=360+k*90+Math.sin(t+k)*8,y=1230-Math.abs(Math.sin(t*.8+k))*14;glow(c,x,y-30,30,'170,200,255',.3);poly(c,[[x-9,y],[x-6,y-38],[x+6,y-38],[x+9,y]],'rgba(190,210,255,.35)');circ(c,x,y-44,8,'rgba(210,225,255,.45)')}}});
+  SC.m3=sc;
+  /* m4 دكان الدلال */
+  sc=skyBase2('m4','دار الدلال',1400,900,[200,450],304,{bare:true},null);cob(sc,1400,900,'rgba(255,210,140,.05)');
+  addDeco(sc,700,380,120,(c,t)=>{ell(c,700,410,70,10,'rgba(0,0,0,.35)');rect(c,640,350,120,60,'#3a2412');rect(c,634,344,132,10,'#5a3a1c');
+    for(let k=0;k<4;k++){circ(c,660+k*26,338,6,'rgba('+PAL[k]+',.9)');glow(c,660+k*26,338,16,PAL[k],.5)}
+    circ(c,700,322,12,'#d7b48c');poly(c,[[684,350],[690,332],[710,332],[716,350]],'#4a3320');rect(c,692,306,16,6,'#6b4a2a');glow(c,700,322,40,'255,210,140',.25)});
+  sc.solids.push({x:630,y:340,w:140,h:76});
+  addDeco(sc,1150,300,120,(c,t)=>{rect(c,1060,150,16,360,'#241608');rect(c,1230,150,16,360,'#241608');poly(c,[[1060,150],[1246,150],[1246,230],[1153,200],[1060,230]],'#3a1030');
+    rrect(c,1090,360,120,46,6,'#2b1b0e');rrect(c,1100,340,100,24,4,'#e8d9b0');glow(c,1150,350,46,'255,215,140',.3)});
+  SC.m4=sc;
+  /* m5 دار السجلات */
+  sc=skyBase2('m5','دار السجلات',1400,900,[200,450],305,{bare:true},2);cob(sc,1400,900,'rgba(255,215,150,.05)');
+  for(let k=0;k<4;k++){const x=420+k*250;sc.solids.push({x:x-60,y:560,w:120,h:60});addDeco(sc,x,600,80,(c,t)=>{rect(c,x-60,560,120,60,'#2a1b0c');for(let r=0;r<3;r++)for(let q=0;q<5;q++)rect(c,x-54+q*22,566+r*18,18,14,['#7a2d2d','#2d5a7a','#7a6a2d','#4a2d7a','#2d7a5a'][(q+r+k)%5])})}
+  [[500,300],[800,300],[1100,300]].forEach((q,i)=>{addDeco(sc,q[0],q[1]+10,60,(c,t)=>clockDeco(c,q[0],q[1],t,!!F()['ck'+i]));
+    sc.objs.push(OBJ({id:'ck'+i,x:q[0],y:q[1]+50,r:80,label:'سجل الساعة',show:()=>F().mStep===6&&!!F().cd75&&!F()['ck'+i],f:kOrb(q[0],q[1]+50,'255,215,140'),use:async()=>{await clockTalk(i)}}))});
+  benchAdd(sc,700,740,'#4a3420');
+  SC.m5=sc;
+  /* m6 الأقبية */
+  sc=skyBase2('m6','الأقبية المحرمة',1800,1000,[150,500],306,{bare:true},3);
+  sc.solids.push({x:1450,y:70,w:60,h:330},{x:1450,y:600,w:60,h:330});
+  vessels(sc,360,230,16,1,64,0);vessels(sc,360,800,16,1,64,0);vessels(sc,360,140,16,1,64,0);vessels(sc,360,890,16,1,64,0);
+  GUARDS.forEach((g,i)=>sc.deco.push({get x(){return g.x},get y(){return gY(g,performance.now()/1000)},r:140,f:(c,t)=>{if(F().mStep!==7||!F().cd76)return;const y=gY(g,t);glow(c,g.x,y,86,'255,230,150',.32);ell(c,g.x,y+4,16,5,'rgba(0,0,0,.4)');poly(c,[[g.x-10,y],[g.x-7,y-34],[g.x+7,y-34],[g.x+10,y]],'#150e22');circ(c,g.x,y-40,8,'#1a1228');circ(c,g.x,y-40,3,'#ffe08a')}}));
+  addDeco(sc,1640,500,260,(c,t)=>{c.strokeStyle='rgba(220,190,255,.35)';c.lineWidth=3;c.beginPath();c.arc(1640,520,170,0,6.2832);c.stroke();c.beginPath();c.arc(1640,520,110,0,6.2832);c.stroke();glow(c,1640,520,200,'200,160,255',.22+.06*Math.sin(t*1.4))});
+  sc.objs.push(OBJ({id:'vial',x:1400,y:500,r:80,label:'وعاء الأرواح',show:()=>F().mStep===7&&!!F().cd76,f:(c,t)=>{rrect(c,1388,462,24,44,8,'rgba(170,190,255,.3)');glow(c,1400,484,34+Math.sin(t*3)*4,'190,170,255',.7);circ(c,1400,486,5,'#fff')},use:async()=>{await vialUse()}}));
+  benchAdd(sc,1650,640,'#3a2a52');
+  SC.m6=sc;
+  /* m7 القبو الأعظم */
+  sc=skyBase2('m7','القبو الأعظم',1400,900,[150,450],307,{bare:true},null);cob(sc,1400,900,'rgba(210,120,255,.06)');
+  vessels(sc,260,300,10,2,96,110);
+  addDeco(sc,980,450,140,(c,t)=>{if(F().mStep<=10&&!F().mBeaten)traderDraw(c,980,470,t);else if(!F().mBroken&&F().mStep<=10)traderDraw(c,980,470,t)});
+  SC.m7=sc;
+  /* m8 الفجر */
+  sc=skyBase2('m8','فجر فوق السوق',1600,900,[200,450],308,{bare:true},null);
+  addDeco(sc,150,450,260,(c,t)=>{mWall(c,70,100,90,300,'#5a4a6a');mWall(c,70,500,90,300,'#5a4a6a');glow(c,150,450,100,'255,235,200',.4)});
+  for(let i=0;i<14;i++){const x=420+(i%7)*150,y=i<7?230:690;addDeco(sc,x,y,30,(c,t)=>{const sw=Math.sin(t*1.2+i)*3;line(c,[[x,y],[x+sw,y-24]],3,'#3a7a4a');poly(c,[[x+sw-8,y-24],[x+sw,y-44],[x+sw+8,y-24]],['#ff7aa8','#ffd06a','#ff8a6a'][i%3]);glow(c,x+sw,y-34,16,'255,210,170',.3)})}
+  benchAdd(sc,1250,640,'#6a5a7a');
+  SC.m8=sc;
+}
+function x2(v){return v}
+
+/* ---- فصول سوق الذكريات ---- */
+async function memPass(n){const p=MEM_PASS[n];if(!p||F()['mp'+n])return;F()['mp'+n]=1;sfx.card();await card(p.n,p.t)}
+async function marketTalk(i){
+  F()['mk'+i]=1;sfx.coin();flash(PAL[i+1],.25);burst(P.x,P.y-30,PAL[i+1],18);
+  const T=[
+   ['رجل في الثلاثين يبيع شبابه لتاجر عجوز. تتقلص عيناه وهو يوقّع، ويتجعد وجهه كأن عشرين سنة مرت في لحظة.',['البائع','أريد مهرًا لابنتي. ما حاجتي بهذه السنين وهي ستكبر بدوني؟'],['ساري','هذا أغلى سعر رأيته في حياتي.']],
+   ['امرأة تشتري «مهارة سيّاف راحل» في قارورة فضية، فترتجف يداها وهي تمسك سيفًا لم تلمسه قبل.',['التاجرة','ثلاث ذكريات من طفولتها مقابل مهارة القتال. صفقة رابحة.'],['شهريان','وماذا يبقى منها بعد ذلك؟']],
+   ['في ركن السوق صفٌّ من القوارير تحمل أسماء أبطال رحلوا. كل واحدة تلمع بلون مختلف، والمشترون يتزاحمون عليها.',['ساري','هنا تُباع بطولات الموتى لمن لا يملكون الشجاعة. كل ركن في هذا المكان ينبض بتجارة أكثر الأشياء حميمية.']]
+  ][i];
+  await talk(T);
+  const n=[0,1,2].filter(k=>F()['mk'+k]).length;toast('جولة السوق: '+n+' / 3');
+  if(n<3)return;
+  await talk([['شهريان','ساري، كل من هنا يبيع شيئًا منه... ويصير أخف، وأفرغ.'],['ساري','وهذا ما يقلقني. من يشتري كل هذا؟ تاجرٌ واحد لا يكفي.'],'ثم لمح ساري عند آخر الصف زقاقًا مظلمًا خلف الأكشاك، تتحاشاه كل الأرواح الهائمة.']);
+  F().mStep=2;save();zmood('');await goto('m3',450,1380)
+}
+async function clockTalk(i){
+  F()['ck'+i]=1;sfx.tick();burst(P.x,P.y-30,'255,215,140',14);
+  const T=[
+   ['السجل الأول يحمل اسم شهريان، وتاريخ المحو مكتوب بحبر لا يجف: «قبل اثنتي عشرة سنة».',['شهريان','مكتوب هنا أنني بعتُ شيئًا... لكنني لم أبع شيئًا قط!']],
+   ['السجل الثاني باسم ساري. التاريخ ذاته، واليوم ذاته، وحتى الساعة نفسها.',['ساري','لا يمكن أن يكون هذا صدفة. تقاطعٌ بين سجلين لا يعرفان بعضهما.']],
+   ['السجل الثالث بلا اسم. فيه وصفٌ فقط: «موضع: معبد الزمن القديم. الحاضران: طفلان».',['شهريان','طفلان... في معبدٍ زمني؟'],['ساري','ذكرى مشتركة، لا يملكها سواهما. نحن.']]
+  ][i];
+  await talk(T);const n=[0,1,2].filter(k=>F()['ck'+k]).length;toast('السجلات: '+n+' / 3');
+  if(n<3)return;
+  await talk(['وتداخلت دقات الساعات البطيئة مع همسات بشرية غامضة تتردد بين الرفوف، كأن الزمن نفسه يحاول أن يتكلم.',['ساري','هناك أقبية تحت السوق تحفظ ما سُلب. إن كان لنا جواب فهو هناك.']]);
+  F().mStep=7;save();await goto('m6',150,500)
+}
+async function vialUse(){
+  sfx.star();flash('190,170,255',.4);zmood('ripple');
+  await talk(['اقتربا من وعاء يلمع بضوء شاحب مظلم. وتلاعبت حوله تموجات زمنية ومجرات دوّارة مظلمة.','وفي زجاجه وجهان صغيران يضحكان... طفلة بحجاب صغير وصبيّ بعينين تلمعان.',['ساري','هذان... نحن؟'],['شهريان','ذكرى لا يستطيع أحد منا استعادتها وحده. تحتاج إلى الاثنين معًا.']]);
+  F().mStep=8;save();toast('تابعا نحو الغرفة الزمنية في أقصى الأقبية')
+}
+async function revealMemory(){
+  F().mSitWait=0;zmood('thread');sfx.hand();flash('255,220,150',.5);
+  await talk(['وبينما جلسا جنبًا إلى جنب، ظهرت من بين صدريهما خيوط طاقة ذهبية خفية، تنبض من قلب شهريان إلى قلب ساري، ولم تنقطع بالنسيان.',['ساري','أراها! خيوط ذهبية... متصلة بيننا منذ ذلك اليوم.'],['شهريان','إذن لم نفقد بعضنا يومًا. نسينا فقط.']]);
+  zmood('fade');await sleep(2600);zmood('thread');
+  await talk(['وانفتح مشهد قديم: معبدٌ زمني تتوهج ساعاته، وطفلان صغيران يمسكان يدي بعضهما أمام باب يعد بالنور الأول.','وفي الظل خلفهما، رجلٌ يرتدي قبعة من العملات، يراقب بعيون تلمع كالذهب.',['ساري','هذا هو التاجر! هو من محا لقاءنا الأول... لأنه كان يخشى ما سيصيرانه معًا.'],['شهريان','إذن علينا أن نواجهه، ونحن نعرف الحقيقة.']]);
+  standUp();F().mStep=9;save();await goto('m7',150,450)
+}
+function vanishPoll(){
+  const f=F();
+  if(f.mFade&&HAND&&!busy&&!ovOpen)run(async()=>{
+    f.mFade=0;zmood('');sfx.hand();flash('255,225,170',.5);burst(SAR.x,SAR.y-30,'255,225,170',30);
+    await talk([['ساري','أحسّ أنني... أعود. يدكِ تثبّتني في هذا العالم.'],['شهريان','ما راح أفلتك. مش اليوم ولا بعد اليوم.'],'ورجعت ألوان ساري إلى الوضوح، وتراجعت الظلال المبتلعة وهي تزمجر.',['ساري','التاجر لا يشتري ذكريات متفرقة فحسب. هو يشتري أرواحًا كاملة. وسيصل إلينا بعدهم.']]);
+    f.cd74=1;f.mStep=6;save();await goto('m5',200,450)});
+  if(f.mSitWait&&SIT&&SIT.key&&SIT.key.indexOf('m6')===0&&!busy&&!ovOpen)run(revealMemory);
+}
+function guardCheck(t){
+  const f=F();if(S.scene!=='m6'||f.mStep!==7||!f.cd76||busy||ovOpen||!$('#title').hidden)return;
+  const slow=(f.mCaught||0)>=3?.5:1;GUARDS.forEach(g=>{g.sp=g.base||(g.base=g.sp);g.sp=g.base*slow});
+  for(const g of GUARDS){const y=gY(g,t);if(dist(P.x,P.y,g.x,y)<60){f.mCaught=(f.mCaught||0)+1;
+    run(async()=>{sfx.alarm();shake(.6);flash('255,230,150',.5);await fade(true);P.x=150;P.y=500;SAR.x=120;SAR.y=504;HAND=false;await fade(false);toast('كشفكِ الحارس! حاولي مجددًا.'+((f.mCaught>=3)?' الحراس صاروا أبطأ.':''))});return}}
+}
+const MS=[
+ [69,'m1',900,450,'بوابة السوق',()=>'اقتربي من بوابة السوق الزجاجية.',async()=>{
+   await memPass(0);zmood('fog');
+   await talk(['وصل ساري وشهريان إلى سورٍ عتيق من زجاج رمادي معتم، يمتد حتى لا تراه العين. وتطايرت في الهواء همسات أثيرية، كفقاعات صابون تنفجر فتبوح بقصص قديمة.',['ساري','هذه مدينة لا تظهر على أي خريطة... سوق الذكريات.'],['حارس البوابة','قفا. الدخول لا يُدفع بالنقود. ذكرى عابرة من كل زائر. لا أكثر ولا أقل.']]);
+   const k=await choose('أي ذكرى عابرة ستتركينها عند البوابة؟',['رائحة خبزٍ في صباحٍ بعيد','لون سماءٍ في يومٍ ممطر','نغمة أغنية نصف منسية'],'شهريان');
+   F().mToll=k;sfx.coin();flash('220,220,245',.5);zmood('fade');await sleep(1800);zmood('fog');
+   await talk(['مدت شهريان يدها، فسحب الحارس من رأسها خيطًا رقيقًا من الضوء وطواه في قارورة. ولم تعد تذكر أنها كانت تحب '+['رائحة الخبز','لون المطر','تلك الأغنية'][k]+'.',['ساري','هل أنتِ بخير؟'],['شهريان','نسيتُ شيئًا... بس ما عرفت شو. بيخوّف هالمكان.'],'وانفتحت البوابة ببطء، وغمر الضباب الخافت خطاهما.']);
+   F().mStep=1;F().cd69=0;await goto('m2',150,450)}],
+ [70,'m2',400,450,'ساري يتأمل السوق',()=>{const n=[0,1,2].filter(k=>F()['mk'+k]).length;return F().cd70?'تجولي بين الأكشاك الثلاثة المتوهجة ('+n+'/3).':'اقتربي من قلب السوق.'},async()=>{
+   zmood('mkt');
+   await talk(['وفي الأسواق المركزية، ومضت ألوان متباينة فوق رؤوس الزوار، كل لون لطاقة كيان مختلف.',['ساري','لكل زبون هنا لون. الألوان الباردة تشتري، والدافئة تبيع.'],['شهريان','وأنا؟ شو لوني؟'],['ساري','لونٌ لم أرَ مثله... ذهبي ممزوج بالبياض.']]);
+   return 'hold'}],
+ [71,'m3',450,330,'نهاية الزقاق',()=>'تقدمي في الزقاق المظلم حتى نهايته.',async()=>{
+   zmood('cold');sfx.boil();
+   await talk(['انخفضت الحرارة فجأة حتى تجمد النفس أبيض في الهواء، وسُمع من بعيد غليان مراجل محملة بذكريات مباعة.',['ساري','الأرواح كلها ترفض الاقتراب من هذا الزقاق. ولهذا أراه مناسبًا لأبحث فيه عن ذكرى طفولتي المحذوفة.'],['شهريان','وأنا... ساري، أحسّ بفراغٍ غريب في رأسي. كأن ذكرى لا أتذكر حتى أنني فقدتها.'],'وانتهى الزقاق بباب حديدي مقفل، يحمل ختم دلال الذكريات العجوز، والمراجل تغلي خلفه.',['ساري','لنبحث عن صاحب هذا الختم.']]);
+   zmood('');await goto('m4',200,450)}],
+ [72,'m4',700,470,'دلال الذكريات',()=>'تحدثي إلى دلال الذكريات العجوز.',async()=>{
+   await memPass(1);
+   await talk([['دلال الذكريات','تعالي يا ابنتي. رأيتُ عقلكِ من الباب. أحدٌ أزال منه قطعةً كاملة، بحرفية لا تُنكر.'],['شهريان','أزالها لماذا؟']]);
+   zmood('fade');await sleep(2200);zmood('');
+   await talk(['وتلاشت الشاشة بخيوط من ضوء، وتشابكت في عقل شهريان مشاهد لا تكتمل: ضحكة طفل، ظل باب، ساعة تتوهج... ثم يقطعها الظلام.']);
+   const k=await choose('ما الذي تتشبثين به من المشهد المشوش؟',['الضحكة','الساعة المتوهجة','يدٌ تمسك بيدي'],'شهريان');
+   await talk([['دلال الذكريات',['أصبتِ. الضحكة هي ما يبقى حين يُمحى كل شيء.','الساعة تعني الزمان... وهو مفتاح كل هذا.','اليد ما زالت في ذاكرتكِ العاطفية، ولا يمحوها أحد.'][k]],['دلال الذكريات','لم يُزَل هذا الجزء لأنه مزعج، بل لأنه كان يحمل مفتاحًا لشيء عظيم.']])}],
+ [73,'m4',1150,470,'سجلات كبير التجار',()=>'ابحثي مع ساري عن أثر ذكراه في خلف الستارة.',async()=>{
+   zmood('sparks');
+   await talk(['خلف الستار وجد ساري أثرًا لذكراه لدى أحد كبار التجار، وتساقطت ومضات ضوئية خافتة حوله كأنها ذكريات تنهار.',['ساري','هنا... يوجد سجل لطفولتي. لكن الصفحة...'],'ومد يده، فتحولت الصفحة إلى غبار ضوئي بين أصابعه.',['ساري','ليست مسلوبة فحسب. إنها ممسوحة من سجلات الوجود نفسها، ببرمجية سحرية سوداء.'],['شهريان','إذن من فعل هذا لا يريد أن تُستعاد أبدًا.']]);
+   zmood('');await goto('m2',900,450)}],
+ [74,'m2',900,450,'قلب السوق',()=>F().mFade?'اضغطي «مسك اليد» (أو حرف H) قبل أن تفقدي ساري!':'تقدمي إلى قلب السوق.',async()=>{
+   zmood('mkt');
+   await talk(['كلما تعمّقا في السوق، فهما حقيقة مرعبة: هناك تاجر خفي لا يشتري ذكريات متفرقة فحسب، بل يشتري أشخاصًا كاملين، ويمحو وجودهم من ذاكرة العالم، حتى لا يبقى لهم أحباء يبكونهم.']);
+   for(let i=0;i<4;i++){F()['vn'+i]=1;sfx.vanish();burst([420,760,1100,1440][i],240,PAL[i],26);flash('255,255,255',.22);await sleep(420)}
+   F().mFade=1;zmood('fade');sfx.rumble();
+   await talk(['اختفت الظلال والوجوه المجاورة من السوق فجأة. ثم لاحظت شهريان أن ساري نفسه بدأ يخفت!',['ساري','شهريان... يدي. لا أشعر بها.'],['شهريان','لا! أمسكي... أمسك يدي! الآن!']]);
+   toast('اضغطي «مسك اليد» قبل أن تفقديه!');return 'hold'}],
+ [75,'m5',350,450,'مدخل دار السجلات',()=>{const n=[0,1,2].filter(k=>F()['ck'+k]).length;return F().cd75?'افحصي سجلات الساعات الثلاثة ('+n+'/3).':'ادخلي دار السجلات السرية.'},async()=>{
+   await memPass(2);zmood('clock');
+   await talk(['في دار السجلات السرية، تتداخل دقات ساعات بطيئة مع همسات بشرية غامضة تتسرب من بين الرفوف.',['ساري','بعضها ساعات، وبعضها أعمار. لنبحث عن أي سجل مرتبط بنا.']]);
+   return 'hold'}],
+ [76,'m6',300,500,'مدخل الأقبية',()=>F().cd76?'اعبري الأقبية دون أن يلمسكِ ضوء الحراس، وصلي إلى وعاء الأرواح.':'ادخلي الأقبية المحرمة.',async()=>{
+   zmood('ripple');
+   await talk(['تسللا إلى أقبية التخزين المحرمة تحت السوق، حيث تُحفظ الأرواح المسلوبة في أوعية زجاجية تلمع بضوء شاحب ومظلم.',['ساري','حراسٌ يجوبون الممرات. أي ضوء يلمسنا نُفتضح.'],['شهريان','نمر بين دوراتهم. بهدوء.']]);
+   toast('تجنبي دوائر الضوء الذهبية');return 'hold'}],
+ [77,'m6',1640,470,'الغرفة الزمنية',()=>F().mSitWait?'اجلسا معًا على المقعد (زر «الجلوس معًا» أو حرف G) لتستعيدا الذكرى.':'ادخلي الغرفة الزمنية.',async()=>{
+   await talk(['وصلا إلى غرفة هادئة تتوهج أرضها بحلقات من النور، وفي وسطها مقعد حجري قديم.',['ساري','هذه الذكرى لا تُستعاد وحدنا. تُستعاد حين نكون معًا.'],['شهريان','فلنجلس يا ساري.']]);
+   F().mSitWait=1;toast('اقتربي من المقعد واضغطي «الجلوس معًا»');return 'hold'}],
+ [78,'m7',640,450,'التاجر الأعظم',()=>'واجهي التاجر الأعظم.',async()=>{
+   await memPass(3);zmood('storm');sfx.rumble();shake(1.2);
+   await talk(['اهتزت أرضية القبو، ووقف أمامهما التاجر الأعظم محاطًا بعملات تدور كالكواكب.',['التاجر الأعظم','أحسنتما. وصلتما إلى ما لا يصل إليه أحد. ولكنكما لن تحملا هذه الذكرى معكما.'],['ساري','أنت من محا لقاءنا الأول!'],['التاجر الأعظم','وسأمحو ما بقي منه الآن.']]);
+   await battle([
+    ['صاعقة من العملات تتجه إلى رأس شهريان.','ماذا تفعلين؟',['أثبّت ذكرى واضحة في عقلي','أركض','أتجاهلها'],0,'تشبّثت شهريان بذكرى ضحكة الطفلة، فتبدد الهجوم.','الذكرى التي تتشبثين بها هي درعكِ.'],
+    ['حاول التاجر أن يسحب خيوط الذهب بين قلبيهما.','والآن؟',['أتمسك بيد ساري','أقطع الخيوط','أصرخ'],0,'اشتدت الخيوط وصارت أصلب من الفولاذ.','لا تقطعي ما يربطكما!'],
+    ['وقف التاجر يعرض صفقة: ذكراهما مقابل الخلود.','ماذا تجيبين؟',['لا أبيع ما لا يُشترى','أفكر في العرض','أقبل'],0,'ارتجف التاجر، فالذكرى التي لا تُباع لا ثمن لها عنده.','جواب خاطئ يا شهريان. فكّري بقلبكِ.']
+   ]);
+   await talk([['التاجر الأعظم','مستحيل... كيف تقاومان؟'],['ساري','لأن الذكرى ليست في العقل فقط. إنها في القلب.']])}],
+ [79,'m7',640,450,'اتحاد الذكرى',()=>'أطلقي النور الأول مع ساري.',async()=>{
+   const k=await choose('الضربة الأخيرة. ماذا تفعلين؟',['أمسك يد ساري وأوقد النور الأول'],'شهريان');
+   HAND=true;zmood('restore');flash('255,240,200',1);sfx.heal();sfx.boom();shake(1.4);burst(P.x,P.y-30,'255,235,190',70);
+   F().mBroken=1;F().mFree=1;F().zSat=1;F().mBeaten=1;
+   await talk(['وتكسرت أوعية التخزين المحرمة كلها بصوتٍ أشبه بالجرس، وانطلقت منها آلاف الذكريات المتوهجة بالذهب والفضة.','وعاد الأشخاص الممحوون إلى ذاكرة العالم وأحبائهم، واحدًا بعد الآخر، تحت وهجٍ يلوّن الأرجاء بالإشراق والحيوية.',['ساري','إنهم يعودون... كل الذين نسيهم العالم.'],['شهريان','ولن ينساهم أحد بعد اليوم.'],'وتحطم التاجر الأعظم إلى غبار من العملات.']);
+   await goto('m8',200,450)}],
+ [80,'m8',900,450,'الفجر الجديد',()=>F().mDone?'تجولي مع ساري. اجلسا على المقعد وشاهدا الفجر.':'اخرجي مع ساري إلى الفجر.',async()=>{
+   zmood('dawn');sfx.card();
+   await talk(['وخرج ساري وشهريان من سوق الذكريات، وقد استعاد كل منهما ذاته وهويته المرتبطة بالآخر.',['ساري','أذكر كل شيء. المعبد، وضحكتكِ، ووعدنا الأول.'],['شهريان','وأنا أذكر يدكَ الصغيرة في يدي.']]);
+   HAND=true;sfx.hand();
+   await talk(['أمسك أحدهما بيد الآخر، وناظرين إلى أفق فجر جديد، شروق كوني مشع تتلاشى فيه ألوان العالم السفلي بالتدريج إلى نور أبيض هادئ ونقي.','فالذكريات الحقيقية لا يمكن شراؤها أو محوها ما دامت تنبض بالحب الخالص.']);
+   await card('النهاية','سوق الذكريات','والذكريات الحقيقية لا تُباع ولا تُمحى.');
+   F().mDone=1;save();zmood('gold');openOv($('#memEnd'))}]
+];
+function memGoal(){const f=F();if(f.mDone)return MS[11][5]();const g=MS[f.mStep];return g?g[5]():''}
+function stateUpToM(ms){
+  stateUpTo('z',12);const f=S.flags;f.cStep=15;f.cDone=1;f.kStarted=1;f.sight=f.insight=f.shield=f.commune=1;f.zSat=1;
+  f.mStarted=1;f.mStep=ms;f.handDone=1;
+  for(let i=0;i<ms;i++)f['cd'+(69+i)]=1;
+  if(ms>=1)f.mp0=1;if(ms>=3)f.mp1=1;if(ms>=6)f.mp2=1;if(ms>=9)f.mp3=1;
+  if(ms>=2){f.mk0=f.mk1=f.mk2=1}if(ms>=6)for(let i=0;i<4;i++)f['vn'+i]=1;
+  if(ms>=7){f.ck0=f.ck1=f.ck2=1}
+  f.mFree=ms>=11?1:0;f.mBroken=ms>=11?1:0;
+  S.chapters=CH.map(c=>c.id).filter(id=>isNaN(+id)||+id<69+ms);
+  initScene();
+}
+async function startMarket(){const f=F();if(!f.mStarted){f.mStarted=1;f.mStep=0;}save();await goto('m1',180,450)}
+const MPART={m1:[0,'m1',180,450],m2:[3,'m4',200,450],m3:[6,'m5',200,450],m4:[9,'m7',150,450]};
+function patchMarket(){
+  memScenes();
+  MS.forEach((e,i)=>{const[id,sc,x,y,lab,goal,fn]=e;
+    SC[sc].objs.push(OBJ({id:'ms'+id,x,y,r:76,label:lab,show:()=>F().mStarted&&F().mStep===i&&!F()['cd'+id],f:kOrb(x,y,ZT[sc].amb),
+      use:async()=>{await chapter(''+id);const r=await fn();if(r==='hold')F()['cd'+id]=1;else F().mStep=i+1;save()}}))});
+  SC.garden.objs.push(OBJ({id:'memgate',x:750,y:340,r:90,label:'بوابة سوق الذكريات',show:()=>F().cDone&&!F().mStarted,
+    f:(c,t)=>{ell(c,750,342,26,8,'rgba(0,0,0,.35)');rrect(c,724,282,52,60,6,'#3a3a46');c.strokeStyle='rgba(220,225,255,.8)';c.lineWidth=4;c.beginPath();c.arc(750,326,18,3.14,6.2832);c.stroke();glow(c,750,310,40+Math.sin(t*2)*4,'200,210,255',.45)},
+    use:()=>startMarket()}));
+  /* مقاعد في أماكن أخرى */
+  if(SC.z10)benchAdd(SC.z10,1000,640,'#5a4a7a');
+  if(SC.z9)benchAdd(SC.z9,900,680,'#2a2a60');
+  if(SC.z1)benchAdd(SC.z1,1000,720,'#2a3060');
+}
+
+/* ---- ربط سوق الذكريات بالنظام ---- */
+(function(){
+  const _is=initScene;initScene=function(){_is();if(isZ()&&/^m\d$/.test(S.scene)){const f=S.flags;f.zSat=(S.scene!=='m8'&&!f.mFree)?.7:1}};
+  const _up=update;update=function(dt,t){_up(dt,t);if(S&&cur&&$('#title').hidden&&isZ()&&F().mStarted){vanishPoll();guardCheck(t)}};
+  const _ds=drawSari;drawSari=function(c,t,s,pose){
+    if(S&&s===SAR&&F().mFade&&!HAND){const pa=c.globalAlpha;c.globalAlpha=.3+.25*Math.sin(t*9);_ds(c,t,s,pose);c.globalAlpha=pa;return}
+    _ds(c,t,s,pose)};
+  const _fx=fxAll;fxAll=function(c,t,vw,vh){_fx(c,t,vw,vh);
+    if(!S||!isZ()||!F().mStarted||busy||!F().insight)return;
+    const g=MS[F().mStep];if(!g||g[1]!==S.scene)return;
+    let tx=g[2],ty=g[3];
+    if(F().mStep===1&&F().cd70){const k=[0,1,2].find(i=>!F()['mk'+i]);if(k==null)return;tx=[640,1100,1440][k];ty=[360,600,360][k]}
+    else if(F().mStep===6&&F().cd75){const k=[0,1,2].find(i=>!F()['ck'+i]);if(k==null)return;tx=[500,800,1100][k];ty=350}
+    else if(F().mStep===7&&F().cd76){tx=1400;ty=500}
+    else if(F().cd69&&F().mStep===5)return;
+    const d=dist(P.x,P.y,tx,ty);if(d>110){const n=Math.min(9,Math.floor(d/70));for(let k=1;k<=n;k++){const q=((k+t*1.6)%(n+1))/(n+1);glow(c,P.x+(tx-P.x)*q,P.y-20+(ty-P.y)*q,7,'255,220,140',.35+.5*(1-q))}}};
+  const _g=goalText,_h=hintText;
+  goalText=function(){return(S&&F().mStarted)?memGoal():_g()};
+  hintText=function(){return(S&&F().mStarted)?memGoal():_h()};
+  /* شاشة النهاية */
+  const d=document.createElement('div');d.id='memEnd';d.className='ovl';d.hidden=true;d.setAttribute('style','z-index:35;background:radial-gradient(ellipse at 50% 40%,#2a2468 0%,#0c0b1d 80%)');
+  d.innerHTML='<div style="font-family:var(--f-display);color:var(--lantern);letter-spacing:.14em">نهاية الجزء الخامس</div><div style="font-family:var(--f-display);font-size:clamp(26px,7vw,44px);font-weight:700;text-align:center;line-height:1.4;max-width:14em">سوق الذكريات</div><p style="color:var(--moon-dim);max-width:24em;text-align:center;line-height:1.9;margin:0">عاد النور إلى الأوعية، وعادت الأرواح إلى أحبائها. ويداكما متشابكتان، وفجرٌ جديد يشرق على الأفق.</p><div class="row"><button id="meStay" class="btn main" type="button">أكملي التجوال</button><button id="meMenu" class="btn" type="button">القائمة الرئيسية</button><button id="meNew" class="btn" type="button">ابدئي من جديد</button></div>';
+  $('#app').appendChild(d);
+  $('#meStay').addEventListener('click',()=>closeOv($('#memEnd')));
+  $('#meMenu').addEventListener('click',()=>{save();location.reload()});
+  $('#meNew').addEventListener('click',()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
+  const b=document.createElement('button');b.id='ceMem';b.className='btn main';b.type='button';b.textContent='إلى سوق الذكريات';const row=$('#ceStay').parentNode;if(row)row.insertBefore(b,row.firstChild);
+  b.addEventListener('click',()=>{closeOv($('#celEnd'));run(startMarket)});
+  /* اختيار البارت */
+  PARTS.push(['m1','الجزء الخامس: سوق الذكريات','الفصول 69–71 · بوابات السوق وأزقة النسيان',0],['m2','الممر الثاني','الفصول 72–74 · المحو التام والبحث عن الخيوط',1],['m3','الممر الثالث','الفصول 75–77 · الالتواء العظيم والأسرار الدفينة',1],['m4','الممر الرابع','الفصول 78–80 · المواجهة الكبرى وانجلاء الظلام',1]);
+  const _sp=startPart;startPart=async function(k){
+    if(!MPART[k])return _sp(k);
+    closeOv($('#partsOv'));const q=MPART[k];stateUpToM(q[0]);
+    if(q[0]===0){await run(startMarket);return}
+    await run(()=>goto(q[1],q[2],q[3]))};
+})();
+
+/* ---------- الأجزاء الأخيرة: الفصول 81–110 ---------- */
+const FINAL_META=[
+['دعوة تحت ضوء القمر','يدعو ساري شهريان إلى قارب في بحيرة تحفظ الرسائل التي لم تصل.'],
+['أول رسالة على الماء','ثلاث رسائل طافية تفتح دفتر الرسائل السرية.'],
+['الرسالة الزرقاء','ثلاث نجوم تعيد ذكرى كلمات خاف صاحبها من قولها.'],
+['دوامة الذكريات','لغز القمر والتوليب والنجمة والقلب يوقف دوامة الماء.'],
+['الرسالة التي لم تصل','زجاجات قديمة على جزيرة فضية ورسالة تستحق أن تُحفظ.'],
+['الرسالة التي اخترتها لك','يختار اللاعب رسالة طمأنينة أو شوق أو وعد لتبقى في الذكريات.'],
+['صندوق أصحاب الرسائل','صفحات ممزقة تروي أمنيات أم وصديق ومسافر.'],
+['رسالتنا الأولى','يكتب ساري وشهريان رسالة تشبههما ويختمانها بتوليب.'],
+['فانوس إلى السماء','يرتفع فانوس ذهبي حاملًا رسالتهما إلى النجوم.'],
+['البحيرة التي تحفظ الحب','تدخل الرسالة دفتر الذكريات وتنفتح بوابة الحديقة.'],
+['الدعوة','زهرة وردية ودعوة بسيطة إلى الرقص تفتحان حديقة الألف توليب.'],
+['ممر الألف زهرة','علامات ضوئية توقظ الأزهار واحدة بعد الأخرى.'],
+['الخطوة الأولى','أربع حركات مشتركة لتعلم إيقاع الرقص.'],
+['جسر البتلات','أربع نغمات في توقيتها الصحيح تصنع جسرًا من البتلات.'],
+['باقة من ألف لون','توليب وردي وبنفسجي وذهبي يعيد ألوان الساحة.'],
+['الرقصة التي لا تكتمل','يد تمتد ويد تقبلها فتتفتح الزهرة الملكية.'],
+['اختبار الإيقاع','ست خطوات مرتبة تقود إلى الرقصة الكاملة.'],
+['تحت شجرة الفوانيس','استراحة دافئة وذكرى رسالة البحيرة المختارة.'],
+['رقصة ألف توليب','رقصة تحت القمر تتفتح معها أزهار الحديقة كلها.'],
+['آخر بتلة في الليل','زهرة صغيرة تنضم إلى دفتر الذكريات قبل مغادرة الحديقة.'],
+['الشجرة التي بدأت تموت','حارسة القرية تطلب الوصول إلى القمة قبل سقوط الورقة الأخيرة.'],
+['جذور تحمل الأمنيات','ثلاث بلورات تفتح طريقًا لا يُفتح إلا بالتعاون.'],
+['أمنية الخباز','حبات قمح تعيد ذكرى أب ينتظر حفيدته وخبزًا تحبه.'],
+['سلم الأغصان المتحركة','علامات سحرية ومساعدة متبادلة فوق أغصان تتحرك.'],
+['أمنية الطفلة والنجمة','النجمة الصغيرة ثم الكبيرة ثم الهلال يجمعون شظايا الضوء.'],
+['حارس الأوراق','مواجهة من ثلاث مراحل تختبر القرار والتعاون.'],
+['غابة الأوراق المفقودة','ثلاث ذكريات تكشف معاني الأمل والرحمة والاختيار.'],
+['آخر استراحة قبل القمة','وقفة أخيرة لفهم الخيارات قبل فتح البوابة.'],
+['الأمنية الأخيرة','اختيار واحد مسؤول يحدد مصير الشجرة والمملكة.'],
+['ما ينمو بعد الأمنيات','بذرة ذهبية ومشهد ختامي يتغير بحسب الأمنية.']
+];
+FINAL_META.forEach((m,i)=>{const id=''+(81+i),c={id,l:'الفصل '+(81+i),t:m[0],s:m[1]};CH.push(c);NOVEL.push({id,l:c.l,t:c.t,p:[c.s]})});
+SPK['صوت الشجرة']='#d8d38a';SPK['الحارسة']='#a9d49b';SPK['صوت الحديقة']='#f2a9cb';
+const NQ=[
+{id:81,sc:'lake1',x:430,y:610,label:'القارب والفانوس',goal:'اقتربي من القارب وامدّي يدكِ لشهريان.',fn:async()=>{await talk([['ساري','شهريان، عندي إلك مفاجأة صغيرة الليلة. هالبحيرة بتحتفظ برسائل الحب القديمة.'],['شهريان','يعني ممكن نلاقي رسالة لسه ناطرة حدا يقرأها؟ يلا نكتشفها سوا.']]);HAND=true;sfx.hand();await talk(['مدّ ساري يده، فتمسكها شهريان وتصعد إلى القارب. ينساب القارب نحو العلامة المضيئة وسط البحيرة.']);await goto('lake1',800,520)}},
+{id:82,sc:'lake1',x:1000,y:470,label:'رسائل طافية',goal:'التقطي ثلاث رسائل طافية.',tasks:[['a',350,300,'رسالة الأمل','letter'],['b',790,710,'رسالة الطريق','letter'],['c',1240,320,'رسالة اللقاء','letter']],fn:async()=>{await talk([['شهريان','ساري! في رسائل عم تلمع فوق الماء. انتبه، لا تصدمها بالقارب!']]);return'tasks'},outro:['«إلى الشخص الذي يجعل الطريق الطويل أقصر: كنت أملًا في قلبي حتى قبل أن أراك.»','انفتح دفتر الرسائل السرية، وصارت لكل رسالة صفحة مضيئة.']},
+{id:83,sc:'lake1',x:1260,y:710,label:'الرسالة الزرقاء',goal:'اجمعي النجوم الثلاث لتكتمل الذكرى.',to:'lake2',tasks:[['a',420,260,'نجمة الذكرى الأولى','star'],['b',850,720,'نجمة الذكرى الثانية','star'],['c',1240,350,'نجمة الذكرى الثالثة','star']],fn:async()=>{await talk([['ساري','هاي الرسالة مختلفة. يمكن مخبية ذكرى وراها.']]);return'tasks'},outro:['ظهرت ذكرى شاب يودع فتاة دون أن يقول ما يشعر به: «لو عاد بي الزمن، لما انتظرت اللحظة المثالية.»',['شهريان','الحب مو كلام حلو وبس؛ الحب إنك تفهم الشخص اللي قدامك وتسمعه.']]},
+{id:84,sc:'lake2',x:760,y:480,label:'دوامة الرموز',goal:'فعّلي الرموز بالترتيب: القمر، التوليب، النجمة، القلب.',ordered:true,tasks:[['a',350,300,'القمر','moon'],['b',1150,300,'التوليب','tulip'],['c',350,720,'النجمة','star'],['d',1150,720,'القلب','heart']],fn:async()=>{await talk([['شهريان','إنت راقب الأعمدة، وأنا براقب الرموز. الترتيب: القمر، التوليب، النجمة، القلب.']]);return'tasks'},outro:['توقفت الدوامة، وظهر جسر من زهور مضيئة يعبر إلى الجزيرة.',['ساري','إذا ضعت بالطريق، إنتِ بتدليني.'],['شهريان','بشرط تسمع كلامي!']]},
+{id:85,sc:'lake2',x:900,y:650,label:'الزجاجة القديمة',goal:'ابحثي عن ثلاث زجاجات ثم احفظي الرسالة في صندوق الذكريات.',ordered:true,tasks:[['a',260,330,'زجاجة مدفونة','bottle'],['b',740,220,'زجاجة قرب الشجرة','bottle'],['c',1270,650,'الزجاجة القديمة','bottle'],['box',790,480,'صندوق الذكريات','box']],fn:async()=>{await talk(['وصلا إلى جزيرة يغطيها العشب الفضي. تحت شجرتها القديمة تنتظر زجاجة منذ سنوات.']);return'tasks'},outro:['«انتظرت يومًا آخر، ثم يومًا آخر… حتى أصبحت الكلمات ذكرى لا أستطيع العودة إليها.»',['شهريان','ما بدي نكون شخصين كل واحد فينا ينتظر الثاني ليبدأ الكلام.']],'collectedLetters':3},
+{id:86,sc:'lake2',x:460,y:690,label:'الرسائل الثلاث',goal:'اختاري رسالة لتقديمها إلى شهريان.',fn:async()=>{const opts=['الطمأنينة: هناك من يريد أن يسمعك ويفهمك.','الشوق: المسافة أخف حين نلتقي بنهاية اليوم.','الوعد: أحاول أن أكون صادقًا معك وأسمعك.'];const k=await choose('أي رسالة يختار ساري لشهريان؟',opts,'ساري');F().lakeLetterChoice=['طمأنينة','شوق','وعد'][k];F().memoryBook='رسالة '+F().lakeLetterChoice;save();sfx.chime? sfx.chime():chime();await talk([['ساري','اخترتلك هالرسالة لأنها بتشبه الشي اللي بدي أعطيكي ياه.'],['شهريان','رح احتفظ فيها، مو بس لأن كلماتها حلوة، لأنك أنت اللي اخترتها إلي.']])}},
+{id:87,sc:'lake2',x:1250,y:390,label:'صندوق الرسائل',goal:'اجمعي الصفحات الثلاث ثم رتبيها داخل الصندوق.',to:'lake3',ordered:true,tasks:[['a',300,690,'صفحة الأم','page'],['b',710,260,'صفحة الصديق','page'],['c',1160,700,'صفحة المسافر','page'],['box',790,490,'ترتيب الصفحات','box']],fn:async()=>{await talk([['شهريان','كل رسالة هون كانت حياة كاملة بالنسبة لصاحبها. خلينا نرتب الصفحات.']]);return'tasks'},outro:['اكتملت حكايات أم تتمنى الأمان لابنتها، وصديق يعتذر، ومسافر يبحث عن بيت. وبقيت صفحة فارغة.',['شهريان','بقي مكان لرسالة جديدة تشبهنا نحن الاثنين.']]},
+{id:88,sc:'lake3',x:440,y:590,label:'صفحة فارغة',goal:'اختاري رسالتكما الأولى واختماها.',fn:async()=>{const k=await choose('ماذا تكتبان في الصفحة الفارغة؟',['إلى الغد الذي سنصل إليه معًا، لنضحك ونتكلم ونفهم بعضنا أكثر.','إلى كل طريق سنحاول عبوره يدًا بيد.','أجمل الأمنيات أن نجد من نشاركه الطريق.'],'شهريان');F().sharedLetter=k;await talk(['تحرك القلم بهدوء، ثم وضعت شهريان يدها فوق يد ساري وخُتمت الرسالة بشكل توليب.']);sfx.page();burst(P.x,P.y-30,'255,215,140',35)}},
+{id:89,sc:'lake3',x:900,y:520,label:'منصة الفانوس',goal:'ضعي الفانوس، أشعلي الفتيل، ثم أطلقيه إلى السماء.',ordered:true,tasks:[['a',400,650,'وضع الفانوس','lantern'],['b',820,430,'إشعال الفتيل','lantern'],['c',1210,610,'إطلاق الفانوس','lantern']],fn:async()=>{await talk([['ساري','بتمنى نضل نعرف نحكي مع بعض مهما صارت الأيام صعبة.'],['شهريان','وأنا بتمنى نلاقي أشياء حلوة حتى بأبسط أيامنا.']]);return'tasks'},outro:['ارتفع الفانوس ببطء حتى صار نجمة ذهبية.',['شهريان','حتى لو اختفى من عيوننا، الرسالة اللي جواته بتضل جزء من حكايتنا.']]},
+{id:90,sc:'lake3',x:1260,y:350,label:'دفتر البحيرة',goal:'سجلي الرسالة، راجعي الذكريات، ثم افتحي بوابة الحديقة.',to:'dance1',ordered:true,tasks:[['a',390,320,'تسجيل الرسالة المختارة','book'],['b',800,700,'مراجعة رسائل البحيرة','book'],['c',1250,570,'بوابة حديقة التوليب','gate']],fn:async()=>{await talk([['شهريان','ما اكتفينا نقرأ قصص الناس، تركنا شي من قصتنا هون.'],['ساري','صار إلنا ذكرى بهالبحيرة.']]);return'tasks'},outro:['«ليست كل الرسائل بحاجة إلى جواب، بعضها يكفيه أن يجد قلبًا يقرأه.»','انفتحت بوابة حديقة التوليب السحرية.']},
+{id:91,sc:'dance1',x:420,y:560,label:'زهرة الدعوة',goal:'قدمي الزهرة وادعي شهريان إلى الرقصة.',fn:async()=>{await talk([['ساري','الليلة ما بدي نركض وراء وحوش ولا نحل ألغاز. بدي أعيش معك لحظة حلوة.']]);const k=await choose('يمد ساري زهرة وردية ويده إلى شهريان.',['ادعُ شهريان إلى الرقصة'],'ساري');HAND=true;await talk([['شهريان','بقبل، بس إذا دعست على رجلي ما رح أعتبرها حركة سحرية!']]);sfx.hand();burst(P.x,P.y-30,'242,145,185',40)}},
+{id:92,sc:'dance1',x:850,y:470,label:'ممر الألف زهرة',goal:'مري فوق أربع علامات ضوئية لفتح الأزهار.',tasks:[['a',300,300,'علامة الضوء الأولى','step'],['b',650,690,'علامة الضوء الثانية','step'],['c',1010,300,'علامة الضوء الثالثة','step'],['d',1280,650,'علامة الضوء الرابعة','step']],fn:async()=>{await talk([['شهريان','شكله كل خطوة بتفتح زهرة. جرّب يا سيد الرقص!']]);return'tasks'},outro:['تفتح الممر كله، وطارت فراشة مضيئة نحو ساحة التدريب.',['ساري','معقول كل هالحديقة كانت ناطرتنا؟']]},
+{id:93,sc:'dance1',x:1190,y:420,label:'ساحة التدريب',goal:'نفذي الحركات: الاقتراب، الدوران، تبديل المكان، مد اليد.',ordered:true,tasks:[['a',320,690,'الاقتراب من شهريان','step'],['b',650,300,'الدوران حولها','step'],['c',1010,690,'تغيير المكان','step'],['d',1260,350,'مد اليد','heart']],fn:async()=>{await talk([['صوت الحديقة','لا تبحثا عن الحركة المثالية، بل عن الإيقاع الذي يجعلكما تتحركان معًا.']]);return'tasks'},outro:['اجتمعت البتلات حول خطواتهما، وفتحت الفراشة طريق جسر البتلات.']},
+{id:94,sc:'dance1',x:1250,y:730,label:'جسر البتلات',goal:'اضغطي عند التقاء الحلقات أربع مرات لتكوين الجسر.',to:'dance2',fn:async()=>{await talk([['شهريان','لازم نتحرك بنفس الإيقاع. وإذا أخطأنا منرجع نجرب.']]);await ringGame(4);await talk(['تحولت البتلات تحت أقدامهما إلى جسر كامل، وعبراه معًا دون أن يسبق أحدهما الآخر.'])}},
+{id:95,sc:'dance2',x:450,y:570,label:'باقة الحديقة',goal:'اجمعي التوليب الوردي والبنفسجي والذهبي.',tasks:[['pink',300,280,'التوليب الوردي','tulip'],['purple',820,700,'التوليب البنفسجي','tulip'],['gold',1260,330,'التوليب الذهبي','tulip']],fn:async()=>{await talk(['طلبت فراشة الحديقة ثلاث زهرات سحرية لإعادة الألوان إلى الساحة.']);return'tasks'},outro:[['شهريان','ما عرفت أي لون بيشبهني أكثر؟'],['ساري','لا، حسيت إنك أحلى من إني أختصرك بلون واحد.']],'collectedTulips':3},
+{id:96,sc:'dance2',x:850,y:460,label:'الزهرة الملكية',goal:'اقتربي، امدّي اليد، أمسكيها، ثم دورا نصف دورة.',ordered:true,tasks:[['a',300,650,'خطوتان إلى الأمام','step'],['b',600,320,'مد اليد','heart'],['c',990,660,'الإمساك باليد','heart'],['d',1260,390,'نصف دورة والزهرة الملكية','tulip']],fn:async()=>{await talk([['صوت الحديقة','لن تتفتح الزهرة إلا حين يختار أحدكما أن يمد يده، ويختار الآخر أن يمسكها.']]);return'tasks'},outro:['انتقل الضوء بين يديهما ودارت شهريان مع ساري نصف دورة، فتفتحت الزهرة الملكية.',['شهريان','أحسن إنك ما ضليت تستنى السحر يعمل كل شي عنك.']]},
+{id:97,sc:'dance2',x:1220,y:690,label:'علامات الإيقاع',goal:'نفذي ست خطوات رقص بالترتيب.',to:'dance3',ordered:true,tasks:[['a',250,280,'١ الاقتراب','step'],['b',520,680,'٢ مد اليد','step'],['c',790,300,'٣ الإمساك باليد','step'],['d',1030,680,'٤ الدوران ببطء','step'],['e',1260,310,'٥ تبديل المكان','step'],['f',1260,700,'٦ النظر إلى السماء','star']],fn:async()=>{await talk([['شهريان','هلأ لازم نركز سوا. لا تخاف، أنا موجودة.']]);F().danceStepsCompleted=0;return'tasks'},outro:['أضاءت المنصة بالكامل، وصفقت ألف زهرة ببتلاتها للخطوات الست.']},
+{id:98,sc:'dance3',x:430,y:570,label:'شجرة الفوانيس',goal:'اختاري استراحة تحت شجرة الفوانيس.',fn:async()=>{const letter=F().lakeLetterChoice||'الوعد';const k=await choose('كيف تقضيان هذه الاستراحة؟',['الجلوس ومشاهدة الفوانيس','جمع البتلات الذهبية','تذكر رسالة '+letter],'شهريان');if(k===0)await talk(['جلسا جنبًا إلى جنب تحت الفوانيس، وهدأ كل شيء حولهما.']);else if(k===1){F().goldenPetals=3;sfx.star();await talk(['التقط ساري ثلاث بتلات ذهبية وقدمها إلى شهريان.'])}else await talk([['شهريان','لسه محتفظة برسالة '+letter+'. وكل مرة بقرأها بتذكر إنك اخترتها إلي.']]);await talk([['شهريان','رح أتذكر إنك حاولت، حتى وأنت مو متأكد من خطواتك.']])}},
+{id:99,sc:'dance3',x:850,y:500,label:'منصة ألف توليب',goal:'ابدئي الرقصة وأتمّي أربع إشارات إيقاعية.',fn:async()=>{await talk([['ساري','تسمحيلي بهالرقصة؟'],['شهريان','بكل سرور.']]);HAND=true;await ringGame(4);F().danceDone=1;save();for(let i=0;i<5;i++){burst(P.x+(i-2)*35,P.y-40,'244,150,195',24);await sleep(160)}await talk([['شهريان','بدي أتذكر هالليلة دائماً.'],['ساري','رح تكون إلنا ذكرى حلوة. مو لأن المكان سحري، لأنك إنتِ فيه.'],'تبادلا دورة هادئة تحت القمر، ثم ضمّ ساري شهريان في عناق هادئ وسط ألف توليب.']);await card('رقصة ألف توليب','حين يتشارك قلبان الخطوة','تصبح حتى الأزهار جزءًا من الموسيقى.')}},
+{id:100,sc:'dance3',x:1250,y:650,label:'آخر زهرة',goal:'التقطي الزهرة، أضيفيها للدفتر، ثم غادري الحديقة.',to:'wish1',ordered:true,tasks:[['a',350,330,'التوليب الأخير','tulip'],['b',790,690,'إضافة صورة الرقصة','book'],['c',1240,330,'بوابة شجرة الأمنيات','gate']],fn:async()=>{await talk([['ساري','هاي الزهرة لسه مفتوحة. يمكن بدها حدا ياخدها معه.']]);return'tasks'},outro:[['شهريان','رح احتفظ فيها حتى أتذكر إن أحلى اللحظات بتبدأ بدعوة بسيطة.'],'انفتح طريق شجرة الأمنيات الأخيرة.']},
+{id:101,sc:'wish1',x:410,y:560,label:'حارسة القرية',goal:'اقرئي الأسطورة واجمعي ثلاث أوراق ذهبية.',ordered:true,tasks:[['legend',760,300,'لوحة أسطورة الشجرة','book'],['a',290,740,'ورقة ذهبية أولى','leaf'],['b',980,700,'ورقة ذهبية ثانية','leaf'],['c',1270,350,'ورقة ذهبية ثالثة','leaf']],fn:async()=>{await talk([['الحارسة','هذه شجرة الأمنيات. لم يبقَ لها إلا ورقة واحدة، وإذا سقطت قد تفقد المملكة سحرها.'],['شهريان','رح نحاول نوصل للقمة، وبعدها نفكر سوا.']]);return'tasks'},outro:['قرأت شهريان الأسطورة، ونبضت الأوراق الثلاث بضوء أخضر خافت داخل الجذع.']},
+{id:102,sc:'wish1',x:880,y:520,label:'بلورات الجذور',goal:'فعّلي بلورات ساري وشهريان والمفتاح السحري.',tasks:[['a',300,300,'بلورة يحرك ساري صخرتها','crystal'],['b',800,720,'بلورة تُنزل شهريان غصنها','crystal'],['c',1260,430,'المفتاح والبلورة الخفية','crystal']],fn:async()=>{await talk(['داخل الجذور سمعا أصوات أمنيات قديمة. ثلاث بلورات تنتظر تعاونهما.']);return'tasks'},outro:[['شهريان','ما قدرنا نفتح الطريق إلا لما تعاونّا.'],['ساري','مثل كل رحلة عم نعيشها سوا.']]},
+{id:103,sc:'wish1',x:1250,y:690,label:'ذكرى الخباز',goal:'اجمعي ثلاث حبات قمح وضعيها في وعاء الذكرى.',to:'wish2',ordered:true,tasks:[['a',280,340,'حبة القمح الأولى','wheat'],['b',650,710,'حبة القمح الثانية','wheat'],['c',1120,300,'حبة القمح الثالثة','wheat'],['bowl',870,510,'وعاء ذكرى الخباز','bowl']],fn:async()=>{await talk(['ظهرت ورقة تحمل ذكرى خباز مسن ينتظر حفيدته على باب فرنه.']);return'tasks'},outro:['«لا أريد مالًا ولا قوة. أتمنى فقط أن تجلس حفيدتي معي وتتذوق الخبز الذي كانت تحبه.»',['ساري','الأشياء الصغيرة ممكن تكون أغلى من كل الكنوز.']]},
+{id:104,sc:'wish2',x:400,y:570,label:'الأغصان المتحركة',goal:'شغّلي ثلاث علامات ثم ساعدا بعضكما على العبور.',ordered:true,tasks:[['a',290,300,'العلامة الأولى','step'],['b',760,700,'العلامة الثانية','step'],['c',1210,330,'العلامة الثالثة','step'],['help',1060,650,'مد اليد والمساعدة','heart']],fn:async()=>{await talk([['شهريان','إنتِ اختاري الطريق… يعني أنا باختار، وأنت بتأكد إن المنصة ثابتة. ما حدا يسبق الثاني.']]);return'tasks'},outro:['مدّت شهريان يدها وسحبت ساري إلى المنصة، ثم ظهر جسر من العصافير الذهبية.',['شهريان','وهذا مو أول مرة نساعد بعض، ولا آخر مرة!']]},
+{id:105,sc:'wish2',x:840,y:480,label:'أعمدة النجوم',goal:'النجمة الصغيرة، الكبيرة، الهلال، ثم اجمعي شظايا الضوء.',ordered:true,tasks:[['a',270,320,'النجمة الصغيرة','star'],['b',690,690,'النجمة الكبيرة','star'],['c',1110,300,'الهلال','moon'],['d',320,710,'شظية الضوء الأولى','crystal'],['e',880,300,'شظية الضوء الثانية','crystal'],['f',1260,650,'شظية الضوء الثالثة','crystal']],fn:async()=>{await talk([['الطفلة','إذا النجمة بعيدة، كيف رح تعرف إني عم أحكي معها؟'],['شهريان','المسافة ما بتمنع صوتك يوصل، حتى لو الجواب تأخر.']]);return'tasks'},outro:['اجتمعت الشظايا في نجمة ذهبية فوق الجسر، وظهر أمامهما حارس مغطى بالأوراق.']},
+{id:106,sc:'wish2',x:1250,y:570,label:'حارس الأوراق',goal:'اجتازي مراحل الحارس الثلاث دون أن تفقدا بعضكما.',to:'wish3',fn:async()=>{await talk([['حارس الأوراق','أثبتا أنكما تستطيعان الوصول إلى القرار دون أن تفقدا بعضكما في الطريق.']]);await battle([['موجة أوراق حادة تندفع نحو شهريان.','كيف تعبران المرحلة الأولى؟',['نراقب الإيقاع ونعبر معًا','نركض في اتجاهين','نختبئ خلف الحارس'],0,'انتظرا اللحظة المناسبة وعبرا الموجة يدًا بيد.','الأوراق تبعثكما بعيدًا عن بعضكما. حاولا معًا.'],['ثبت الحارس درعه الخشبي ورفع موجة جديدة.','ماذا تفعل شهريان؟',['تفعّل الجذور السحرية','تلمس الأوراق مباشرة','تتخلى عن ساري'],0,'شلّت الجذور حركة الحارس لحظة، واستعاد ساري توازنه.','الجذور هي مفتاح هذه المرحلة.'],['انكشف قلب الدرع الخشبي.','كيف ينهي ساري المواجهة؟',['ثلاث ضربات ثم تراجع آمن','ضربات بلا توقف','يطلب الأمنية الآن'],0,'ثلاث ضربات دقيقة، ثم تراجع مع شهريان قبل الهجوم الأخير.','القوة وحدها لا تكفي؛ انتبه للهجوم الأخير.']]);await talk([['حارس الأوراق','لم تطلبا الأمنية قبل أن تفهما ثمنها. تابعا الطريق.']])}},
+{id:107,sc:'wish3',x:410,y:570,label:'الأوراق المفقودة',goal:'اقرئي ثلاث ذكريات ثم ضعيها على أغصانها المطابقة.',ordered:true,tasks:[['a',260,300,'ذكرى الأخوين','leaf'],['b',650,700,'ذكرى الشجاعة','leaf'],['c',1050,300,'ذكرى القرية','leaf'],['d',320,700,'غصن الرحمة','heart'],['e',810,310,'غصن الأمل','star'],['f',1250,650,'غصن الاختيار','seed']],fn:async()=>{await talk(['كل ورقة في الغابة تحمل أمنية مختلفة: مصالحة أخ، واستعادة شجاعة، وأمان قرية.']);F().treeMemories=0;return'tasks'},outro:[['شهريان','ما في أمنية بتشبه الثانية تمامًا. لازم نفهم الخيارات قبل ما نقرر.'],'ظهرت ثلاثة رموز: الأمل، الرحمة، والاختيار.']},
+{id:108,sc:'wish3',x:830,y:520,label:'شرفة المملكة',goal:'افحصي الرموز الثلاثة ثم فعّلي البوابة الأخيرة.',ordered:true,tasks:[['a',270,300,'رمز الأمل','star'],['b',670,700,'رمز الرحمة','heart'],['c',1060,300,'رمز الاختيار','seed'],['gate',1240,610,'البوابة الأخيرة','gate']],fn:async()=>{const k=await choose('قبل القمة، هل تجلسان قليلًا؟',['نجلس وننظر إلى المملكة','نكمل بهدوء'],'شهريان');if(k===0)await talk([['ساري','كل مكان تحت فيه حكاية. ما بدي أختار شي بس لأننا تعبنا.'],['شهريان','ولا نخلي الخوف يقرر عنا. منسمع لبعض ومنختار بصدق.']]);return'tasks'},outro:['انفتحت البوابة إلى قمة الشجرة، حيث تلمع ورقة واحدة فوق بلورة ذهبية.']},
+{id:109,sc:'wish3',x:1100,y:420,label:'الورقة الأخيرة',goal:'اختاري الأمنية، راجعي نتيجتها، ثم أكديها.',fn:async()=>{await talk([['صوت الشجرة','لم يبقَ لي إلا أمنية واحدة. اختارا ما تريدان أن يبقى في هذا العالم.']]);for(;;){const k=await choose('ما أمنيتكما الأخيرة؟',['الأمل: استعادة قدرة الشجرة على النمو.','الرحمة: فرصة لكلمة صادقة أو مصالحة.','الاختيار: بذرة سحرية لكل شخص.'],'شهريان');const names=['الأمل','الرحمة','الاختيار'],results=['تنمو أوراق جديدة وتنتشر البذور في المملكة.','تطير رسائل مضيئة وتُفتح أبواب الاعتذار والمصالحة.','تتنوع الأزهار ويختار كل شخص ما يزرعه في حياته.'];const yes=await choose('أمنية '+names[k]+' — '+results[k],['تأكيد الأمنية','الرجوع إلى الخيارات'],'شهريان');if(yes===1)continue;F().treeWishEnding=names[k];save();sfx.heal();flash('255,235,170',.7);await talk(['سقطت الورقة الذهبية وتحولت إلى بذرة صغيرة بين يدي شهريان.',['شهريان','بتمنى نكون اخترنا لسبب منؤمن فيه.'],['ساري','وأنا كمان.']]);break}}},
+{id:110,sc:'wish3',x:1250,y:690,label:'البذرة الذهبية',goal:'ازرعي البذرة الذهبية قرب جذع الشجرة.',tasks:[['seed',760,510,'زرع البذرة الذهبية','seed']],fn:async()=>{await talk(['بين يدي شهريان بذرة صغيرة تحمل أمنية '+F().treeWishEnding+'. يضع ساري يده بجانب يدها.']);return'tasks'},outro:['نبضت البذرة بالضوء، ونبتت منها زهرة صغيرة وتحرك الضوء داخل جذع الشجرة.',['شهريان','يعني انتهت الحكاية؟'],['ساري','انتهت رحلتنا لهون، بس الأمنيات مو بديل عن الخطوات اللي منعملها كل يوم.']]}
+];
+function finScene(id,name,type,seed){
+ const r=rng(seed),sc=mk(id,name,1500,900,[220,520],type==='lake'?'140,190,255':type==='dance'?'244,150,195':'220,205,120');
+ const dots=Array.from({length:90},()=>[r()*1500,r()*900,r()]);sc.ground=(c,t)=>{
+  if(type==='lake'){rect(c,0,0,1500,900,'#101d43');for(const q of dots){ell(c,q[0],q[1],35+q[2]*65,4+q[2]*5,'rgba(105,155,210,'+(.06+q[2]*.08)+')')}glow(c,760,120,260,'190,215,255',.22);for(let i=0;i<9;i++)ell(c,150+i*165,470+Math.sin(t+i)*14,80,8,'rgba(170,210,245,.12)');rrect(c,80,480,310,90,8,'#55445a');for(let i=0;i<6;i++)rect(c,95+i*50,486,5,78,'#766074')}
+  else if(type==='dance'){rect(c,0,0,1500,900,'#192b35');for(const q of dots)drawTulip(c,q[0],q[1],['#e98bb5','#a78bdb','#f1c66f'][q[2]*3|0],.65+q[2]*.55,t);ell(c,780,490,280,150,'rgba(75,45,85,.55)');c.strokeStyle='rgba(255,215,180,.22)';c.lineWidth=5;c.beginPath();c.ellipse(780,490,270,140,0,0,6.2832);c.stroke();glow(c,780,250,280,'244,150,195',.12)}
+  else{rect(c,0,0,1500,900,'#17292b');for(const q of dots)ell(c,q[0],q[1],18+q[2]*28,7+q[2]*9,'rgba(110,140,85,.12)');for(let i=0;i<8;i++)line(c,[[750,450],[200+i*150,100+(i%2)*650],[120+i*160,900]],18,'rgba(65,65,48,.45)');glow(c,760,400,330,'180,200,105',.13)}
+ };
+ for(let i=0;i<14;i++){const x=100+r()*1300,y=100+r()*700;if(type==='lake')addDeco(sc,x,y,40,(c,t)=>{drawTulip(c,x,y,'#91c9e8',.8,t);ell(c,x,y+3,22,5,'rgba(150,190,230,.16)')});else if(type==='dance')addDeco(sc,x,y,55,(c,t)=>drawLamp(c,x,y,t));else addTree(sc,x,y,.55+r()*.35,'a')}
+ if(type==='wish')addDeco(sc,760,390,300,(c,t)=>{rect(c,710,120,100,320,'#4a4436');for(let i=0;i<9;i++)circ(c,760+Math.cos(i*2.4)*130,130+Math.sin(i*2.4)*70,75,'#42513c');glow(c,760,380,120,'210,200,110',.24+Math.sin(t*2)*.05)});
+ return sc;
+}
+function drawFinObj(c,t,o,kind){const x=o.x,y=o.y,b=Math.sin(t*2+x)*4;glow(c,x,y-22,48,'255,225,160',.34);ell(c,x,y+3,18,6,'rgba(0,0,0,.28)');if(kind==='letter'||kind==='page'){rrect(c,x-15,y-35+b,30,23,3,'#e8ddbd');line(c,[[x-10,y-28+b],[x+10,y-28+b]],1,'#8e7590');line(c,[[x-10,y-22+b],[x+6,y-22+b]],1,'#8e7590')}else if(kind==='star')starShape(c,x,y-24+b,1.3,'#ffe6a0');else if(kind==='tulip')drawTulip(c,x,y,'#f09abe',1.5,t);else if(kind==='heart'){circ(c,x-7,y-28+b,9,'#ed8dac');circ(c,x+7,y-28+b,9,'#ed8dac');poly(c,[[x-16,y-27+b],[x+16,y-27+b],[x,y-5+b]],'#ed8dac')}else if(kind==='moon'){circ(c,x,y-24+b,17,'#e8e5bf');circ(c,x+8,y-29+b,15,'#263453')}else if(kind==='lantern'){rrect(c,x-12,y-42+b,24,34,5,'#d9a95c');glow(c,x,y-25+b,60,'255,205,110',.55);line(c,[[x-8,y-43+b],[x,y-54+b],[x+8,y-43+b]],2,'#f4d59a')}else if(kind==='leaf'||kind==='wheat'){ell(c,x,y-24+b,9,21,kind==='leaf'?'#d9c466':'#dcbf71');line(c,[[x,y-44+b],[x,y-2]],2,'#8b884d')}else if(kind==='crystal')drawCrystal(c,x,y,.6,'#8bd6b0',t,.8);else if(kind==='book'||kind==='box'||kind==='bowl'){rrect(c,x-22,y-28+b,44,27,5,kind==='bowl'?'#aa8359':'#75536b');line(c,[[x-18,y-20+b],[x+18,y-20+b]],2,'#e0bd7b')}else if(kind==='gate'){c.strokeStyle='#d8c583';c.lineWidth=7;c.beginPath();c.arc(x,y-30,30,3.14,6.2832);c.stroke();rect(c,x-34,y-30,8,34,'#8d7654');rect(c,x+26,y-30,8,34,'#8d7654');glow(c,x,y-20,60,'220,205,140',.4)}else if(kind==='seed'){ell(c,x,y-20+b,12,18,'#e8c66f');glow(c,x,y-20+b,60,'255,220,120',.65)}else if(kind==='step'){ell(c,x,y,28,11,'rgba(244,180,210,.35)');c.strokeStyle='#f2b6d0';c.lineWidth=2;c.beginPath();c.ellipse(x,y,24+Math.sin(t*3)*4,9,0,0,6.2832);c.stroke()}else if(kind==='bottle'){rrect(c,x-9,y-35+b,18,30,5,'rgba(170,215,230,.65)');rect(c,x-5,y-43+b,10,9,'#b3926c')}else{glow(c,x,y-25,50,'255,230,170',.65);starShape(c,x,y-25,1,'#fff0bd')}}
+function finGoal(){const f=F(),i=f.nStep||0,e=NQ[i];if(f.finalDone)return'اكتملت الحكاية. تجولي في ضوء أمنية '+f.treeWishEnding+'.';if(!f.nStarted||!e)return'';if(f.fq===e.id){const left=e.tasks.filter(q=>!f['ft'+e.id+q[0]]);if(!left.length)return'اكتملت المهمة.';const next=e.ordered?left[0]:null;return(next?'التالي: '+next[3]:e.goal)+' · بقي '+left.length}return e.goal}
+async function finAdvance(i){const f=F(),e=NQ[i];f.nStep=i+1;f.fq=0;f['fd'+e.id]=1;if(e.id===82)f.collectedLetters=3;if(e.id===95)f.collectedTulips=3;if(e.id===97)f.danceStepsCompleted=6;if(e.id===107)f.treeMemories=3;if(e.id===110){f.finalDone=1;f.memoryHouse=1}save();if(e.to)await goto(e.to,220,520);if(e.id===110)showFinalEnd()}
+function finTaskUse(e,q){return async()=>{const f=F();if(f.fq!==e.id)return;if(e.ordered){const next=e.tasks.find(z=>!f['ft'+e.id+z[0]]);if(next&&next[0]!==q[0]){sfx.wrong();toast('الترتيب غير صحيح. التالي: '+next[3]);return}}f['ft'+e.id+q[0]]=1;if(e.id===97)f.danceStepsCompleted=e.tasks.filter(z=>f['ft'+e.id+z[0]]).length;if(e.id===107)f.treeMemories=Math.min(3,e.tasks.slice(0,3).filter(z=>f['ft'+e.id+z[0]]).length);sfx.star();burst(q[1],q[2]-20,'255,225,155',25);save();const left=e.tasks.filter(z=>!f['ft'+e.id+z[0]]);toast(left.length?'بقي '+left.length:'اكتملت المهمة');if(left.length)return;const i=NQ.indexOf(e);if(e.outro)await talk(e.outro);await finAdvance(i)}}
+function patchFinal(){
+ SC.lake1=finScene('lake1','بحيرة القمر · الممر المائي','lake',811);SC.lake2=finScene('lake2','بحيرة القمر · الجزيرة الفضية','lake',812);SC.lake3=finScene('lake3','بحيرة القمر · رصيف الفوانيس','lake',813);
+ SC.dance1=finScene('dance1','حديقة التوليب · ممر الألف زهرة','dance',911);SC.dance2=finScene('dance2','حديقة التوليب · منصة التدريب','dance',912);SC.dance3=finScene('dance3','حديقة التوليب · منصة القمر','dance',913);
+ SC.wish1=finScene('wish1','شجرة الأمنيات · القرية والجذور','wish',1011);SC.wish2=finScene('wish2','شجرة الأمنيات · الأغصان والسحب','wish',1012);SC.wish3=finScene('wish3','شجرة الأمنيات · القمة','wish',1013);
+ NQ.forEach((e,i)=>{const sc=SC[e.sc];sc.objs.push(OBJ({id:'nq'+e.id,x:e.x,y:e.y,r:78,label:e.label,show:()=>F().nStarted&&F().nStep===i&&F().fq!==e.id&&!F()['fd'+e.id],f:(c,t,o)=>drawFinObj(c,t,o,e.id===81?'boat':e.id===109?'leaf':'star'),use:async()=>{await chapter(''+e.id);F()['fc'+e.id]=1;const r=await e.fn();if(r==='tasks'){F().fq=e.id;save();toast(e.goal)}else await finAdvance(i)}}));
+  (e.tasks||[]).forEach(q=>sc.objs.push(OBJ({id:'ft'+e.id+q[0],x:q[1],y:q[2],r:66,label:q[3],show:()=>F().fq===e.id&&!F()['ft'+e.id+q[0]],f:(c,t,o)=>drawFinObj(c,t,o,q[4]),use:finTaskUse(e,q)}))) });
+ SC.garden.objs.push(OBJ({id:'lakegate',x:900,y:340,r:85,label:'بوابة بحيرة الرسائل',show:()=>F().mDone&&!F().nStarted,f:(c,t,o)=>drawFinObj(c,t,o,'gate'),use:()=>startFinal()}));
+}
+async function startFinal(){const f=F();f.nStarted=1;f.nStep=0;f.sariJoin=1;save();await goto('lake1',220,520);await card('الجزء السادس','بحيرة الرسائل السرية','الفصول 81–90')}
+function stateUpToFinal(n){stateUpToM(12);const f=F();f.mDone=1;f.nStarted=1;f.nStep=n;f.sariJoin=1;f.fq=0;f.finalDone=0;for(let i=0;i<n;i++){f['fd'+NQ[i].id]=1;f['fc'+NQ[i].id]=1}if(n>=10){f.collectedLetters=3;f.lakeLetterChoice=f.lakeLetterChoice||'وعد'}if(n>=20){f.collectedTulips=3;f.danceStepsCompleted=6}f.treeWishEnding='الأمل';S.chapters=CH.map(c=>c.id).filter(id=>isNaN(+id)||+id<81+n);initScene()}
+function showFinalEnd(){const f=F(),kind=f.treeWishEnding||'الأمل';const txt={الأمل:'نمت أوراق خضراء وذهبية في أنحاء المملكة، وعادت النافورة إلى التدفق. صارت الشجرة قادرة على استقبال أمنيات جديدة.',الرحمة:'طارت رسائل مضيئة فوق القرى، وقال الناس الكلمات التي تأخرت طويلًا، وفتحوا أبواب الاعتذار والمصالحة.',الاختيار:'وجد كل شخص بذرة سحرية في يده، ونمت حول البيوت أزهار مختلفة بقدر اختلاف أصحابها.'}[kind];$('#wishEndTitle').textContent='نهاية أمنية '+kind;$('#wishEndText').textContent=txt+' «الأمنيات قد تضيء الطريق، لكن الحب الحقيقي يظهر في الخطوات التي نختار أن نمشيها معًا.»';$('#wishEndExtra').hidden=!f.memoryHouse;openOv($('#wishEnd'))}
+(function(){
+ const d=document.createElement('div');d.id='wishEnd';d.className='ovl';d.hidden=true;d.setAttribute('style','z-index:38;background:radial-gradient(ellipse at 50% 35%,#354b43 0%,#111526 72%,#090914 100%)');d.innerHTML='<div style="font-family:var(--f-display);color:var(--lantern);letter-spacing:.14em">الفصل 110 · الخاتمة</div><div id="wishEndTitle" style="font-family:var(--f-display);font-size:clamp(26px,7vw,44px);font-weight:700;text-align:center"></div><p id="wishEndText" style="color:var(--moon);max-width:29em;text-align:center;line-height:1.9;margin:0"></p><p id="wishEndExtra" style="color:var(--lantern);max-width:27em;text-align:center;line-height:1.8;margin:0">مشهد بيت الذكريات: رسالة البحيرة وزهرة الرقصة والبذرة الذهبية على طاولة واحدة. «هالمرة إنتِ اختاري وين نروح.»</p><div class="row"><button id="wishStay" class="btn main" type="button">أكملي التجوال</button><button id="wishMenu" class="btn" type="button">القائمة الرئيسية</button><button id="wishNew" class="btn" type="button">ابدئي من جديد</button></div>';$('#app').appendChild(d);
+ $('#wishStay').addEventListener('click',()=>closeOv(d));$('#wishMenu').addEventListener('click',()=>{save();location.reload()});$('#wishNew').addEventListener('click',()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
+ const b=document.createElement('button');b.id='meLake';b.className='btn main';b.type='button';b.textContent='إلى بحيرة الرسائل';const row=$('#meStay').parentNode;row.insertBefore(b,row.firstChild);b.addEventListener('click',()=>{closeOv($('#memEnd'));run(startFinal)});
+ PARTS.push(['n0','الجزء السادس: بحيرة الرسائل السرية','الفصول 81–90 · الرسائل والفانوس وذكرى القمر',0],['n1','الجزء السابع: رقصة ألف توليب','الفصول 91–100 · دعوة الرقص وآخر بتلة',0],['n2','الجزء الثامن: شجرة الأمنيات الأخيرة','الفصول 101–110 · ثلاث أمنيات وثلاث نهايات',0]);
+ const sp=startPart;startPart=async function(k){if(!/^n[0-2]$/.test(k))return sp(k);closeOv($('#partsOv'));const n=+k[1]*10;stateUpToFinal(n);if(n===0){await run(startFinal);return}await run(()=>goto(n===10?'dance1':'wish1',220,520))};
+ const gt=goalText,ht=hintText;goalText=function(){return S&&F().nStarted?finGoal():gt()};hintText=function(){return S&&F().nStarted?finGoal():ht()};
+ const ci=continueGame;continueGame=function(){ci();if(S&&F().finalDone)setTimeout(()=>{if($('#title').hidden)showFinalEnd()},80)};
+})();
+
+/* ---------- رفيق الهامستر الاختياري ---------- */
+const PET={x:0,y:0,face:1,walk:0,moving:false};
+function drawHamster(c,t){
+ const s=PET,b=s.moving?Math.abs(Math.sin(s.walk*13))*-3:Math.sin(t*3)*.7,f=s.face;
+ ell(c,s.x,s.y+2,12,4,'rgba(0,0,0,.3)');c.save();c.translate(s.x,s.y+b);c.scale(f,1);
+ ell(c,0,-9,12,11,'#c99058');circ(c,-7,-20,5,'#a66d49');circ(c,7,-20,5,'#a66d49');circ(c,-7,-20,2.7,'#edb6a0');circ(c,7,-20,2.7,'#edb6a0');
+ ell(c,0,-8,8,8,'#edc998');circ(c,0,-16,10,'#d8a66d');ell(c,0,-12,7,5,'#f2d7ae');circ(c,-4,-18,1.5,'#211b25');circ(c,4,-18,1.5,'#211b25');circ(c,0,-13,1.7,'#6e4145');
+ line(c,[[-2,-10],[0,-9],[2,-10]],1,'#7d5150');circ(c,-7,-12,2,'rgba(235,135,130,.45)');circ(c,7,-12,2,'rgba(235,135,130,.45)');ell(c,-7,0,4,2,'#edc998');ell(c,7,0,4,2,'#edc998');c.restore();
+ c.save();c.font='11px Reem Kufi, sans-serif';c.textAlign='center';c.textBaseline='middle';const name=settings.petName,w=Math.min(116,c.measureText(name).width+14);rrect(c,s.x-w/2,s.y-48+b,w,18,7,'rgba(12,11,29,.78)');c.fillStyle='#ffe2a6';c.fillText(name,s.x,s.y-39+b,100);c.restore();
+}
+function petStep(dt){if(!S||!cur||!settings.petName)return;const tx=P.x-P.face*(F().sariJoin?52:34),ty=P.y+15,dx=tx-PET.x,dy=ty-PET.y,d=Math.hypot(dx,dy);PET.moving=d>8;if(d>240){PET.x=tx;PET.y=ty}else if(PET.moving){const st=Math.min(d,Math.max(95,d*4.4)*dt);PET.x+=dx/d*st;PET.y+=dy/d*st;PET.walk+=dt;if(Math.abs(dx)>2)PET.face=dx>0?1:-1}else PET.face=P.x>=PET.x?1:-1;const q=resolve(PET.x,PET.y,7);PET.x=q[0];PET.y=q[1]}
+function syncPetTitle(){const on=!!settings.petName;$('#btnPet').textContent=on?'تغيير اسم الهامستر':'إضافة هامستر أليف';$('#petStatus').textContent=on?settings.petName+' يرافق شهريان من الفصل الأول حتى النهاية.':'أضيفي هامسترًا واختاري اسمه ليرافق شهريان طوال الحكاية.';$('#petRemove').hidden=!on}
+(function(){
+ const up=update;update=function(dt,t){up(dt,t);petStep(dt)};const is=initScene;initScene=function(){is();PET.x=P.x-34;PET.y=P.y+15;PET.walk=0};
+ const d=document.createElement('div');d.id='petOv';d.className='ovl';d.hidden=true;d.style.zIndex=55;d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-labelledby','petTitle');d.innerHTML='<form id="petForm" class="sheet"><header><h3 id="petTitle">هامستركِ الصغير</h3><button id="petCancel" class="btn" type="button">إلغاء</button></header><p style="margin:0;color:var(--moon-dim);line-height:1.8">اختاري اسمًا من 1 إلى 18 حرفًا. سيظهر بجانب شهريان في جميع الفصول، ويمكنكِ إزالته متى شئتِ.</p><label for="petName">اسم الهامستر</label><input id="petName" name="petName" type="text" maxlength="18" autocomplete="off" required aria-describedby="petError"><div id="petError" role="alert" style="min-height:1.5em;color:#ffb0a8"></div><div class="row"><button class="btn main" type="submit">حفظ الرفيق</button><button id="petRemove" class="btn" type="button">إزالة الهامستر</button></div></form>';$('#app').appendChild(d);
+ $('#btnPet').addEventListener('click',()=>{$('#petName').value=settings.petName||'';$('#petError').textContent='';openOv(d);setTimeout(()=>$('#petName').focus(),50)});$('#petCancel').addEventListener('click',()=>closeOv(d));
+ $('#petForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#petName').value.trim().replace(/\s+/g,' ');if(!name){$('#petError').textContent='اكتبي اسمًا للهامستر أولًا.';return}settings.petName=name;saveSettings();syncPetTitle();closeOv(d);sfx.pick()});
+ $('#petRemove').addEventListener('click',()=>{settings.petName='';saveSettings();syncPetTitle();closeOv(d);toast('تمت إزالة الهامستر. يمكنكِ إضافته مجددًا من شاشة البداية.')});
+ syncPetTitle();
+})();
+
 /* ---------- boot ---------- */
 function build(){
-  SC.garden=gardenScene();SC.hospital=hospitalScene();SC.road=roadScene();SC.city=cityScene();SC.forest=forestScene();SC.grove=groveScene();SC.crystal=crystalScene();SC.valley=valleyScene();SC.cloud=cloudScene();SC.ember=emberScene();SC.echo=echoScene();SC.glass=glassScene();SC.storm=stormScene();SC.fanaa=fanaaScene();patchGarden();patchKitchen();patchCelestial();
+  SC.garden=gardenScene();SC.hospital=hospitalScene();SC.road=roadScene();SC.city=cityScene();SC.forest=forestScene();SC.grove=groveScene();SC.crystal=crystalScene();SC.valley=valleyScene();SC.cloud=cloudScene();SC.ember=emberScene();SC.echo=echoScene();SC.glass=glassScene();SC.storm=stormScene();SC.fanaa=fanaaScene();patchGarden();patchKitchen();patchCelestial();patchMarket();patchFinal();
 }
 async function newGame(){
   closeDlg();S=fresh();initScene();
