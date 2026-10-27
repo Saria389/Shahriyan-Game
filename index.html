@@ -68,7 +68,9 @@ body.talking #controls,body.ov #controls,body.talking #keys,body.ov #keys{opacit
 #fade.on{opacity:1}
 #title{z-index:40;background:radial-gradient(ellipse at 50% 30%,#2a2468 0%,#12112a 55%,#0a0918 100%)}
 #title svg{width:min(26vw,96px);height:auto;flex:none}
-#tFace{width:116px;height:116px;border-radius:50%;object-fit:cover;border:3px solid var(--lantern);box-shadow:0 0 44px rgba(244,185,92,.38);flex:none}
+#tFace,#tFaceA{width:112px;height:112px;border-radius:50%;object-fit:cover;border:3px solid var(--lantern);box-shadow:0 0 36px rgba(244,185,92,.3);flex:none;background:var(--night-2)}
+.title-duo{display:flex;align-items:center;justify-content:center;direction:rtl;padding:0 16px;flex:none}
+.title-duo img+img{margin-inline-start:-22px;border-color:var(--glass);box-shadow:0 0 34px rgba(143,210,230,.24)}
 #title h1{font-family:var(--f-display);font-weight:700;font-size:clamp(46px,14vw,86px);line-height:1.1;margin:0;color:var(--moon)}
 #title h2{font-family:var(--f-display);font-weight:500;font-size:clamp(18px,5vw,26px);margin:0;color:var(--lantern);letter-spacing:.04em}
 #title p{margin:0;color:var(--moon-dim);max-width:24em;text-align:center;line-height:1.9;font-size:16px}
@@ -109,12 +111,24 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
 #rdHint{margin:8px 0 0;background:rgba(244,185,92,.12);border:1px solid var(--lantern);border-radius:10px;padding:10px 12px;line-height:1.9;font-size:16px}
 .tog{display:flex;flex-direction:column;gap:8px;width:100%}
 .tog .btn{text-align:right}
-#title.ovl{justify-content:flex-start}
+#title.ovl{justify-content:flex-start;overflow-x:hidden}
 #title>:first-child{margin-top:auto}
 #title>:last-child{margin-bottom:auto}
 #petOpt{width:min(100%,520px);display:flex;align-items:center;gap:12px;background:rgba(244,185,92,.08);border:1px solid rgba(244,185,92,.42);border-radius:14px;padding:12px 14px}.petIcon{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:50%;color:#f4d29a;background:#9a6949;border:5px solid #d9ad79;box-shadow:0 0 20px rgba(244,185,92,.2)}.petCopy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.petCopy b{font-family:var(--f-display);color:var(--lantern);font-size:15px}.petCopy span{color:var(--moon-dim);font-size:14px;line-height:1.6}#btnPet{flex:none}#petOv .sheet{gap:16px}#petName{width:100%;box-sizing:border-box;background:var(--night);color:var(--moon);border:1px solid var(--line);border-radius:9px;padding:12px;font:18px var(--f-body);user-select:text;-webkit-user-select:text}#petName:focus{outline:2px solid var(--lantern)}@media(max-width:520px){#petOpt{flex-wrap:wrap}.petCopy{min-width:180px}#btnPet{width:100%}}
 #tOpt{width:min(100%,520px);display:flex;flex-direction:column;gap:12px;background:rgba(236,233,247,.05);border:1px solid var(--line);border-radius:14px;padding:14px}
 #tOpt h4,.volBox h4{margin:0;font-family:var(--f-display);font-size:14px;letter-spacing:.08em;color:var(--glass)}
+.studioHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.studioHead span{font-size:12px;color:var(--moon-dim)}
+.studioNote{margin:0;color:var(--moon-dim);font-size:13px;line-height:1.8}
+.studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.avatarCard{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;padding:12px 8px;border:1px solid var(--line);border-radius:12px;background:rgba(8,7,22,.32)}
+.avatarCard img{width:86px;height:86px;border-radius:50%;object-fit:cover;border:2px solid var(--lantern);background:var(--night)}
+.avatarCard:nth-child(2) img{border-color:var(--glass)}
+.avatarCard b{font-family:var(--f-display);font-size:16px}.avatarCard small{color:var(--moon-dim);min-height:1.5em;text-align:center}
+.avatarCard .btn{width:100%;padding-inline:8px}.avatarCard .resetAvatar{min-height:34px;font-size:12px;background:transparent}
+#avatarMsg{min-height:1.7em;margin:0;text-align:center;color:var(--lantern);font-size:13px;line-height:1.7}
+#pauseOv{z-index:38}#pauseOv .sheet{max-width:440px;gap:16px}#pauseOv p{margin:0;color:var(--moon-dim);line-height:1.9;text-align:center}
+@media(max-width:380px){.studioGrid{grid-template-columns:1fr}.avatarCard{display:grid;grid-template-columns:72px 1fr;column-gap:10px;text-align:right}.avatarCard img{width:72px;height:72px;grid-row:1/5}.avatarCard small{text-align:right}.avatarCard .btn{grid-column:2}}
+@media(prefers-reduced-motion:reduce){#card,#fade{transition-duration:.01ms}}
 .outRow{display:flex;gap:12px;align-items:center}
 .outRow canvas{width:76px;height:104px;flex:none;border-radius:10px;background:radial-gradient(ellipse at 50% 70%,#2a2468,#0f0e24);border:1px solid var(--line)}
 .outInfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
@@ -142,7 +156,7 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
       <div id="goal"></div>
       <div id="memWrap" hidden><span>الذاكرة</span><div id="memBar"><div id="memFill"></div></div></div>
     </div>
-    <div id="hudR"><button id="btnRead" class="hbtn" type="button">الرواية</button><button id="btnBook" class="hbtn" type="button">الحقيبة</button><button id="btnSari" class="hbtn" type="button" hidden>ساري</button></div>
+    <div id="hudR"><button id="btnPause" class="hbtn" type="button" aria-label="إيقاف مؤقت">إيقاف</button><button id="btnRead" class="hbtn" type="button">الرواية</button><button id="btnBook" class="hbtn" type="button">الحقيبة</button><button id="btnSari" class="hbtn" type="button" hidden>ساري</button></div>
   </div>
   <div id="place"></div>
   <div id="toast"></div>
@@ -151,7 +165,7 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
     <div id="stick"><div id="knob"></div></div>
     <button id="act" type="button">تفاعل</button>
   </div>
-  <div id="keys">الأسهم أو WASD للحركة · مسافة أو E للتفاعل · B للكتاب</div>
+  <div id="keys">الأسهم أو WASD للحركة · E للتفاعل · B للحقيبة · P للإيقاف</div>
 
   <div id="dialog" hidden>
     <div id="dRow"><img id="dAv" alt="" hidden><div id="dBody"><div id="dSpk"></div><div id="dTxt"></div></div></div>
@@ -195,6 +209,16 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
       <text x="196" y="50" text-anchor="middle" fill="#e0405f" font-size="17" font-family="Reem Kufi,sans-serif" font-weight="700">غابة النسيان</text>
     </svg>
     <button id="mapNo" class="btn main" type="button">فهمت</button>
+  </div>
+
+  <div id="pauseOv" class="ovl" hidden role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="sheet">
+      <header><h3 id="pauseTitle">الحكاية متوقفة</h3><button id="pauseNo" class="btn" type="button">متابعة</button></header>
+      <p>خذي وقتك؛ لن تتحرك الشخصيات أو المطاردات أثناء الإيقاف.</p>
+      <button id="fxBtn" class="btn" type="button"></button>
+      <button id="pauseSave" class="btn main" type="button">حفظ ومتابعة</button>
+      <button id="pauseMenu" class="btn" type="button">حفظ والقائمة الرئيسية</button>
+    </div>
   </div>
 
   <div id="book" class="ovl" hidden>
@@ -241,7 +265,7 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
 
   <div id="finOv" class="ovl" hidden style="z-index:35;background:radial-gradient(ellipse at 50% 40%,#2a2468 0%,#0c0b1d 80%)"><div style="font-family:var(--f-display);color:var(--lantern);letter-spacing:.14em">الفصل الأخير</div><div style="font-family:var(--f-display);font-size:clamp(26px,7vw,44px);font-weight:700;text-align:center;line-height:1.4;max-width:14em">الأفق المفتوح</div><p style="color:var(--moon-dim);max-width:24em;text-align:center;line-height:1.9;margin:0">حكاية جديدة لا تنتهي... حكاية الحب والطب والسحر في العوالم اللانهائية.</p><div class="row"><button id="finStay" class="btn main" type="button">أكملي التجوال</button><button id="finNew" class="btn" type="button">ابدئي من جديد</button></div></div>
   <div id="title" class="ovl">
-    <img id="tFace" alt="شهريان">
+    <div class="title-duo" aria-label="شهريان وساري"><img id="tFace" alt="شهريان"><img id="tFaceA" alt="ساري"></div>
     <svg viewBox="0 0 100 130" aria-hidden="true">
       <defs><radialGradient id="tg" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#8fd2e6" stop-opacity=".55"/><stop offset="1" stop-color="#8fd2e6" stop-opacity="0"/></radialGradient></defs>
       <circle cx="50" cy="48" r="46" fill="url(#tg)"/>
@@ -262,6 +286,14 @@ select{background:var(--night);color:var(--moon);border:1px solid var(--line);bo
       <button id="btnPet" class="btn" type="button" aria-haspopup="dialog">إضافة هامستر أليف</button>
     </div>
     <div id="tOpt">
+      <div class="studioHead"><h4>استوديو الشخصيات</h4><span>صوركما، حكايتكما</span></div>
+      <p class="studioNote">اختاري صورة لشهريان وأخرى لساري من جهازك. تُقصّ الصورة تلقائيًا وتظهر في اللعب والحوارات.</p>
+      <div class="studioGrid">
+        <div class="avatarCard"><img id="studioH" alt="معاينة صورة شهريان"><b>شهريان</b><small id="studioHState">الصورة الأصلية</small><button id="pickH" class="btn sm" type="button">اختيار صورة</button><button id="resetH" class="btn sm resetAvatar" type="button">استرجاع الأصلية</button><input id="fileH" type="file" accept="image/*" hidden></div>
+        <div class="avatarCard"><img id="studioA" alt="معاينة صورة ساري"><b>ساري</b><small id="studioAState">الصورة الأصلية</small><button id="pickA" class="btn sm" type="button">اختيار صورة</button><button id="resetA" class="btn sm resetAvatar" type="button">استرجاع الأصلية</button><input id="fileA" type="file" accept="image/*" hidden></div>
+      </div>
+      <p id="avatarMsg" role="status" aria-live="polite"></p>
+      <p class="studioNote">الصور محفوظة في هذا المتصفح فقط، ولا تُرفع إلى الإنترنت.</p>
       <h4>الأزياء</h4>
       <div class="outRow"><canvas id="pvH" width="152" height="208" aria-label="معاينة زي شهريان"></canvas><div class="outInfo"><div class="outName" id="nmH"></div><div class="sw" id="swH"></div></div></div>
       <div class="outRow"><canvas id="pvA" width="152" height="208" aria-label="معاينة زي ساري"></canvas><div class="outInfo"><div class="outName" id="nmA"></div><div class="sw" id="swA"></div></div></div>
@@ -3274,7 +3306,91 @@ $('#btnCont').addEventListener('click',continueGame);
 $('#endStay').addEventListener('click',()=>closeOv($('#endOv')));
 $('#endNew').addEventListener('click',()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
 
-$('#dAv').src=FACE;$('#tFace').src=FACE;syncSettings();outUI();
+/* ---------- استوديو الشخصيات والإيقاف ---------- */
+const AVKEY='shahriyan-avatars-v1';
+let avatars={h:'',a:''};
+try{const a=JSON.parse(localStorage.getItem(AVKEY))||{};if(typeof a.h==='string'&&a.h.startsWith('data:image/'))avatars.h=a.h;if(typeof a.a==='string'&&a.a.startsWith('data:image/'))avatars.a=a.a}catch(e){}
+function saveAvatars(){try{localStorage.setItem(AVKEY,JSON.stringify(avatars));return true}catch(e){return false}}
+function syncAvatarUI(){
+  $('#studioH').src=faceImg.src;$('#studioA').src=sariImg.src;
+  $('#tFace').src=faceImg.src;$('#tFaceA').src=sariImg.src;
+  $('#studioHState').textContent=avatars.h?'صورة مخصصة':'الصورة الأصلية';
+  $('#studioAState').textContent=avatars.a?'صورة مخصصة':'الصورة الأصلية';
+  $('#resetH').disabled=!avatars.h;$('#resetA').disabled=!avatars.a;
+}
+function setAvatar(who,src,custom,persist=true){
+  avatars[who]=custom?src:'';
+  if(who==='h'){FACE_OK=false;faceImg.src=custom?src:FACE}else{SARI_OK=false;sariImg.src=custom?src:SARI}
+  const stored=persist?saveAvatars():true;syncAvatarUI();pvDraw();return stored;
+}
+faceImg.addEventListener('load',()=>{syncAvatarUI();if(!dlg.hidden&&dSpk.textContent==='شهريان')portrait('شهريان')});
+sariImg.addEventListener('load',()=>{syncAvatarUI();if(!dlg.hidden&&dSpk.textContent==='ساري')portrait('ساري')});
+const portraitWithAvatars=portrait;
+portrait=function(spk){
+  portraitWithAvatars(spk);
+  if(spk==='شهريان'&&FACE_OK){dAv.src=faceImg.src;dAv.alt='شهريان';dAv.hidden=false}
+  else if(spk==='ساري'&&SARI_OK){dAv.src=sariImg.src;dAv.alt='ساري';dAv.hidden=false}
+};
+function avatarMessage(t){$('#avatarMsg').textContent=t}
+function readAvatar(who,file){
+  if(!file)return;
+  if(!file.type.startsWith('image/')){avatarMessage('اختاري ملف صورة صالحًا.');return}
+  if(file.size>15*1024*1024){avatarMessage('الصورة كبيرة جدًا؛ اختاري صورة أصغر من 15 ميغابايت.');return}
+  avatarMessage('جارٍ تجهيز الصورة…');
+  const reader=new FileReader();
+  reader.onerror=()=>avatarMessage('تعذر فتح الصورة. جرّبي صورة أخرى.');
+  reader.onload=()=>{
+    const im=new Image();
+    im.onerror=()=>avatarMessage('صيغة الصورة غير مدعومة. جرّبي JPG أو PNG.');
+    im.onload=()=>{
+      try{
+        const side=Math.min(im.naturalWidth,im.naturalHeight);if(!side)throw new Error('empty');
+        const sx=(im.naturalWidth-side)/2,sy=(im.naturalHeight-side)*.18;
+        const cv=document.createElement('canvas');cv.width=cv.height=384;
+        const cx=cv.getContext('2d');cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';
+        cx.drawImage(im,sx,sy,side,side,0,0,384,384);
+        const data=cv.toDataURL('image/jpeg',.86),stored=setAvatar(who,data,true);
+        avatarMessage((stored?'تم حفظ صورة ':'تم استخدام صورة لهذه الجلسة فقط؛ تعذر حفظ ')+(who==='h'?'شهريان':'ساري')+'.');
+      }catch(e){avatarMessage('تعذر تجهيز الصورة. جرّبي صورة أخرى.')}
+    };
+    im.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+$('#pickH').addEventListener('click',()=>$('#fileH').click());
+$('#pickA').addEventListener('click',()=>$('#fileA').click());
+$('#fileH').addEventListener('change',e=>{readAvatar('h',e.target.files[0]);e.target.value=''});
+$('#fileA').addEventListener('change',e=>{readAvatar('a',e.target.files[0]);e.target.value=''});
+$('#resetH').addEventListener('click',()=>{setAvatar('h',FACE,false);avatarMessage('عادت صورة شهريان الأصلية.')});
+$('#resetA').addEventListener('click',()=>{setAvatar('a',SARI,false);avatarMessage('عادت صورة ساري الأصلية.')});
+setAvatar('h',avatars.h||FACE,!!avatars.h,false);setAvatar('a',avatars.a||SARI,!!avatars.a,false);
+
+if(settings.fx===undefined)settings.fx=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fullLightPass=lightPass,fullCelPass=celPass,fullBurst=burst;
+lightPass=function(t){if(settings.fx)fullLightPass(t)};
+celPass=function(t){if(settings.fx)fullCelPass(t)};
+burst=function(x,y,col,n){if(settings.fx)fullBurst(x,y,col,n)};
+function syncFx(){const b=$('#fxBtn');b.textContent='المؤثرات البصرية: '+(settings.fx?'كاملة':'خفيفة');b.setAttribute('aria-pressed',String(!settings.fx))}
+$('#fxBtn').addEventListener('click',()=>{settings.fx=!settings.fx;saveSettings();syncFx();sfx.ui()});
+function clearMovement(){keys.l=keys.r=keys.u=keys.d=0;joy.x=joy.y=0;$('#knob').style.transform=''}
+function openPause(){
+  if(!S||!$('#title').hidden||busy||ovOpen)return;
+  clearMovement();syncFx();openOv($('#pauseOv'));$('#pauseNo').focus();
+}
+function closePause(){if(!$('#pauseOv').hidden)closeOv($('#pauseOv'))}
+$('#btnPause').addEventListener('click',openPause);
+$('#pauseNo').addEventListener('click',closePause);
+$('#pauseSave').addEventListener('click',()=>{save();closePause();toast('تم حفظ التقدم')});
+$('#pauseMenu').addEventListener('click',()=>{save();location.reload()});
+window.addEventListener('keydown',e=>{
+  if((e.key==='p'||e.key==='P')&&!e.repeat&&S&&$('#title').hidden){e.preventDefault();if(!$('#pauseOv').hidden)closePause();else openPause()}
+},true);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearMovement();if(S&&$('#title').hidden)save()}});
+
+let gameReady=false;const frameWithReady=frame;
+frame=function(t){frameWithReady(t);if(!gameReady){gameReady=true;window.__GAME_READY__=true}};
+window.__gameProbe=()=>({scene:S&&S.scene,x:P.x,y:P.y,title:!$('#title').hidden,dialog:!dlg.hidden,busy,overlay:ovOpen,paused:!$('#pauseOv').hidden,fx:settings.fx,avatars:{h:faceImg.src,a:sariImg.src},avatarReady:{h:FACE_OK,a:SARI_OK}});
+$('#dAv').src=faceImg.src;syncSettings();syncAvatarUI();outUI();
 build();resize();requestAnimationFrame(resize);
 cur=SC.garden;
 if(loadSave())$('#btnCont').hidden=false;
